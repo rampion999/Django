@@ -1,0 +1,27 @@
+#sugTable table,#sugTable th,#sugTable td {
+	border: 1px solid black;
+    border-collapse: collapse;
+}
+
+#sugTable{
+	width: 100%;
+}
+
+#sugTable th, #sugTable td {
+    padding: 5px;
+    text-align: center;    
+}
+
+#sug_selected, #sug_selected th,#sug_selected td {
+	border: 1px solid black;
+    border-collapse: collapse;
+}
+
+#sug_selected{
+	width: 100%;
+}
+
+#sug_selected th, #sug_selected td {
+    padding: 5px;
+    text-align: center;    
+}

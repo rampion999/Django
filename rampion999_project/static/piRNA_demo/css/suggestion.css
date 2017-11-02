@@ -1,0 +1,27 @@
+#div_name2 table,#div_name2 th,#div_name2 td {
+	border: 1px solid black;
+    border-collapse: collapse;
+}
+
+#div_name2{
+	width: 100%;
+}
+
+#div_name2 th, #div_name2 td {
+    padding: 5px;
+    text-align: center;    
+}
+
+#sug_selected, #sug_selected th,#sug_selected td {
+	border: 1px solid black;
+    border-collapse: collapse;
+}
+
+#sug_selected{
+	width: 100%;
+}
+
+#sug_selected th, #sug_selected td {
+    padding: 5px;
+    text-align: center;    
+}

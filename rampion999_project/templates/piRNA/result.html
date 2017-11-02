@@ -1,0 +1,235 @@
+{% load staticfiles %}
+<!DOCTYPE html>
+<html lang="en">
+
+  <head>
+
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="description" content="">
+    <meta name="author" content="">
+
+    <title>piScan</title>
+
+    
+
+    <!-- Bootstrap core CSS -->
+    <link href="{% static 'vendor/bootstrap/css/bootstrap.min.css' %}" rel="stylesheet">
+
+    <!-- Custom styles for this template -->
+    <link href="{% static 'bo_css/modern-business.css' %}" rel="stylesheet">
+    <link rel="stylesheet" type="text/css" href='{% static "piRNA/css/sweetalert2.min.css" %}'>
+    <link rel="stylesheet" type="text/css" href='{% static "piRNA/css/suggestion.css" %}'>
+    <link rel="stylesheet" type="text/css" href='{% static "piRNA/css/jquery.dataTables.min.css" %}'>
+    <link rel="stylesheet" type="text/css" href='{% static "piRNA/css/ex.css" %}'>
+    
+    <!-- Bootstrap core JavaScript -->
+    <script src="{% static 'vendor/jquery/jquery.min.js' %}"></script>
+    <script src="{% static 'vendor/popper/popper.min.js' %}"></script>
+    <script src="{% static 'vendor/bootstrap/js/bootstrap.min.js' %}"></script>
+
+    <!-- old JS -->
+    <script type="text/javascript" src="{% static 'piRNA/js/effect.js' %}"></script>
+    <script type="text/javascript" src="{% static 'piRNA/js/cookie.js' %}"></script>
+    <script type="text/javascript" src="{% static 'piRNA/js/d3.min.js' %}"></script>
+    <script type="text/javascript" src="{% static 'piRNA/js/sweetalert2.min.js' %}"></script>
+    <script type="text/javascript" src="{% static 'piRNA/js/jquery.dataTables.min.js' %}"></script>
+    <script type="text/javascript" src="{% static 'piRNA/js/overView.js' %}"></script>
+    <script type="text/javascript" src="{% static 'piRNA/js/seqView.js' %}"></script>
+    <script type="text/javascript" src="{% static 'piRNA/js/range.js' %}"></script>
+    <script type="text/javascript" src="{% static 'piRNA/js/tableEffect.js' %}"></script>
+    <script type="text/javascript" src="{% static 'piRNA/js/piRNA_info.js' %}"></script>
+    <script type="text/javascript" src="{% static 'piRNA/js/suggestion.js' %}"></script>
+    <script type="text/javascript" src="{% static 'piRNA/js/dataTables.fixedColumns.min.js' %}"></script>
+    <script type="text/javascript" src="{% static 'piRNA/js/seq_update.js' %}"></script>
+    <script type="text/javascript" src="{% static 'piRNA/js/noBulgeData.js' %}"></script>
+    <script type="text/javascript" src="{% static 'piRNA/js/resultCreate.js' %}"></script>
+  </head>
+
+
+
+  <script>
+    var csrftoken = Cookies.get('csrftoken');
+    function csrfSafeMethod(method) {
+        // these HTTP methods do not require CSRF protection
+        return (/^(GET|HEAD|OPTIONS|TRACE)$/.test(method));
+    }
+    $.ajaxSetup({
+        beforeSend: function(xhr, settings) {
+            if (!csrfSafeMethod(settings.type) && !this.crossDomain) {
+                xhr.setRequestHeader("X-CSRFToken", csrftoken);
+            }
+        }
+    });
+
+    $(document).ready(function(){
+      function Submit(){
+        var start = 0;
+        var end = 0;
+        start = new Date().getTime();
+        swal.queue([{
+        title : 'Scanning',
+        imageUrl: "{% static 'piRNA/img/Magnify.gif' %}",
+        disableButtons: true,
+        showConfirmButton: false,
+        allowOutsideClick : false,
+        }]);
+        $('#result').empty();
+          $.ajax({
+            url: "scanOperation/", 
+                  data:{ 
+              data1:$('#gene').val(),
+              opt1:$('#opt1').val(),
+              opt2:$('#opt2').val(),
+              opt3:$('#opt3').val(),
+              opt4:$('#opt4').val(),
+              opt5:$('#opt5').val(),
+              nematodeType:$('#nematodeType').val(),
+              CDS_1:$('#CDS_1').val(),
+              CDS_2:$('#CDS_2').val(),
+              // csrfmiddlewaretoken: '{{ csrf_token }}',
+            },
+            type: "POST", 
+            dataType:'json',
+            error: function(no){
+              console.log(no);
+              swal(
+                'Scan cancelled',
+                'System memory overload',
+                'error'
+              )
+              },
+            success: function(data){
+              if(data.state=='nothing'){
+                swal(
+                'Scan cancelled',
+                'The input aera is empty, please enter some sequence :)',
+                'error'
+                )
+              }
+              else if(data.state=='formatX'){
+                swal(
+                'Scan cancelled',
+                'The input sequence format is wrong!!<br>\
+                Please check it and try again!!<br>\
+                <br>Note!!<br>\
+                DNAseq is compose of "A"."T"."C"."G"<br>\
+                RNAseq is compose of "A"."U"."C"."G"',
+                'error'
+                )
+              }
+              else if(data.state=='notfasta'){
+                swal(
+                'Scan cancelled',
+                'The input is not in fasta format',
+                'error'
+                )
+              }
+              else if(data.state=='CDSX'){
+                swal(
+                'Scan cancelled',
+                'The input CDS regions have some problem',
+                'error'
+                )
+              }
+              else if(data.state=='nematode'){
+                swal(
+                'Scan cancelled',
+                "Sorry, this part hasn't opened yet",
+                'error'
+                )
+              }
+              else{
+                $('#footer').removeClass('fixed-bottom');
+                console.log(data);
+                resultCreate();
+                var seqViewDataArr = noBulgeData(data);  
+                var geneArr = data.gene.split("");
+                console.log(geneArr);
+                overView(geneArr,seqViewDataArr,$('#CDS_1').val(),$('#CDS_2').val());
+                seqView(geneArr,seqViewDataArr,data.CDS[0].split(''),$('#CDS_1').val(),$('#CDS_2').val());
+                end = new Date().getTime();
+                swal({
+                  type: 'success',
+                  title: 'Done!',
+                  html: 'With given criteria, '
+                    +data.newout.length
+                    +' targets sites are found for your target sequences.<br>Total running time : '
+                    +(end - start) / 1000 + " sec"
+                });
+              }
+            },
+          })
+      };
+      $(document).on('click','#TransformBTN',Submit);
+    }); 
+  </script>
+
+
+
+  <body>
+
+    <!-- Navigation -->
+    <nav class="navbar fixed-top navbar-expand-lg navbar-dark bg-dark fixed-top">
+      <div class="container-fluid">
+        <a class="navbar-brand" href="http://140.116.215.236/rampion999/piRNA">piScan</a>
+        <button class="navbar-toggler navbar-toggler-right" type="button" data-toggle="collapse" data-target="#navbarResponsive" aria-controls="navbarResponsive" aria-expanded="false" aria-label="Toggle navigation">
+          <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarResponsive">
+          <ul class="navbar-nav ml-auto">
+            <li class="nav-item">
+              <a class="nav-link" href="http://140.116.215.236/rampion999/piRNA">Home</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link active" href="http://140.116.215.236/rampion999/piRNA/Scan">Scan</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="http://140.116.215.236/rampion999/piRNA/Help">Help</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="http://140.116.215.236/rampion999/piRNA/Contact">Contact</a>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </nav>
+
+    <!-- Page Content -->
+    <div class="container-fluid" id='wrap'>  
+      <!-- Page Heading/Breadcrumbs -->
+      <h1 class="mt-4 mb-3">Scan
+        <small>piRNA target operation</small>
+      </h1>
+      <div>
+        <ul class="nav nav-tabs" id="myTab" role="tablist">
+          <li class="nav-item">
+            <a class="nav-link active" id="home-tab" data-toggle="tab" href="#home" role="tab" aria-controls="home" aria-selected="true">Home</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" id="profile-tab" data-toggle="tab" href="#profile" role="tab" aria-controls="profile" aria-selected="false">Profile</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" id="contact-tab" data-toggle="tab" href="#contact" role="tab" aria-controls="contact" aria-selected="false">Contact</a>
+          </li>
+        </ul>
+        <div class="tab-content" id="myTabContent">
+          <div class="tab-pane fade show active" id="home" role="tabpanel" aria-labelledby="home-tab">...</div>
+          <div class="tab-pane fade" id="profile" role="tabpanel" aria-labelledby="profile-tab">...</div>
+          <div class="tab-pane fade" id="contact" role="tabpanel" aria-labelledby="contact-tab">...</div>
+        </div>
+      </div>
+    </div>
+    <div id="result"></div>
+
+  <!-- Footer -->
+  <footer id='footer' class="py-5 bg-dark">
+    <div class="container">
+      <p class="m-0 text-center text-white">This web tool is maintained by Dr. <a href="https://www.researchgate.net/profile/Wei-Sheng_Wu">Wei-Sheng Wu</a>'s lab at National Cheng Kung University, Taiwan.</p>
+    </div>
+    <!-- /.container -->
+  </footer>
+  
+</body>
+
+</html>

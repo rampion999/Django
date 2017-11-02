@@ -1,0 +1,464 @@
+{% load staticfiles %}
+<!DOCTYPE html>
+<html lang="en">
+
+  <head>
+
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="description" content="">
+    <meta name="author" content="">
+
+    <title>NEW piScan</title>
+
+    
+
+    <!-- Bootstrap core CSS -->
+    <link href="{% static 'vendor/bootstrap/css/bootstrap.min.css' %}" rel="stylesheet">
+
+    <!-- Custom styles for this template -->
+    <link href="{% static 'bo_css/modern-business.css' %}" rel="stylesheet">
+    <link rel="stylesheet" type="text/css" href='{% static "piRNA/css/sweetalert2.min.css" %}'>
+    <link rel="stylesheet" type="text/css" href='{% static "piRNA/css/suggestion.css" %}'>
+    <link rel="stylesheet" type="text/css" href='{% static "piRNA/css/jquery.dataTables.min.css" %}'>
+    <link rel="stylesheet" type="text/css" href='{% static "piRNA/css/ex.css" %}'>
+    
+    <!-- Bootstrap core JavaScript -->
+    <script src="{% static 'vendor/jquery/jquery.min.js' %}"></script>
+    <script src="{% static 'vendor/popper/popper.min.js' %}"></script>
+    <script src="{% static 'vendor/bootstrap/js/bootstrap.min.js' %}"></script>
+
+    <!-- old JS -->
+    <script type="text/javascript" src="{% static 'piRNA/js/effect.js' %}"></script>
+    <script type="text/javascript" src="{% static 'piRNA/js/cookie.js' %}"></script>
+    <script type="text/javascript" src="{% static 'piRNA/js/d3.min.js' %}"></script>
+    <script type="text/javascript" src="{% static 'piRNA/js/sweetalert2.min.js' %}"></script>
+    <script type="text/javascript" src="{% static 'piRNA/js/jquery.dataTables.min.js' %}"></script>
+    <script type="text/javascript" src="{% static 'piRNA/js/overView.js' %}"></script>
+    <script type="text/javascript" src="{% static 'piRNA/js/seqView.js' %}"></script>
+    <script type="text/javascript" src="{% static 'piRNA/js/range.js' %}"></script>
+    <script type="text/javascript" src="{% static 'piRNA/js/tableEffect.js' %}"></script>
+    <script type="text/javascript" src="{% static 'piRNA/js/piRNA_info.js' %}"></script>
+    <script type="text/javascript" src="{% static 'piRNA/js/suggestion.js' %}"></script>
+    <script type="text/javascript" src="{% static 'piRNA/js/dataTables.fixedColumns.min.js' %}"></script>
+    <script type="text/javascript" src="{% static 'piRNA/js/seq_update.js' %}"></script>
+    <script type="text/javascript" src="{% static 'piRNA/js/noBulgeData.js' %}"></script>
+    <script type="text/javascript" src="{% static 'piRNA/js/resultCreate.js' %}"></script>
+    <script type="text/javascript" src="{% static 'piRNA/js/load_the_page.js' %}"></script>
+    <script type="text/javascript" src="{% static 'piRNA/js/showDaTable.js' %}"></script>
+    <script type="text/javascript" src="{% static 'piRNA/js/preSeqView.js' %}"></script>
+  </head>
+
+
+
+  <script>
+    var csrftoken = Cookies.get('csrftoken');
+    function csrfSafeMethod(method) {
+        // these HTTP methods do not require CSRF protection
+        return (/^(GET|HEAD|OPTIONS|TRACE)$/.test(method));
+    }
+    $.ajaxSetup({
+        beforeSend: function(xhr, settings) {
+            if (!csrfSafeMethod(settings.type) && !this.crossDomain) {
+                xhr.setRequestHeader("X-CSRFToken", csrftoken);
+            }
+        }
+    });
+
+    $(document).ready(function(){
+      $.ajax({
+        url: "selectedPreData/", 
+        data:{ 
+          QQ:'QQ',
+        },
+        type: "POST", 
+        dataType:'json',
+        error: function(no){
+          console.log(no);
+          swal(
+            'Scan cancelled',
+            'System memory overload',
+            'error'
+          )
+          },
+        success: function(data){
+          // showDaTable();
+          preSeqView(data);
+          console.log(data);
+          var pic2src = "{% static 'piRNA/img/QQ.jpg' %}";
+          loadDaShit(pic2src,data);
+          $('#TransformBTN').on('click', function(){
+            scan(data);
+          });
+        },
+      });
+    });
+
+
+function scan(input){
+  $('#overView, #seqView, #div_name, #div_name2, #div_name3').empty();
+  swal.queue([{
+  title : 'Scanning',
+  imageUrl: "{% static 'piRNA/img/Magnify.gif' %}",
+  disableButtons: true,
+  showConfirmButton: false,
+  allowOutsideClick : false,
+  }]);
+  $('#result').empty();
+  start = new Date().getTime();
+      $.ajax({
+        url: "scanOperation/", 
+        data:{ 
+          data1:'>'+input.name+'\n'+input.gene,
+          opt1:$('#opt1').val(),
+          opt2:$('#opt2').val(),
+          opt3:$('#opt3').val(),
+          opt4:$('#opt4').val(),
+          opt5:$('#opt5').val(),
+          nematodeType:$('#nematodeType').val(),
+          CDS_1:$('#CDS_1').val(),
+          CDS_2:$('#CDS_2').val(),
+        },
+        type: "POST", 
+        dataType:'json',
+        error: function(no){
+          console.log(no);
+          swal(
+            'Scan cancelled',
+            'System memory overload',
+            'error'
+          )
+          },
+        success: function(data){
+          if(data.state=='nothing'){
+            swal(
+            'Scan cancelled',
+            'The input aera is empty, please enter some sequence :)',
+            'error'
+            )
+          }
+          else if(data.state=='formatX'){
+            swal(
+            'Scan cancelled',
+            'The input sequence format is wrong!!<br>\
+            Please check it and try again!!<br>\
+            <br>Note!!<br>\
+            DNAseq is compose of "A"."T"."C"."G"<br>\
+            RNAseq is compose of "A"."U"."C"."G"',
+            'error'
+            )
+          }
+          else if(data.state=='notfasta'){
+            swal(
+            'Scan cancelled',
+            'The input is not in fasta format',
+            'error'
+            )
+          }
+          else if(data.state=='CDSX'){
+            swal(
+            'Scan cancelled',
+            'The input CDS regions have some problem',
+            'error'
+            )
+          }
+          else if(data.state=='nematode'){
+            swal(
+            'Scan cancelled',
+            "Sorry, this part hasn't opened yet",
+            'error'
+            )
+          }
+          else{
+            resultCreate();
+            $('#result').append('<svg id="overView"></svg><svg id="seqView"></svg>')
+            console.log(data);
+            var pic2src = "{% static 'piRNA/img/QQ.jpg' %}";
+            // loadDaShit(pic2src,data);
+            var seqViewDataArr = noBulgeData(data);
+            var geneArr = data.gene.split("");
+            console.log(seqViewDataArr);
+            // $('#seqView').text('');
+            // $('#overView').text('');
+            overView(geneArr,seqViewDataArr,$('#CDS_1').val(),$('#CDS_2').val());
+            console.log(data);
+
+            seqView(geneArr,seqViewDataArr,data.CDS[0].split(''),$('#CDS_1').val(),$('#CDS_2').val());
+            // if(data.suggestion.length != 0){
+            //  suggestion(
+            //  data.suggestion,
+            //  $('#opt1').val(),
+            //  $('#opt2').val(),
+            //  $('#opt3').val(),
+            //  $('#opt4').val(),
+            //  $('#opt5').val(),
+            //  );
+            //  shit(
+            //    data.suggestion,
+            //    $('#opt1').val(),
+            //    $('#opt2').val(),
+            //    $('#opt3').val(),
+            //    $('#opt4').val(),
+            //    $('#opt5').val(),
+            //    data.name,
+            //    data.gene,
+            //    $('#nematodeType').val(),
+            //    $('#CDS_1').val(),
+            //    $('#CDS_2').val(),
+            //    data.csrf,
+            //  );
+            // };
+            end = new Date().getTime();
+            swal({
+              type: 'success',
+              title: 'Done!',
+              html: 'With given criteria, '
+                +data.newout.length
+                +' targets sites are found for your target sequences.<br>Total running time : '
+                +(end - start) / 1000 + " sec"
+            });
+          }
+        },
+      })
+} 
+  </script>
+
+
+
+  <body>
+
+    <!-- Navigation -->
+    <nav class="navbar fixed-top navbar-expand-lg navbar-dark bg-dark fixed-top">
+      <div class="container-fluid">
+        <a class="navbar-brand" href="http://140.116.215.236/rampion999/piRNA">piScan</a>
+        <button class="navbar-toggler navbar-toggler-right" type="button" data-toggle="collapse" data-target="#navbarResponsive" aria-controls="navbarResponsive" aria-expanded="false" aria-label="Toggle navigation">
+          <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarResponsive">
+          <ul class="navbar-nav ml-auto">
+            <li class="nav-item">
+              <a class="nav-link" href="http://140.116.215.236/rampion999/piRNA">Home</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="http://140.116.215.236/rampion999/piRNA/Scan">Scan</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="http://140.116.215.236/rampion999/piRNA/Help">Help</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="http://140.116.215.236/rampion999/piRNA/Contact">Contact</a>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </nav>
+
+    <!-- Page Content -->
+    <div class="container-fluid" id='wrap'>  
+      <!-- Page Heading/Breadcrumbs -->
+      <h1 class="mt-4 mb-3 display-4">New gene scan
+        <!-- <small>Updated gene piRNA target operation</small> -->
+      </h1>
+      <div class="card border-dark mb-4">
+        <h1 class="card-header text-center"><b>New input gene</b></h4>
+        <div class="card-body text-dark text-center">
+          <svg id="preSeqView"></svg>
+        </div>
+      </div>
+      <div class="row">
+        <!-- input area -->
+        <div class="col-sm-5">
+          <div class="card mb-2 h-100 pb-2">
+            <h4 class="card-header">Input area</h4>
+            <div class="card-body form-group mb-0" style="padding-bottom: 10px; height: 100%;">
+              <label for="gene"><b>Input cDNA or (spliced) RNA sequence(in fasta format):</b></label>
+              <textarea class="form-control mb-2" name="gene" id="gene" value="QQ" style="height: 90%; width:100%; box-sizing: border-box; resize: none;" disabled></textarea>
+            </div>
+            <!-- <div class="card-footer">
+            <small class="text-muted mt-1">Please make sure that you type in is fasta format.</small>
+              <div class="btn-group btn-group-sm mt-1 float-right" role="group" aria-label="Basic example">
+                <button type="button" class="btn btn-secondary" id="example">Example 1</button>
+                <button type="button" class="btn btn-secondary" id="example2">Example 2</button>
+              </div>
+            </div> -->
+          </div>
+        </div>
+        
+        <!-- Scan filter options -->
+        <div class="col-sm-7">
+          <div class="card mb-2 h-100">
+            <h4 class="card-header">Scan filter options</h4>
+            <div class="card-body">
+              <div class="row">
+                <div class="col-lg-5 align-self-center">
+                  <a href="#">
+                    <img class="img-fluid rounded" src="{% static 'piRNA/img/QQ.jpg' %}" alt="">
+                  </a>
+                  <button type="button" class="btn btn-outline-dark btn-block" id="reset_to_default">Set to default</button>
+                </div>
+                <!-- <div class="col-lg-1">
+                </div> -->
+                <div class="col-lg-7">
+                  <ul class="list-unstyled">             
+                    <li class="card-text">
+                      <!-- <b>Choose nematode species :&nbsp;&nbsp;</b> -->
+                      <label class="mr-sm-2" for="nematodeType"><b>Choose nematode species :</b></label>
+                      <select class="custom-select mb-2 mr-sm-2 mb-sm-0" id="nematodeType">
+                        <option class = "clean" selected value="C.elegans">C. elegans</option>
+                        <option class = "clean" value="C.briggsae">C. briggsae</option>
+                        <option class = "clean" value="C.remanei">C. remanei</option>
+                        <option class = "clean" value="C.brenneri">C. brenneri</option>
+                      </select>
+                    </li>
+                    <li class="card-text">
+                      <b>Number of mismatches allowed at seed region:</b>
+                    </li>
+
+
+                    <li>
+                      <ul>
+                        <li>
+                          <label class="mr-sm-2" for="opt1">number of non-GU pairs &nbsp;≤&nbsp;</label>
+                          <select id="opt1">
+                            <option class = "clean" selected value="0">0</option>
+                            <option class = "clean" value="1">1</option>
+                            <option class = "clean" value="2">2</option>
+                            <option class = "clean" value="3">3</option>
+                            <option class = "clean" value="4">4</option>
+                            <option class = "clean" value="5">5</option>
+                            <option class = "clean" value="6">6</option>
+                          </select>
+                        </li>
+                        <!-- <br> -->
+                        <li>
+                          <label class="mr-sm-2" for="opt2">number of GU pairs &nbsp;≤&nbsp;</label>
+                          <select id="opt2">
+                            <option class = "clean" value="0">0</option>
+                            <option class = "clean" selected value="1">1</option>
+                            <option class = "clean" value="2">2</option>
+                            <option class = "clean" value="3">3</option>
+                            <option class = "clean" value="4">4</option>
+                            <option class = "clean" value="5">5</option>
+                            <option class = "clean" value="6">6</option>
+                          </select>
+                        </li>
+                      </ul>
+                    </li>
+                    
+
+                    <li class="card-text">
+                      <b>Number of mismatches allowed at non-seed region:</b>
+                    </li>
+
+
+                    <li>
+                      <ul>
+                        <li>
+                          <label class="mr-sm-2" for="opt3">number of non-GU pairs &nbsp;≤&nbsp;</label>
+                          <select id="opt3">
+                            <option class = "clean" value="0">0</option>
+                            <option class = "clean" value="1">1</option>
+                            <option class = "clean" value="2">2</option>
+                            <option class = "clean" selected value="3">3</option>
+                            <option class = "clean" value="4">4</option>
+                            <option class = "clean" value="5">5</option>
+                            <option class = "clean" value="6">6</option>
+                            <option class = "clean" value="7">7</option>
+                            <option class = "clean" value="8">8</option>
+                            <option class = "clean" value="9">9</option>
+                            <option class = "clean" value="10">10</option>
+                            <option class = "clean" value="11">11</option>
+                            <option class = "clean" value="12">12</option>
+                            <option class = "clean" value="13">13</option>
+                            <option class = "clean" value="14">∞</option>
+                          </select>
+                        </li>
+                        <li>
+                          <label class="mr-sm-2" for="opt4">number of GU pairs &nbsp;≤&nbsp;</label>
+                          <select id="opt4">
+                            <option class = "clean" value="0">0</option>
+                            <option class = "clean" value="1">1</option>
+                            <option class = "clean" value="2">2</option>
+                            <option class = "clean" selected value="3">3</option>
+                            <option class = "clean" value="4">4</option>
+                            <option class = "clean" value="5">5</option>
+                            <option class = "clean" value="6">6</option>
+                            <option class = "clean" value="7">7</option>
+                            <option class = "clean" value="8">8</option>
+                            <option class = "clean" value="9">9</option>
+                            <option class = "clean" value="10">10</option>
+                            <option class = "clean" value="11">11</option>
+                            <option class = "clean" value="12">12</option>
+                            <option class = "clean" value="13">13</option>
+                            <option class = "clean" value="14">∞</option>
+                          </select>
+                        </li>
+                      </ul>
+                    </li>
+
+
+                    <li>
+                      <label class="mr-sm-2" for="opt5"><b>Total number of mismatches at seed & non-seed regions ≤&nbsp;</b></label>
+                      <select id="opt5">
+                        <option class = "clean" value="0">0</option>
+                        <option class = "clean" value="1">1</option>
+                        <option class = "clean" value="2">2</option>
+                        <option class = "clean" selected value="3">3</option>
+                        <option class = "clean" value="4">4</option>
+                        <option class = "clean" value="5">5</option>
+                        <option class = "clean" value="6">6</option>
+                        <option class = "clean" value="7">7</option>
+                        <option class = "clean" value="8">8</option>
+                        <option class = "clean" value="9">9</option>
+                        <option class = "clean" value="10">10</option>
+                        <option class = "clean" value="11">11</option>
+                        <option class = "clean" value="12">12</option>
+                        <option class = "clean" value="13">13</option>
+                        <option class = "clean" value="14">14</option>
+                        <option class = "clean" value="15">15</option>
+                        <option class = "clean" value="16">16</option>
+                        <option class = "clean" value="17">17</option>
+                        <option class = "clean" value="18">18</option>
+                        <option class = "clean" value="19">19</option>
+                        <option class = "clean" value="20">20</option>
+                        <option class = "clean" value="21">21</option>
+                      </select>
+                    </li>
+
+
+                    <li>
+                      <input type="checkbox" id='CDS_ck' checked><b>Show CDS &nbsp;&nbsp;&nbsp;</b>
+                    </li>
+                    
+
+                    <li>
+                      <ul>
+                        <li>
+                        choose region :
+                        <input type="number" style="width: 60px" id='CDS_1' class='CDS'>&nbsp;~&nbsp;
+                        <input type="number" style="width: 60px" id='CDS_2' class='CDS'>
+                        </li>
+                      </ul>
+                    </li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <button type="button" class="btn btn-lg btn-primary btn-block mb-2 mt-4" id="TransformBTN">SCAN</button>
+    </div>
+    <div id="result"></div>
+
+  <!-- Footer -->
+  <footer id='footer' class="py-5 bg-dark">
+    <div class="container">
+      <p class="m-0 text-center text-white">This web tool is maintained by Dr. <a href="https://www.researchgate.net/profile/Wei-Sheng_Wu">Wei-Sheng Wu</a>'s lab at National Cheng Kung University, Taiwan.</p>
+    </div>
+    <!-- /.container -->
+  </footer>
+  
+</body>
+
+</html>

@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>I come from template!!</title>
+        <style>
+            body {
+               background-color: lightyellow;
+            }
+            em {
+                color: LightSeaGreen;
+            }
+        </style>
+    </head>
+    <body>
+        <h1>YGMD</h1>
+        <em>{{ man_list }}</em>
+
+        <table>
+            <thead>
+                <th>name</th>
+                <th>age</th>
+                <th>alias</th>
+            </thead>
+            <tbody>
+                {% for man in man_list %}
+                <tr>
+                    <td>{{ man.name }}</td>
+                    <td>{{ man.age }}</td>
+                    <td>{{ man.alias }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>          
+        </table>
+    </body>
+</html>

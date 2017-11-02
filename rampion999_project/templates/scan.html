@@ -1,0 +1,163 @@
+{% load staticfiles %}
+<!DOCTYPE html>
+<html lang="en">
+
+  <head>
+
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="description" content="">
+    <meta name="author" content="">
+
+    <title>piScan</title>
+
+    
+
+    <!-- Bootstrap core CSS -->
+    <link href="{% static 'vendor/bootstrap/css/bootstrap.min.css' %}" rel="stylesheet">
+
+    <!-- Custom styles for this template -->
+    <link href="{% static 'bo_css/modern-business.css' %}" rel="stylesheet">
+    
+    <!-- Bootstrap core JavaScript -->
+    <script src="{% static 'vendor/jquery/jquery.min.js' %}"></script>
+    <script src="{% static 'vendor/popper/popper.min.js' %}"></script>
+    <script src="{% static 'vendor/bootstrap/js/bootstrap.min.js' %}"></script>
+
+    <!-- old JS -->
+    <script type="text/javascript" src="{% static 'piRNA/js/effect.js' %}"></script>
+
+  </head>
+
+  <body>
+
+    <!-- Navigation -->
+    <nav class="navbar fixed-top navbar-expand-lg navbar-dark bg-dark fixed-top">
+      <div class="container">
+        <a class="navbar-brand" href="index.html">piScan</a>
+        <button class="navbar-toggler navbar-toggler-right" type="button" data-toggle="collapse" data-target="#navbarResponsive" aria-controls="navbarResponsive" aria-expanded="false" aria-label="Toggle navigation">
+          <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarResponsive">
+          <ul class="navbar-nav ml-auto">
+            <li class="nav-item">
+              <a class="nav-link" href="http://140.116.215.236/rampion999/piRNA">Home</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link active" href="http://140.116.215.236/rampion999/piRNA/Scan">Scan</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="Help.html">Help</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="contact.html">Contact</a>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </nav>
+
+    <!-- Page Content -->
+    <div class="container">
+      
+      <!-- Page Heading/Breadcrumbs -->
+      <h1 class="mt-4 mb-3">Scan
+        <small>piRNA target operation</small>
+      </h1>
+
+      <!-- <ol class="breadcrumb">
+        <li class="breadcrumb-item">
+          <a href="index.html">Home</a>
+        </li>
+        <li class="breadcrumb-item active">Blog Home 2</li>
+      </ol> -->
+
+      <!-- input area -->
+      <div class="card mb-1">
+        <h4 class="card-header">Input area</h4>
+        <div class="card-body form-group mb-0" style="padding-bottom: 10px;">
+          <label for="gene"><img class="icon" src="{% static 'Entypo/._aircraft.svg' %}" alt="Controller next pictogram"><b>Input cDNA or (spliced) RNA sequence(in fasta format):</b></label>
+          <textarea class="form-control" name="gene" id="gene" value="QQ" style="margin-top: 0px; margin-bottom: 0px; height: 344px;"></textarea>
+          <small class="text-muted mt-1">Please make sure that you type in is fasta format.</small>
+          <div class="btn-group btn-group-sm mt-1 float-right" role="group" aria-label="Basic example">
+            <button type="button" class="btn btn-secondary" id="example">Example 1</button>
+            <button type="button" class="btn btn-secondary" id="example2">Example 2</button>
+          </div>
+        </div> 
+      </div>
+
+
+      
+      <!-- Scan filter options -->
+      <div class="card mb-4">
+        <h4 class="card-header mb-3">Scan filter options</h4>
+        <div class="card-body">
+          <div class="row">
+            <div class="col-lg-5">
+              <a href="#">
+                <img class="img-fluid rounded" src="{% static 'piRNA/img/QQ.jpg' %}" alt="">
+              </a>
+            </div>
+            <div class="col-lg-6">             
+              <p class="card-text">
+                <!-- <b>Choose nematode species :&nbsp;&nbsp;</b> -->
+                <label class="mr-sm-2" for="nematodeType">Choose nematode species :</label>
+                <select class="custom-select mb-2 mr-sm-2 mb-sm-0" id="nematodeType">
+                  <option class = "clean" selected value="C.elegans">C. elegans</option>
+                  <option class = "clean" value="C.briggsae">C. briggsae</option>
+                  <option class = "clean" value="C.remanei">C. remanei</option>
+                  <option class = "clean" value="C.brenneri">C. brenneri</option>
+                </select>
+              </p>
+              <p class="card-text">
+                <b>Number of mismatches allowed at seed region:&nbsp;&nbsp;</b><br>
+                number of non-GU pairs &nbsp;≤&nbsp;
+                <select id="opt1">
+                  <option class = "clean" selected value="0">0</option>
+                  <option class = "clean" value="1">1</option>
+                  <option class = "clean" value="2">2</option>
+                  <option class = "clean" value="3">3</option>
+                  <option class = "clean" value="4">4</option>
+                  <option class = "clean" value="5">5</option>
+                  <option class = "clean" value="6">6</option>
+                </select>
+              </p>
+
+              <!-- <a href="#" class="btn btn-primary">Read More &rarr;</a> -->
+            </div>
+          </div>
+        </div>
+        <!-- <div class="card-footer text-muted">
+          Posted on January 1, 2017 by
+          <a href="#">Start Bootstrap</a>
+        </div> -->
+      </div>
+
+
+      <!-- Pagination -->
+      <!-- 
+      <ul class="pagination justify-content-center mb-4">
+        <li class="page-item">
+          <a class="page-link" href="#">&larr; Older</a>
+        </li>
+        <li class="page-item disabled">
+          <a class="page-link" href="#">Newer &rarr;</a>
+        </li>
+      </ul> -->
+
+    </div>
+
+  </div>
+  <!-- /.container -->
+
+  <!-- Footer -->
+  <footer class="py-5 bg-dark">
+    <div class="container">
+      <p class="m-0 text-center text-white">Copyright &copy; Your Website 2017</p>
+    </div>
+    <!-- /.container -->
+  </footer>
+  
+</body>
+
+</html>

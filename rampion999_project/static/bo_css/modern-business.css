@@ -1,0 +1,128 @@
+/*!
+ * Start Bootstrap - Modern Business (http://startbootstrap.com/template-overviews/modern-business)
+ * Copyright 2013-2017 Start Bootstrap
+ * Licensed under MIT (https://github.com/BlackrockDigital/startbootstrap-logomodern-business-nav/blob/master/LICENSE)
+ */
+
+body {
+    padding-top: 54px;
+}
+
+@media (min-width: 992px) {
+    body {
+        padding-top: 56px;
+    }
+}
+
+.carousel-item {
+    height: 65vh;
+    min-height: 300px;
+    background: no-repeat center center scroll;
+    -webkit-background-size: cover;
+    -moz-background-size: cover;
+    -o-background-size: cover;
+    background-size: cover;
+}
+
+.portfolio-item {
+    margin-bottom: 30px;
+}
+
+#input .card{
+    border-color: #000;
+}
+
+#input .card-header{
+    color: #fff;
+    background-color: #343a40;
+}
+
+/*#charts .card{
+    border-color: #000;
+}
+
+#charts .card-header{
+    color: #fff;
+    background-color: #343a40;
+}*/
+/*html, body{
+    height: 100%;
+}*/
+
+
+fieldset {
+    border:0;
+    padding:10px;
+    margin-bottom: 10px;
+    background:#ddd;
+    border-radius: 8px;
+    -moz-border-radius: 8px;
+    -webkit-border-radius: 8px;
+    background:-webkit-liner-gradient(top,#EEEEEE,#FFFFFF);
+    background:linear-gradient(top,#EFEFEF,#FFFFFF);
+    box-shadow:3px 3px 10px #666;
+    -moz-box-shadow:3px 3px 10px #666;
+    -webkit-box-shadow:3px 3px 10px #666;
+    position:relative;
+    }
+legend {
+    font-size: 2.5rem;
+    width:inherit;
+    padding:0px 10px;
+    border-bottom:none;
+    background-color:#343a40;
+    color:#FFF;
+    border-radius:3px;
+    -moz-border-radius:3px;
+    -webkit-border-radius:3px;
+    box-shadow:2px 2px 4px #666;
+    -moz-box-shadow:2px 2px 4px #666;
+    -webkit-box-shadow:2px 2px 4px #666;
+    /*position:absolute;*/
+    left:10px;top:-11px;
+    }
+
+/*.nav-tabs{
+  background-color:#ddd;
+}
+.tab-content{
+    background-color:#fff;
+    color:#000;
+    padding:5px
+}*/
+
+
+/*#result .nav-tabs > li > a{
+  border: medium none;
+}
+#result .nav-tabs > li > a:hover{
+    background-color: #303136 !important;
+    border: medium none;
+    border-top-left-radius: .25rem!important;
+    border-top-right-radius: .25rem!important;
+    color:#fff;
+}*/
+/*
+.nav-tabs > li > a:focus{
+    background-color: #303136 !important;
+    color: red;
+}*/
+
+
+/*使SVG變成動態*/
+
+.svg-container {
+    display: inline-block;
+    position: relative;
+    width: 100%;
+    padding-bottom: 100%; /* aspect ratio */
+    vertical-align: top;
+    overflow: hidden;
+}
+
+.svg-content-responsive {
+    display: inline-block;
+    position: absolute;
+    top: 10px;
+    left: 0;
+}

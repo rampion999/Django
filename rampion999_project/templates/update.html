@@ -1,0 +1,210 @@
+{% load staticfiles %}
+<!DOCTYPE html>
+<html>
+
+<head>		
+	<link rel="stylesheet" type="text/css" href='{% static "piRNA/css/ex.css" %}'>
+	<link rel="stylesheet" type="text/css" href='{% static "piRNA/css/jquery.dataTables.min.css" %}'>
+	<link rel="stylesheet" type="text/css" href='{% static "piRNA/css/sweetalert2.min.css" %}'>
+	<link rel="stylesheet" type="text/css" href='{% static "piRNA/css/fixedColumns.dataTables.min.css" %}'>
+	<link rel="stylesheet" type="text/css" href='{% static "piRNA/css/suggestion.css" %}'>
+
+	<script type="text/javascript" src="{% static 'piRNA/js/jquery-3.1.1.min.js' %}"></script>
+	<script type="text/javascript" src="{% static 'piRNA/js/d3.min.js' %}"></script>
+	<script type="text/javascript" src="{% static 'piRNA/js/sweetalert2.min.js' %}"></script>
+	<script type="text/javascript" src="{% static 'piRNA/js/jquery.dataTables.min.js' %}"></script>
+	<script type="text/javascript" src="{% static 'piRNA/js/effect.js' %}"></script>
+	<script type="text/javascript" src="{% static 'piRNA/js/overView.js' %}"></script>
+	<script type="text/javascript" src="{% static 'piRNA/js/seqView.js' %}"></script>
+	<script type="text/javascript" src="{% static 'piRNA/js/range.js' %}"></script>
+	<script type="text/javascript" src="{% static 'piRNA/js/tableEffect.js' %}"></script>
+	<script type="text/javascript" src="{% static 'piRNA/js/piRNA_info.js' %}"></script>
+	<script type="text/javascript" src="{% static 'piRNA/js/suggestion.js' %}"></script>
+	<script type="text/javascript" src="{% static 'piRNA/js/dataTables.fixedColumns.min.js' %}"></script>
+	<script type="text/javascript" src="{% static 'piRNA/js/seq_update.js' %}"></script>
+	<script type="text/javascript" src="{% static 'piRNA/js/cookie.js' %}"></script>
+	<script type="text/javascript" src="{% static 'piRNA/js/noBulgeData.js' %}"></script>
+	<script type="text/javascript" src="{% static 'piRNA/js/load_the_page.js' %}"></script>
+	<script type="text/javascript" src="{% static 'piRNA/js/showDaTable.js' %}"></script>
+	<script type="text/javascript" src="{% static 'piRNA/js/preSeqView.js' %}"></script>
+</head>
+
+<script>
+var csrftoken = Cookies.get('csrftoken');
+function csrfSafeMethod(method) {
+	// these HTTP methods do not require CSRF protection
+	return (/^(GET|HEAD|OPTIONS|TRACE)$/.test(method));
+}
+$.ajaxSetup({
+	beforeSend: function(xhr, settings) {
+		if (!csrfSafeMethod(settings.type) && !this.crossDomain) {
+			xhr.setRequestHeader("X-CSRFToken", csrftoken);
+		}
+	}
+});
+
+$(document).ready(function(){
+	$.ajax({
+		url: "selectedPreData/", 
+		data:{ 
+			QQ:'QQ',
+		},
+		type: "POST", 
+		dataType:'json',
+		error: function(no){
+			console.log(no);
+			swal(
+				'Scan cancelled',
+				'System memory overload',
+				'error'
+			)
+			},
+		success: function(data){
+			showDaTable();
+			preSeqView(data);
+			console.log(data);
+			var pic2src = "{% static 'piRNA/img/QQ.jpg' %}";
+			loadDaShit(pic2src,data);
+			$('#TransformBTN').on('click', function(){
+				scan(data);
+			});
+		},
+	});
+});
+
+function scan(input){
+	$('#overView, #seqView, #div_name, #div_name2, #div_name3').empty();
+	swal.queue([{
+	title : 'Scanning',
+	imageUrl: "{% static 'piRNA/img/Magnify.gif' %}",
+	disableButtons: true,
+	showConfirmButton: false,
+	allowOutsideClick : false,
+	}]);
+	$('#result').empty();
+	start = new Date().getTime();
+			$.ajax({
+				url: "scan/", 
+				data:{ 
+					data1:'>'+input.name+'\n'+input.gene,
+					opt1:$('#opt1').val(),
+					opt2:$('#opt2').val(),
+					opt3:$('#opt3').val(),
+					opt4:$('#opt4').val(),
+					opt5:$('#opt5').val(),
+					nematodeType:$('#nematodeType').val(),
+					CDS_1:$('#CDS_1').val(),
+					CDS_2:$('#CDS_2').val(),
+				},
+				type: "POST", 
+				dataType:'json',
+				error: function(no){
+					console.log(no);
+					swal(
+						'Scan cancelled',
+						'System memory overload',
+						'error'
+					)
+					},
+				success: function(data){
+					if(data.state=='nothing'){
+						swal(
+						'Scan cancelled',
+						'The input aera is empty, please enter some sequence :)',
+						'error'
+						)
+					}
+					else if(data.state=='formatX'){
+						swal(
+						'Scan cancelled',
+						'The input sequence format is wrong!!<br>\
+						Please check it and try again!!<br>\
+						<br>Note!!<br>\
+						DNAseq is compose of "A"."T"."C"."G"<br>\
+						RNAseq is compose of "A"."U"."C"."G"',
+						'error'
+						)
+					}
+					else if(data.state=='notfasta'){
+						swal(
+						'Scan cancelled',
+						'The input is not in fasta format',
+						'error'
+						)
+					}
+					else if(data.state=='CDSX'){
+						swal(
+						'Scan cancelled',
+						'The input CDS regions have some problem',
+						'error'
+						)
+					}
+					else if(data.state=='nematode'){
+						swal(
+						'Scan cancelled',
+						"Sorry, this part hasn't opened yet",
+						'error'
+						)
+					}
+					else{
+						$('#result').append('<svg id="overView"></svg><svg id="seqView"></svg>')
+						console.log(data);
+						var pic2src = "{% static 'piRNA/img/QQ.jpg' %}";
+						// loadDaShit(pic2src,data);
+						var seqViewDataArr = noBulgeData(data);
+						var geneArr = data.gene.split("");
+						console.log(seqViewDataArr);
+						// $('#seqView').text('');
+						// $('#overView').text('');
+						overView(geneArr,seqViewDataArr,$('#CDS_1').val(),$('#CDS_2').val());
+						console.log(data);
+
+						seqView(geneArr,seqViewDataArr,data.CDS[0].split(''),$('#CDS_1').val(),$('#CDS_2').val());
+						// if(data.suggestion.length != 0){
+						// 	suggestion(
+						// 	data.suggestion,
+						// 	$('#opt1').val(),
+						// 	$('#opt2').val(),
+						// 	$('#opt3').val(),
+						// 	$('#opt4').val(),
+						// 	$('#opt5').val(),
+						// 	);
+						// 	shit(
+						// 		data.suggestion,
+						// 		$('#opt1').val(),
+						// 		$('#opt2').val(),
+						// 		$('#opt3').val(),
+						// 		$('#opt4').val(),
+						// 		$('#opt5').val(),
+						// 		data.name,
+						// 		data.gene,
+						// 		$('#nematodeType').val(),
+						// 		$('#CDS_1').val(),
+						// 		$('#CDS_2').val(),
+						// 		data.csrf,
+						// 	);
+						// };
+						end = new Date().getTime();
+						swal({
+							type: 'success',
+							title: 'Done!',
+							html: 'With given criteria, '
+								+data.newout.length
+								+' targets sites are found for your target sequences.<br>Total running time : '
+								+(end - start) / 1000 + " sec"
+						});
+					}
+				},
+			})
+}
+
+</script>
+<body>
+<div id="preTable"></div>
+<div id="preGene"></div>
+<div id="loadPage"></div>
+<div id="result"></div>
+</body>
+
+</html>
+
