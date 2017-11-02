@@ -82,6 +82,26 @@
           )
           },
         success: function(data){
+          resultCreate('originalResult');
+          $('#originalResult').append(data.originalResult);
+          var seqViewDataArr = noBulgeData(data.ori_result);
+          var geneArr = data.ori_result.gene.split("");
+          overView(geneArr,seqViewDataArr,data.CDS1,data.CDS2);
+          seqView(geneArr,seqViewDataArr,data.ori_result.CDS[0].split(''),data.CDS1,data.CDS2);
+          $('#overView').attr('id','ori_overView');
+          $('#seqView').attr('id','ori_seqView');
+          $('#targetedTable').attr('id','ori_targetedTable');
+          $('#abundance').attr('id','ori_abundance');
+          $('#sugTable').attr('id','ori_sugTable');
+          $('#update_footer').remove();
+          $('#original-tab').click(function(){
+            $('#modify_1').removeClass('active');
+            $('#originalResult-charts-tab').trigger('mouseup');
+            $(document).ready(function(){
+              $('#originalResult-charts-tab').trigger('click');
+            });     
+          });
+          $('#originalResult').find('svg, table, table div').removeAttr('id');         
           // showDaTable();
           preSeqView(data);
           console.log(data);
@@ -89,14 +109,13 @@
           loadDaShit(pic2src,data);
           $('#TransformBTN').on('click', function(){
             scan(data);
-          });
+          }); 
         },
       });
     });
 
 
 function scan(input){
-  $('#overView, #seqView, #div_name, #div_name2, #div_name3').empty();
   swal.queue([{
   title : 'Scanning',
   imageUrl: "{% static 'piRNA/img/Magnify.gif' %}",
@@ -104,7 +123,6 @@ function scan(input){
   showConfirmButton: false,
   allowOutsideClick : false,
   }]);
-  $('#result').empty();
   start = new Date().getTime();
       $.ajax({
         url: "scanOperation/", 
@@ -170,44 +188,15 @@ function scan(input){
             )
           }
           else{
-            resultCreate();
-            $('#result').append('<svg id="overView"></svg><svg id="seqView"></svg>')
             console.log(data);
+            $('#modify_1').empty().append('<div id="modifyResult1"></div>');     
+            resultCreate('modifyResult1');
             var pic2src = "{% static 'piRNA/img/QQ.jpg' %}";
-            // loadDaShit(pic2src,data);
             var seqViewDataArr = noBulgeData(data);
             var geneArr = data.gene.split("");
             console.log(seqViewDataArr);
-            // $('#seqView').text('');
-            // $('#overView').text('');
-            overView(geneArr,seqViewDataArr,$('#CDS_1').val(),$('#CDS_2').val());
-            console.log(data);
-
-            seqView(geneArr,seqViewDataArr,data.CDS[0].split(''),$('#CDS_1').val(),$('#CDS_2').val());
-            // if(data.suggestion.length != 0){
-            //  suggestion(
-            //  data.suggestion,
-            //  $('#opt1').val(),
-            //  $('#opt2').val(),
-            //  $('#opt3').val(),
-            //  $('#opt4').val(),
-            //  $('#opt5').val(),
-            //  );
-            //  shit(
-            //    data.suggestion,
-            //    $('#opt1').val(),
-            //    $('#opt2').val(),
-            //    $('#opt3').val(),
-            //    $('#opt4').val(),
-            //    $('#opt5').val(),
-            //    data.name,
-            //    data.gene,
-            //    $('#nematodeType').val(),
-            //    $('#CDS_1').val(),
-            //    $('#CDS_2').val(),
-            //    data.csrf,
-            //  );
-            // };
+            overView(geneArr,seqViewDataArr,data.CDS1,data.CDS2);
+            seqView(geneArr,seqViewDataArr,data.CDS[0].split(''),data.CDS1,data.CDS2);
             end = new Date().getTime();
             swal({
               type: 'success',
@@ -259,195 +248,227 @@ function scan(input){
       <h1 class="mt-4 mb-3 display-4">New gene scan
         <!-- <small>Updated gene piRNA target operation</small> -->
       </h1>
-      <div class="card border-dark mb-4">
-        <h1 class="card-header text-center"><b>New input gene</b></h4>
-        <div class="card-body text-dark text-center">
-          <svg id="preSeqView"></svg>
+      <div class="card mb-5">
+        <div class="card-header">
+          <ul class="nav nav-tabs card-header-tabs" id="myTab" role="tablist">
+            <li class="nav-item">
+              <a class="nav-link" id="original-tab" data-toggle="tab" href="#original" role="tab" aria-controls="original" aria-selected="true">Original</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link active" id="modify_1-tab" data-toggle="tab" href="#modify_1" role="tab" aria-controls="modify_1" aria-selected="false">Modify #1</a>
+            </li>
+          </ul>
         </div>
-      </div>
-      <div class="row">
-        <!-- input area -->
-        <div class="col-sm-5">
-          <div class="card mb-2 h-100 pb-2">
-            <h4 class="card-header">Input area</h4>
-            <div class="card-body form-group mb-0" style="padding-bottom: 10px; height: 100%;">
-              <label for="gene"><b>Input cDNA or (spliced) RNA sequence(in fasta format):</b></label>
-              <textarea class="form-control mb-2" name="gene" id="gene" value="QQ" style="height: 90%; width:100%; box-sizing: border-box; resize: none;" disabled></textarea>
-            </div>
-            <!-- <div class="card-footer">
-            <small class="text-muted mt-1">Please make sure that you type in is fasta format.</small>
-              <div class="btn-group btn-group-sm mt-1 float-right" role="group" aria-label="Basic example">
-                <button type="button" class="btn btn-secondary" id="example">Example 1</button>
-                <button type="button" class="btn btn-secondary" id="example2">Example 2</button>
-              </div>
-            </div> -->
+        <div class="card-body tab-content" id="myTabContent">
+          <div class="tab-pane fade" id="original" role="tabpanel" aria-labelledby="original-tab">
+            <div id="originalResult"></div>
           </div>
-        </div>
-        
-        <!-- Scan filter options -->
-        <div class="col-sm-7">
-          <div class="card mb-2 h-100">
-            <h4 class="card-header">Scan filter options</h4>
-            <div class="card-body">
-              <div class="row">
-                <div class="col-lg-5 align-self-center">
-                  <a href="#">
-                    <img class="img-fluid rounded" src="{% static 'piRNA/img/QQ.jpg' %}" alt="">
-                  </a>
-                  <button type="button" class="btn btn-outline-dark btn-block" id="reset_to_default">Set to default</button>
-                </div>
-                <!-- <div class="col-lg-1">
-                </div> -->
-                <div class="col-lg-7">
-                  <ul class="list-unstyled">             
-                    <li class="card-text">
-                      <!-- <b>Choose nematode species :&nbsp;&nbsp;</b> -->
-                      <label class="mr-sm-2" for="nematodeType"><b>Choose nematode species :</b></label>
-                      <select class="custom-select mb-2 mr-sm-2 mb-sm-0" id="nematodeType">
-                        <option class = "clean" selected value="C.elegans">C. elegans</option>
-                        <option class = "clean" value="C.briggsae">C. briggsae</option>
-                        <option class = "clean" value="C.remanei">C. remanei</option>
-                        <option class = "clean" value="C.brenneri">C. brenneri</option>
-                      </select>
-                    </li>
-                    <li class="card-text">
-                      <b>Number of mismatches allowed at seed region:</b>
-                    </li>
-
-
-                    <li>
-                      <ul>
-                        <li>
-                          <label class="mr-sm-2" for="opt1">number of non-GU pairs &nbsp;≤&nbsp;</label>
-                          <select id="opt1">
-                            <option class = "clean" selected value="0">0</option>
-                            <option class = "clean" value="1">1</option>
-                            <option class = "clean" value="2">2</option>
-                            <option class = "clean" value="3">3</option>
-                            <option class = "clean" value="4">4</option>
-                            <option class = "clean" value="5">5</option>
-                            <option class = "clean" value="6">6</option>
-                          </select>
-                        </li>
-                        <!-- <br> -->
-                        <li>
-                          <label class="mr-sm-2" for="opt2">number of GU pairs &nbsp;≤&nbsp;</label>
-                          <select id="opt2">
-                            <option class = "clean" value="0">0</option>
-                            <option class = "clean" selected value="1">1</option>
-                            <option class = "clean" value="2">2</option>
-                            <option class = "clean" value="3">3</option>
-                            <option class = "clean" value="4">4</option>
-                            <option class = "clean" value="5">5</option>
-                            <option class = "clean" value="6">6</option>
-                          </select>
-                        </li>
-                      </ul>
-                    </li>
-                    
-
-                    <li class="card-text">
-                      <b>Number of mismatches allowed at non-seed region:</b>
-                    </li>
-
-
-                    <li>
-                      <ul>
-                        <li>
-                          <label class="mr-sm-2" for="opt3">number of non-GU pairs &nbsp;≤&nbsp;</label>
-                          <select id="opt3">
-                            <option class = "clean" value="0">0</option>
-                            <option class = "clean" value="1">1</option>
-                            <option class = "clean" value="2">2</option>
-                            <option class = "clean" selected value="3">3</option>
-                            <option class = "clean" value="4">4</option>
-                            <option class = "clean" value="5">5</option>
-                            <option class = "clean" value="6">6</option>
-                            <option class = "clean" value="7">7</option>
-                            <option class = "clean" value="8">8</option>
-                            <option class = "clean" value="9">9</option>
-                            <option class = "clean" value="10">10</option>
-                            <option class = "clean" value="11">11</option>
-                            <option class = "clean" value="12">12</option>
-                            <option class = "clean" value="13">13</option>
-                            <option class = "clean" value="14">∞</option>
-                          </select>
-                        </li>
-                        <li>
-                          <label class="mr-sm-2" for="opt4">number of GU pairs &nbsp;≤&nbsp;</label>
-                          <select id="opt4">
-                            <option class = "clean" value="0">0</option>
-                            <option class = "clean" value="1">1</option>
-                            <option class = "clean" value="2">2</option>
-                            <option class = "clean" selected value="3">3</option>
-                            <option class = "clean" value="4">4</option>
-                            <option class = "clean" value="5">5</option>
-                            <option class = "clean" value="6">6</option>
-                            <option class = "clean" value="7">7</option>
-                            <option class = "clean" value="8">8</option>
-                            <option class = "clean" value="9">9</option>
-                            <option class = "clean" value="10">10</option>
-                            <option class = "clean" value="11">11</option>
-                            <option class = "clean" value="12">12</option>
-                            <option class = "clean" value="13">13</option>
-                            <option class = "clean" value="14">∞</option>
-                          </select>
-                        </li>
-                      </ul>
-                    </li>
-
-
-                    <li>
-                      <label class="mr-sm-2" for="opt5"><b>Total number of mismatches at seed & non-seed regions ≤&nbsp;</b></label>
-                      <select id="opt5">
-                        <option class = "clean" value="0">0</option>
-                        <option class = "clean" value="1">1</option>
-                        <option class = "clean" value="2">2</option>
-                        <option class = "clean" selected value="3">3</option>
-                        <option class = "clean" value="4">4</option>
-                        <option class = "clean" value="5">5</option>
-                        <option class = "clean" value="6">6</option>
-                        <option class = "clean" value="7">7</option>
-                        <option class = "clean" value="8">8</option>
-                        <option class = "clean" value="9">9</option>
-                        <option class = "clean" value="10">10</option>
-                        <option class = "clean" value="11">11</option>
-                        <option class = "clean" value="12">12</option>
-                        <option class = "clean" value="13">13</option>
-                        <option class = "clean" value="14">14</option>
-                        <option class = "clean" value="15">15</option>
-                        <option class = "clean" value="16">16</option>
-                        <option class = "clean" value="17">17</option>
-                        <option class = "clean" value="18">18</option>
-                        <option class = "clean" value="19">19</option>
-                        <option class = "clean" value="20">20</option>
-                        <option class = "clean" value="21">21</option>
-                      </select>
-                    </li>
-
-
-                    <li>
-                      <input type="checkbox" id='CDS_ck' checked><b>Show CDS &nbsp;&nbsp;&nbsp;</b>
-                    </li>
-                    
-
-                    <li>
-                      <ul>
-                        <li>
-                        choose region :
-                        <input type="number" style="width: 60px" id='CDS_1' class='CDS'>&nbsp;~&nbsp;
-                        <input type="number" style="width: 60px" id='CDS_2' class='CDS'>
-                        </li>
-                      </ul>
-                    </li>
-                  </ul>
-                </div>
+          <div class="tab-pane fade show active" id="modify_1" role="tabpanel" aria-labelledby="modify_1-tab">
+            <div class="card mb-4">
+              <h1 class="card-header bg-white text-dark text-center"><b>New gene seq</b></h4>
+              <div class="card-body text-dark text-center">
+                <svg id="preSeqView"></svg>
               </div>
             </div>
+            <div class="row">
+              <div class="col-5">
+                <table class="table table-dark">
+                  <thead>
+                    <tr>
+                      <th scope="col">#</th>
+                      <th scope="col">First Name</th>
+                      <th scope="col">Last Name</th>
+                      <th scope="col">Username</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <th scope="row">1</th>
+                      <td>Mark</td>
+                      <td>Otto</td>
+                      <td>@mdo</td>
+                    </tr>
+                    <tr>
+                      <th scope="row">2</th>
+                      <td>Jacob</td>
+                      <td>Thornton</td>
+                      <td>@fat</td>
+                    </tr>
+                    <tr>
+                      <th scope="row">3</th>
+                      <td>Larry</td>
+                      <td>the Bird</td>
+                      <td>@twitter</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              <div class="col-7">
+                <div class="card mb-2 h-100">
+                  <h4 class="card-header">Scan filter options</h4>
+                  <div class="card-body">
+                    <div class="row">
+                      <div class="col-lg-5 align-self-center">
+                        <a href="#">
+                          <img class="img-fluid rounded" src="{% static 'piRNA/img/QQ.jpg' %}" alt="">
+                        </a>
+                        <button type="button" class="btn btn-outline-dark btn-block" id="reset_to_default">Set to default</button>
+                      </div>
+                      <!-- <div class="col-lg-1">
+                      </div> -->
+                      <div class="col-lg-7">
+                        <ul class="list-unstyled">             
+                          <li class="card-text">
+                            <!-- <b>Choose nematode species :&nbsp;&nbsp;</b> -->
+                            <label class="mr-sm-2" for="nematodeType"><b>Choose nematode species :</b></label>
+                            <select class="custom-select mb-2 mr-sm-2 mb-sm-0" id="nematodeType">
+                              <option class = "clean" selected value="C.elegans">C. elegans</option>
+                              <option class = "clean" value="C.briggsae">C. briggsae</option>
+                              <option class = "clean" value="C.remanei">C. remanei</option>
+                              <option class = "clean" value="C.brenneri">C. brenneri</option>
+                            </select>
+                          </li>
+                          <li class="card-text">
+                            <b>Number of mismatches allowed at seed region:</b>
+                          </li>
+
+
+                          <li>
+                            <ul>
+                              <li>
+                                <label class="mr-sm-2" for="opt1">number of non-GU pairs &nbsp;≤&nbsp;</label>
+                                <select id="opt1">
+                                  <option class = "clean" selected value="0">0</option>
+                                  <option class = "clean" value="1">1</option>
+                                  <option class = "clean" value="2">2</option>
+                                  <option class = "clean" value="3">3</option>
+                                  <option class = "clean" value="4">4</option>
+                                  <option class = "clean" value="5">5</option>
+                                  <option class = "clean" value="6">6</option>
+                                </select>
+                              </li>
+                              <!-- <br> -->
+                              <li>
+                                <label class="mr-sm-2" for="opt2">number of GU pairs &nbsp;≤&nbsp;</label>
+                                <select id="opt2">
+                                  <option class = "clean" value="0">0</option>
+                                  <option class = "clean" selected value="1">1</option>
+                                  <option class = "clean" value="2">2</option>
+                                  <option class = "clean" value="3">3</option>
+                                  <option class = "clean" value="4">4</option>
+                                  <option class = "clean" value="5">5</option>
+                                  <option class = "clean" value="6">6</option>
+                                </select>
+                              </li>
+                            </ul>
+                          </li>
+                          
+
+                          <li class="card-text">
+                            <b>Number of mismatches allowed at non-seed region:</b>
+                          </li>
+
+
+                          <li>
+                            <ul>
+                              <li>
+                                <label class="mr-sm-2" for="opt3">number of non-GU pairs &nbsp;≤&nbsp;</label>
+                                <select id="opt3">
+                                  <option class = "clean" value="0">0</option>
+                                  <option class = "clean" value="1">1</option>
+                                  <option class = "clean" value="2">2</option>
+                                  <option class = "clean" selected value="3">3</option>
+                                  <option class = "clean" value="4">4</option>
+                                  <option class = "clean" value="5">5</option>
+                                  <option class = "clean" value="6">6</option>
+                                  <option class = "clean" value="7">7</option>
+                                  <option class = "clean" value="8">8</option>
+                                  <option class = "clean" value="9">9</option>
+                                  <option class = "clean" value="10">10</option>
+                                  <option class = "clean" value="11">11</option>
+                                  <option class = "clean" value="12">12</option>
+                                  <option class = "clean" value="13">13</option>
+                                  <option class = "clean" value="14">∞</option>
+                                </select>
+                              </li>
+                              <li>
+                                <label class="mr-sm-2" for="opt4">number of GU pairs &nbsp;≤&nbsp;</label>
+                                <select id="opt4">
+                                  <option class = "clean" value="0">0</option>
+                                  <option class = "clean" value="1">1</option>
+                                  <option class = "clean" value="2">2</option>
+                                  <option class = "clean" selected value="3">3</option>
+                                  <option class = "clean" value="4">4</option>
+                                  <option class = "clean" value="5">5</option>
+                                  <option class = "clean" value="6">6</option>
+                                  <option class = "clean" value="7">7</option>
+                                  <option class = "clean" value="8">8</option>
+                                  <option class = "clean" value="9">9</option>
+                                  <option class = "clean" value="10">10</option>
+                                  <option class = "clean" value="11">11</option>
+                                  <option class = "clean" value="12">12</option>
+                                  <option class = "clean" value="13">13</option>
+                                  <option class = "clean" value="14">∞</option>
+                                </select>
+                              </li>
+                            </ul>
+                          </li>
+
+
+                          <li>
+                            <label class="mr-sm-2" for="opt5"><b>Total number of mismatches at seed & non-seed regions ≤&nbsp;</b></label>
+                            <select id="opt5">
+                              <option class = "clean" value="0">0</option>
+                              <option class = "clean" value="1">1</option>
+                              <option class = "clean" value="2">2</option>
+                              <option class = "clean" selected value="3">3</option>
+                              <option class = "clean" value="4">4</option>
+                              <option class = "clean" value="5">5</option>
+                              <option class = "clean" value="6">6</option>
+                              <option class = "clean" value="7">7</option>
+                              <option class = "clean" value="8">8</option>
+                              <option class = "clean" value="9">9</option>
+                              <option class = "clean" value="10">10</option>
+                              <option class = "clean" value="11">11</option>
+                              <option class = "clean" value="12">12</option>
+                              <option class = "clean" value="13">13</option>
+                              <option class = "clean" value="14">14</option>
+                              <option class = "clean" value="15">15</option>
+                              <option class = "clean" value="16">16</option>
+                              <option class = "clean" value="17">17</option>
+                              <option class = "clean" value="18">18</option>
+                              <option class = "clean" value="19">19</option>
+                              <option class = "clean" value="20">20</option>
+                              <option class = "clean" value="21">21</option>
+                            </select>
+                          </li>
+
+
+                          <li>
+                            <input type="checkbox" id='CDS_ck' checked><b>Show CDS &nbsp;&nbsp;&nbsp;</b>
+                          </li>
+                          
+
+                          <li>
+                            <ul>
+                              <li>
+                              choose region :
+                              <input type="number" style="width: 60px" id='CDS_1' class='CDS'>&nbsp;~&nbsp;
+                              <input type="number" style="width: 60px" id='CDS_2' class='CDS'>
+                              </li>
+                            </ul>
+                          </li>
+                        </ul>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div id="update_footer" class="text-center my-3"><button type="button" id="TransformBTN" class="btn btn-primary btn-lg" style="width: 50%;">SCAN</button></div>
           </div>
         </div>
       </div>
-      <button type="button" class="btn btn-lg btn-primary btn-block mb-2 mt-4" id="TransformBTN">SCAN</button>
     </div>
     <div id="result"></div>
 

@@ -65,9 +65,10 @@
         }
     });
 
+
     $(document).ready(function(){
       $.ajax({
-        url: "selectedPreData/", 
+        url: "firstResult/", 
         data:{ 
           QQ:'QQ',
         },
@@ -82,37 +83,75 @@
           )
           },
         success: function(data){
-          resultCreate('originalResult');
-          $('#originalResult').append(data.originalResult);
-          var seqViewDataArr = noBulgeData(data.ori_result);
-          var geneArr = data.ori_result.gene.split("");
-          overView(geneArr,seqViewDataArr,data.CDS1,data.CDS2);
-          seqView(geneArr,seqViewDataArr,data.ori_result.CDS[0].split(''),data.CDS1,data.CDS2);
-          $('#overView').attr('id','ori_overView');
-          $('#seqView').attr('id','ori_seqView');
-          $('#targetedTable').attr('id','ori_targetedTable');
-          $('#abundance').attr('id','ori_abundance');
-          $('#sugTable').attr('id','ori_sugTable');
-          $('#update_footer').remove();
-          $('#original-tab').click(function(){
-            $('#modify_1').removeClass('active');
-            $('#originalResult-charts-tab').trigger('mouseup');
-            $(document).ready(function(){
-              $('#originalResult-charts-tab').trigger('click');
-            });     
-          });
-          $('#originalResult').find('svg, table, table div').removeAttr('id');         
-          // showDaTable();
-          preSeqView(data);
           console.log(data);
-          var pic2src = "{% static 'piRNA/img/QQ.jpg' %}";
-          loadDaShit(pic2src,data);
-          $('#TransformBTN').on('click', function(){
-            scan(data);
-          }); 
+          resultCreate('originalResult');
+          var seqViewDataArr = noBulgeData(data);  
+          var geneArr = data.gene.split("");
+          console.log(geneArr);
+          overView(geneArr,seqViewDataArr,data.CDS1,data.CDS2);
+          seqView(geneArr,seqViewDataArr,data.CDS[0].split(''),data.CDS1,data.CDS2);
+          end = new Date().getTime();
+          swal({
+            type: 'success',
+            title: 'Done!',
+            html: 'With given criteria, '
+              +data.newout.length
+              +' targets sites are found for your target sequences.<br>Total running time : '
+              +(end - start) / 1000 + " sec"
+          });  
         },
       });
     });
+
+    // $(document).ready(function(){
+    //   $.ajax({
+    //     url: "selectedPreData/", 
+    //     data:{ 
+    //       QQ:'QQ',
+    //     },
+    //     type: "POST", 
+    //     dataType:'json',
+    //     error: function(no){
+    //       console.log(no);
+    //       swal(
+    //         'Scan cancelled',
+    //         'System memory overload',
+    //         'error'
+    //       )
+    //       },
+    //     success: function(data){
+
+    //       resultCreate('originalResult');
+    //       $('#originalResult').append(data.originalResult);
+    //       var seqViewDataArr = noBulgeData(data.ori_result);
+    //       var geneArr = data.ori_result.gene.split("");
+    //       overView(geneArr,seqViewDataArr,data.CDS1,data.CDS2);
+    //       seqView(geneArr,seqViewDataArr,data.ori_result.CDS[0].split(''),data.CDS1,data.CDS2);
+    //       $('#overView').attr('id','ori_overView');
+    //       $('#seqView').attr('id','ori_seqView');
+    //       $('#targetedTable').attr('id','ori_targetedTable');
+    //       $('#abundance').attr('id','ori_abundance');
+    //       $('#sugTable').attr('id','ori_sugTable');
+    //       $('#update_footer').remove();
+    //       $('#original-tab').click(function(){
+    //         $('#modify_1').removeClass('active');
+    //         $('#originalResult-charts-tab').trigger('mouseup');
+    //         $(document).ready(function(){
+    //           $('#originalResult-charts-tab').trigger('click');
+    //         });     
+    //       });
+    //       $('#originalResult').find('svg, table, table div').removeAttr('id');         
+    //       // showDaTable();
+    //       preSeqView(data);
+    //       console.log(data);
+    //       var pic2src = "{% static 'piRNA/img/QQ.jpg' %}";
+    //       loadDaShit(pic2src,data);
+    //       $('#TransformBTN').on('click', function(){
+    //         scan(data);
+    //       }); 
+    //     },
+    //   });
+    // });
 
 
 function scan(input){
@@ -198,14 +237,14 @@ function scan(input){
             overView(geneArr,seqViewDataArr,data.CDS1,data.CDS2);
             seqView(geneArr,seqViewDataArr,data.CDS[0].split(''),data.CDS1,data.CDS2);
             end = new Date().getTime();
-            swal({
-              type: 'success',
-              title: 'Done!',
-              html: 'With given criteria, '
-                +data.newout.length
-                +' targets sites are found for your target sequences.<br>Total running time : '
-                +(end - start) / 1000 + " sec"
-            });
+            // swal({
+            //   type: 'success',
+            //   title: 'Done!',
+            //   html: 'With given criteria, '
+            //     +data.newout.length
+            //     +' targets sites are found for your target sequences.<br>Total running time : '
+            //     +(end - start) / 1000 + " sec"
+            // });
           }
         },
       })
@@ -252,18 +291,18 @@ function scan(input){
         <div class="card-header">
           <ul class="nav nav-tabs card-header-tabs" id="myTab" role="tablist">
             <li class="nav-item">
-              <a class="nav-link" id="original-tab" data-toggle="tab" href="#original" role="tab" aria-controls="original" aria-selected="true">Original</a>
+              <a class="nav-link active" id="original-tab" data-toggle="tab" href="#original" role="tab" aria-controls="original" aria-selected="true">Original</a>
             </li>
-            <li class="nav-item">
-              <a class="nav-link active" id="modify_1-tab" data-toggle="tab" href="#modify_1" role="tab" aria-controls="modify_1" aria-selected="false">Modify #1</a>
-            </li>
+            <!-- <li class="nav-item">
+              <a class="nav-link" id="modify_1-tab" data-toggle="tab" href="#modify_1" role="tab" aria-controls="modify_1" aria-selected="false">Modify #1</a>
+            </li> -->
           </ul>
         </div>
         <div class="card-body tab-content" id="myTabContent">
-          <div class="tab-pane fade" id="original" role="tabpanel" aria-labelledby="original-tab">
+          <div class="tab-pane fade show active" id="original" role="tabpanel" aria-labelledby="original-tab">
             <div id="originalResult"></div>
           </div>
-          <div class="tab-pane fade show active" id="modify_1" role="tabpanel" aria-labelledby="modify_1-tab">
+          <!-- <div class="tab-pane fade" id="modify_1" role="tabpanel" aria-labelledby="modify_1-tab">
             <div class="card mb-4">
               <h1 class="card-header bg-white text-dark text-center"><b>New gene seq</b></h4>
               <div class="card-body text-dark text-center">
@@ -314,12 +353,9 @@ function scan(input){
                         </a>
                         <button type="button" class="btn btn-outline-dark btn-block" id="reset_to_default">Set to default</button>
                       </div>
-                      <!-- <div class="col-lg-1">
-                      </div> -->
                       <div class="col-lg-7">
                         <ul class="list-unstyled">             
                           <li class="card-text">
-                            <!-- <b>Choose nematode species :&nbsp;&nbsp;</b> -->
                             <label class="mr-sm-2" for="nematodeType"><b>Choose nematode species :</b></label>
                             <select class="custom-select mb-2 mr-sm-2 mb-sm-0" id="nematodeType">
                               <option class = "clean" selected value="C.elegans">C. elegans</option>
@@ -347,7 +383,6 @@ function scan(input){
                                   <option class = "clean" value="6">6</option>
                                 </select>
                               </li>
-                              <!-- <br> -->
                               <li>
                                 <label class="mr-sm-2" for="opt2">number of GU pairs &nbsp;≤&nbsp;</label>
                                 <select id="opt2">
@@ -466,7 +501,7 @@ function scan(input){
               </div>
             </div>
             <div id="update_footer" class="text-center my-3"><button type="button" id="TransformBTN" class="btn btn-primary btn-lg" style="width: 50%;">SCAN</button></div>
-          </div>
+          </div> -->
         </div>
       </div>
     </div>

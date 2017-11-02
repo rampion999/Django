@@ -39,6 +39,7 @@ urlpatterns = [
     url(r'^bulge/scan/', bulge.scan_main),  
     url(r'^piRNA/Scan(?:/update)*/create_data/', views_piRNA.create_data),
     url(r'^piRNA/Scan(?:/update)+/create_data/', views_piRNA.create_data),
+    url(r'^piRNA/Scan(?:/update)+/firstResult/$', views_piRNA.firstResult),
     url(r'^piRNA/Scan(?:/update)+/selectedPreData/$', views_piRNA.selectedPreData),
     url(r'^piRNA/Scan(?:/update)+/showDaTable/', views_piRNA.showDaTable),
     url(r'^piRNA/Scan(?:/update)+/scanOperation/', views_piRNA.scan_main),

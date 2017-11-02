@@ -183,6 +183,8 @@ def scan_main(request):
 				'csrf':request.POST.get('csrfmiddlewaretoken'),
 			}
 			ori_result = data
+			with open(os.path.join(module_dir,'ori_result.json'),'w') as w1:
+				json.dump(data,w1,indent=4)
 	return JsonResponse(data)
 
 def scan(q,num):
@@ -1013,9 +1015,18 @@ def showDaTable(request):
 			out.append([i[1].split('@@@'),bigList])
 	return JsonResponse({'out':out})
 
+def firstResult(request):
+	module_dir = os.path.dirname(__file__)
+	with open(os.path.join(module_dir,'ori_result.json'),'r') as w1:
+		data = json.load(w1)
+	return JsonResponse(data)
+
+
 def selectedPreData(request):
 	module_dir = os.path.dirname(__file__)
-	global Arr2,options,CDS1,CDS2,RNA,ori_result
+	global Arr2,options,CDS1,CDS2,RNA
+	with open(os.path.join(module_dir,'ori_result.json'),'r') as w1:
+		ori_result = json.load(w1)
 	with open(os.path.join(module_dir,'modify.csv'),'r') as f1:
 		options = {}
 		mod = csv.reader(f1)
@@ -1068,10 +1079,10 @@ def selectedPreData(request):
 		info_names = []
 		for x in reader2:
 			info_names.append(x[0])
-	with open(os.path.join(module_dir,'ori_result.txt'),'r') as f3:
-		for x in f3:
-			originalResult = x
-			break
+	# with open(os.path.join(module_dir,'ori_result.txt'),'r') as f3:
+	# 	for x in f3:
+	# 		originalResult = x
+	# 		break
 	predata = {
 		# 'CDS':[CDSout],
 		'advice':[],
