@@ -13,7 +13,7 @@
 
 
 
-function update(sug,sugNotCDS,name,gene,a,b,c,d,e,f,g,h,csrf,ori_data){
+function update(modifyCount,sug,sugNotCDS,name,gene,a,b,c,d,e,f,g,h,csrf,ori_data,pic2src,scanUrl){
 	var new_gene = gene.split('');
 	var selected = {};
 	var count = 0;
@@ -128,10 +128,6 @@ function update(sug,sugNotCDS,name,gene,a,b,c,d,e,f,g,h,csrf,ori_data){
 			count+=1;
 		}
 	}
-	// console.log(Object.keys(check_dict));
-	// console.log('24' in Object.keys(check_dict));
-	// console.log(check_dict);
-	// console.log(repeated);
 	if (posss.length==0){
 		alert('you selected nothing T_T');
 	}
@@ -170,12 +166,246 @@ function update(sug,sugNotCDS,name,gene,a,b,c,d,e,f,g,h,csrf,ori_data){
 			type: "POST", 
 			dataType:'json',
 			success: function(data){
-				console.log(data);
+				$('#overallTab').append(
+					'<li class="nav-item">\
+		            	<a class="nav-link" id="modify_'+modifyCount+'-tab" data-toggle="tab" href="#modify_'+modifyCount+'" role="tab" aria-controls="modify_'+modifyCount+'" aria-selected="false">Modify #'+modifyCount+'</a>\
+		            </li>'
+		        );
+				$('#overallTabContent').append(
+					'<div class="tab-pane fade" id="modify_'+modifyCount+'" role="tabpanel" aria-labelledby="modify_'+modifyCount+'-tab">\
+		            	<div id="modify_'+modifyCount+'-Result"></div>\
+		          	</div>'
+		        );
+		        $('html, body').animate({scrollTop: '0px'}, 300);
+		        $('#modify_'+modifyCount+'-Result').append('\
+					<div class="card mb-4">\
+		              <h1 class="card-header bg-white text-dark text-center"><b>New gene seq</b></h4>\
+		              <div class="card-body text-dark text-center">\
+		                <svg id="preSeqView-'+modifyCount+'"></svg>\
+		              </div>\
+		            </div>\
+		        ');
+		        var strVar="";
+    				strVar += "            <div class=\"row\">";
+    				strVar += "              <div class=\"col-5\">";
+            strVar += '\
+                <div class="card">\
+                  <h4 class="card-header">Selected changes</h4>\
+                  <div id="selectedChange_'+modifyCount+'" class="card-body">';               
+            strVar += '</div></div>';
+    				strVar += "              <\/div>";
+    				strVar += "              <div class=\"col-7\">";
+    				strVar += "                <div class=\"card mb-2 h-100\">";
+    				strVar += "                  <h4 class=\"card-header\">Scan filter options<\/h4>";
+    				strVar += "                  <div class=\"card-body\">";
+    				strVar += "                    <div class=\"row\">";
+    				strVar += "                      <div class=\"col-lg-5 align-self-center\">";
+    				strVar += "                        <a href=\"#\">";
+    				strVar += "                          <img class=\"img-fluid rounded\" src=\""+pic2src+"\" alt=\"\">";
+    				strVar += "                        <\/a>";
+    				strVar += "                        <button type=\"button\" class=\"btn btn-outline-dark btn-block\" id=\"reset_to_default_"+modifyCount+"\">Set to default<\/button>";
+    				strVar += "                      <\/div>";
+    				strVar += "                      <!-- <div class=\"col-lg-1\">";
+    				strVar += "                      <\/div> -->";
+    				strVar += "                      <div class=\"col-lg-7\">";
+    				strVar += "                        <ul class=\"list-unstyled\">             ";
+    				strVar += "                          <li class=\"card-text\">";
+    				strVar += "                            <!-- <b>Choose nematode species :&nbsp;&nbsp;<\/b> -->";
+    				strVar += "                            <label class=\"mr-sm-2\" for=\"nematodeType\"><b>Choose nematode species :<\/b><\/label>";
+    				strVar += "                            <select class=\"custom-select mb-2 mr-sm-2 mb-sm-0\" id=\"nematodeType_"+modifyCount+"\">";
+    				strVar += "                              <option class = \"clean\" selected value=\"C.elegans\">C. elegans<\/option>";
+    				strVar += "                              <option class = \"clean\" value=\"C.briggsae\">C. briggsae<\/option>";
+    				strVar += "                              <option class = \"clean\" value=\"C.remanei\">C. remanei<\/option>";
+    				strVar += "                              <option class = \"clean\" value=\"C.brenneri\">C. brenneri<\/option>";
+    				strVar += "                            <\/select>";
+    				strVar += "                          <\/li>";
+    				strVar += "                          <li class=\"card-text\">";
+    				strVar += "                            <b>Number of mismatches allowed at seed region:<\/b>";
+    				strVar += "                          <\/li>";
+    				strVar += "";
+    				strVar += "";
+    				strVar += "                          <li>";
+    				strVar += "                            <ul>";
+    				strVar += "                              <li>";
+    				strVar += "                                <label class=\"mr-sm-2\" for=\"opt1\">number of non-GU pairs &nbsp;≤&nbsp;<\/label>";
+    				strVar += "                                <select id=\"opt1_"+modifyCount+"\">";
+    				strVar += "                                  <option class = \"clean\" selected value=\"0\">0<\/option>";
+    				strVar += "                                  <option class = \"clean\" value=\"1\">1<\/option>";
+    				strVar += "                                  <option class = \"clean\" value=\"2\">2<\/option>";
+    				strVar += "                                  <option class = \"clean\" value=\"3\">3<\/option>";
+    				strVar += "                                  <option class = \"clean\" value=\"4\">4<\/option>";
+    				strVar += "                                  <option class = \"clean\" value=\"5\">5<\/option>";
+    				strVar += "                                  <option class = \"clean\" value=\"6\">6<\/option>";
+    				strVar += "                                <\/select>";
+    				strVar += "                              <\/li>";
+    				strVar += "                              <!-- <br> -->";
+    				strVar += "                              <li>";
+    				strVar += "                                <label class=\"mr-sm-2\" for=\"opt2\">number of GU pairs &nbsp;≤&nbsp;<\/label>";
+    				strVar += "                                <select id=\"opt2_"+modifyCount+"\">";
+    				strVar += "                                  <option class = \"clean\" value=\"0\">0<\/option>";
+    				strVar += "                                  <option class = \"clean\" selected value=\"1\">1<\/option>";
+    				strVar += "                                  <option class = \"clean\" value=\"2\">2<\/option>";
+    				strVar += "                                  <option class = \"clean\" value=\"3\">3<\/option>";
+    				strVar += "                                  <option class = \"clean\" value=\"4\">4<\/option>";
+    				strVar += "                                  <option class = \"clean\" value=\"5\">5<\/option>";
+    				strVar += "                                  <option class = \"clean\" value=\"6\">6<\/option>";
+    				strVar += "                                <\/select>";
+    				strVar += "                              <\/li>";
+    				strVar += "                            <\/ul>";
+    				strVar += "                          <\/li>";
+    				strVar += "                          ";
+    				strVar += "";
+    				strVar += "                          <li class=\"card-text\">";
+    				strVar += "                            <b>Number of mismatches allowed at non-seed region:<\/b>";
+    				strVar += "                          <\/li>";
+    				strVar += "";
+    				strVar += "";
+    				strVar += "                          <li>";
+    				strVar += "                            <ul>";
+    				strVar += "                              <li>";
+    				strVar += "                                <label class=\"mr-sm-2\" for=\"opt3\">number of non-GU pairs &nbsp;≤&nbsp;<\/label>";
+    				strVar += "                                <select id=\"opt3_"+modifyCount+"\">";
+    				strVar += "                                  <option class = \"clean\" value=\"0\">0<\/option>";
+    				strVar += "                                  <option class = \"clean\" value=\"1\">1<\/option>";
+    				strVar += "                                  <option class = \"clean\" value=\"2\">2<\/option>";
+    				strVar += "                                  <option class = \"clean\" selected value=\"3\">3<\/option>";
+    				strVar += "                                  <option class = \"clean\" value=\"4\">4<\/option>";
+    				strVar += "                                  <option class = \"clean\" value=\"5\">5<\/option>";
+    				strVar += "                                  <option class = \"clean\" value=\"6\">6<\/option>";
+    				strVar += "                                  <option class = \"clean\" value=\"7\">7<\/option>";
+    				strVar += "                                  <option class = \"clean\" value=\"8\">8<\/option>";
+    				strVar += "                                  <option class = \"clean\" value=\"9\">9<\/option>";
+    				strVar += "                                  <option class = \"clean\" value=\"10\">10<\/option>";
+    				strVar += "                                  <option class = \"clean\" value=\"11\">11<\/option>";
+    				strVar += "                                  <option class = \"clean\" value=\"12\">12<\/option>";
+    				strVar += "                                  <option class = \"clean\" value=\"13\">13<\/option>";
+    				strVar += "                                  <option class = \"clean\" value=\"14\">∞<\/option>";
+    				strVar += "                                <\/select>";
+    				strVar += "                              <\/li>";
+    				strVar += "                              <li>";
+    				strVar += "                                <label class=\"mr-sm-2\" for=\"opt4\">number of GU pairs &nbsp;≤&nbsp;<\/label>";
+    				strVar += "                                <select id=\"opt4_"+modifyCount+"\">";
+    				strVar += "                                  <option class = \"clean\" value=\"0\">0<\/option>";
+    				strVar += "                                  <option class = \"clean\" value=\"1\">1<\/option>";
+    				strVar += "                                  <option class = \"clean\" value=\"2\">2<\/option>";
+    				strVar += "                                  <option class = \"clean\" selected value=\"3\">3<\/option>";
+    				strVar += "                                  <option class = \"clean\" value=\"4\">4<\/option>";
+    				strVar += "                                  <option class = \"clean\" value=\"5\">5<\/option>";
+    				strVar += "                                  <option class = \"clean\" value=\"6\">6<\/option>";
+    				strVar += "                                  <option class = \"clean\" value=\"7\">7<\/option>";
+    				strVar += "                                  <option class = \"clean\" value=\"8\">8<\/option>";
+    				strVar += "                                  <option class = \"clean\" value=\"9\">9<\/option>";
+    				strVar += "                                  <option class = \"clean\" value=\"10\">10<\/option>";
+    				strVar += "                                  <option class = \"clean\" value=\"11\">11<\/option>";
+    				strVar += "                                  <option class = \"clean\" value=\"12\">12<\/option>";
+    				strVar += "                                  <option class = \"clean\" value=\"13\">13<\/option>";
+    				strVar += "                                  <option class = \"clean\" value=\"14\">∞<\/option>";
+    				strVar += "                                <\/select>";
+    				strVar += "                              <\/li>";
+    				strVar += "                            <\/ul>";
+    				strVar += "                          <\/li>";
+    				strVar += "";
+    				strVar += "";
+    				strVar += "                          <li>";
+    				strVar += "                            <label class=\"mr-sm-2\" for=\"opt5\"><b>Total number of mismatches at seed & non-seed regions ≤&nbsp;<\/b><\/label>";
+    				strVar += "                            <select id=\"opt5_"+modifyCount+"\">";
+    				strVar += "                              <option class = \"clean\" value=\"0\">0<\/option>";
+    				strVar += "                              <option class = \"clean\" value=\"1\">1<\/option>";
+    				strVar += "                              <option class = \"clean\" value=\"2\">2<\/option>";
+    				strVar += "                              <option class = \"clean\" selected value=\"3\">3<\/option>";
+    				strVar += "                              <option class = \"clean\" value=\"4\">4<\/option>";
+    				strVar += "                              <option class = \"clean\" value=\"5\">5<\/option>";
+    				strVar += "                              <option class = \"clean\" value=\"6\">6<\/option>";
+    				strVar += "                              <option class = \"clean\" value=\"7\">7<\/option>";
+    				strVar += "                              <option class = \"clean\" value=\"8\">8<\/option>";
+    				strVar += "                              <option class = \"clean\" value=\"9\">9<\/option>";
+    				strVar += "                              <option class = \"clean\" value=\"10\">10<\/option>";
+    				strVar += "                              <option class = \"clean\" value=\"11\">11<\/option>";
+    				strVar += "                              <option class = \"clean\" value=\"12\">12<\/option>";
+    				strVar += "                              <option class = \"clean\" value=\"13\">13<\/option>";
+    				strVar += "                              <option class = \"clean\" value=\"14\">14<\/option>";
+    				strVar += "                              <option class = \"clean\" value=\"15\">15<\/option>";
+    				strVar += "                              <option class = \"clean\" value=\"16\">16<\/option>";
+    				strVar += "                              <option class = \"clean\" value=\"17\">17<\/option>";
+    				strVar += "                              <option class = \"clean\" value=\"18\">18<\/option>";
+    				strVar += "                              <option class = \"clean\" value=\"19\">19<\/option>";
+    				strVar += "                              <option class = \"clean\" value=\"20\">20<\/option>";
+    				strVar += "                              <option class = \"clean\" value=\"21\">21<\/option>";
+    				strVar += "                            <\/select>";
+    				strVar += "                          <\/li>";
+    				strVar += "";
+    				strVar += "";
+    				strVar += "                          <li>";
+    				strVar += "                            <input type=\"checkbox\" id='CDS_ck_"+modifyCount+"' checked><b>Show CDS &nbsp;&nbsp;&nbsp;<\/b>";
+    				strVar += "                          <\/li>";
+    				strVar += "                          ";
+    				strVar += "";
+    				strVar += "                          <li>";
+    				strVar += "                            <ul>";
+    				strVar += "                              <li>";
+    				strVar += "                              choose region :";
+    				strVar += "                              <input type=\"number\" style=\"width: 60px\" id='CDS_1_"+modifyCount+"' class='CDS_"+modifyCount+"'>&nbsp;~&nbsp;";
+    				strVar += "                              <input type=\"number\" style=\"width: 60px\" id='CDS_2_"+modifyCount+"' class='CDS_"+modifyCount+"'>";
+    				strVar += "                              <\/li>";
+    				strVar += "                            <\/ul>";
+    				strVar += "                          <\/li>";
+    				strVar += "                        <\/ul>";
+    				strVar += "                      <\/div>";
+    				strVar += "                    <\/div>";
+    				strVar += "                  <\/div>";
+    				strVar += "                <\/div>";
+    				strVar += "              <\/div>";
+    				strVar += "            <\/div>";
+    				strVar += "            <div id=\"update_footer_"+modifyCount+"\" class=\"text-center my-3\"><button type=\"button\" id=\"TransformBTN_"+modifyCount+"\" class=\"btn btn-primary btn-lg\" style=\"width: 50%;\">RESCAN<\/button><\/div>";
+
+		        $('#modify_'+modifyCount+'-Result').append(strVar);                   
+		        $.ajax({
+			        url: "selectedPreData/", 
+			        data:{ 
+			          QQ:'QQ',
+			        },
+			        type: "POST", 
+			        dataType:'json',
+			        error: function(no){
+			          console.log(no);
+			          swal(
+			            'Scan cancelled',
+			            'System memory overload',
+			            'error'
+			          )
+			          },
+			        success: function(data){
+			        	console.log(data);			        	
+          			loadDaShit(pic2src,data,modifyCount);
+			        	preSeqView('preSeqView-'+modifyCount,data);	
+                selectedTable('selectedChange_'+modifyCount,data,modifyCount); 
+			        	$('#TransformBTN_'+modifyCount).on('click',function(){
+				        	newScan(data,pic2src,modifyCount,scanUrl);
+				        });
+			        },
+			    });
+			    $('#originalResult-resultTab a').removeClass('active');
+			    $('#originalResult-resultTabContent a').removeClass('active');
+		        $('#modify_'+modifyCount+'-tab').on('click', function(){
+		       		$('#originalResult-resultTab a').removeClass('active');
+			   		$('#originalResult-resultTabContent div').removeClass('active');
+		        });
+		        $('#modify_'+modifyCount+'-tab').trigger('click');
 			},
-		})
-		// window.open("http://140.116.215.236/rampion999/piRNA/update/",'_blank');
-		// window.location.replace(document.URL.replace(/\?fref=gc&dti=[0-9]+/,'')+"update/",'_blank');
-		window.location = document.URL.replace(/\?fref=gc&dti=[0-9]+/,'')+"update/",'_blank';
-		// window.open(document.URL.replace(/\?fref=gc&dti=[0-9]+/,'')+"update/",'_blank');
+		})          
 	}
+}
+
+
+function selectedTable(divId,data,modifyCount){
+  var tableText ='';
+  tableText += '<table class="table table-striped" id="changeTable_'+modifyCount+'">';
+  tableText += '<thead><th scope="col">#</th><th scope="col">Position</th><th scope="col">Variation</th></thead><tbody></tbody></table>';
+  $('#'+divId).append(tableText);
+
+  var tableTemp='';
+  for(var x in data.changed_pos){
+    tableTemp += '<tr><th>'+(Number(x)+1)+'</th><td>'+data.changed_pos[x]+'</td></tr>';
+  }
+  $('#changeTable_'+modifyCount).find('tbody').append(tableTemp);
 }

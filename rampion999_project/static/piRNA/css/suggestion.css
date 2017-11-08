@@ -1,13 +1,13 @@
-#sugTable table,#sugTable th,#sugTable td {
+.sugTable, .sugTable th,.sugTable td {
 	border: 1px solid black;
     border-collapse: collapse;
 }
 
-#sugTable{
+.sugTable{
 	width: 100%;
 }
 
-#sugTable th, #sugTable td {
+.sugTable th, .sugTable td {
     padding: 5px;
     text-align: center;    
 }

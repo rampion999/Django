@@ -1,5 +1,5 @@
-function noBulgeData(data){
-	var table_html = '<table id="myTable" class="display"><thead>\
+function noBulgeData(divId,data){
+	var table_html = '<table id="'+divId+'-myTable" class="display"><thead>\
 						<tr>\
 						<th width= 150>piRNA</th>\
 						<th>targeted region in the input sequences</th>\
@@ -12,8 +12,8 @@ function noBulgeData(data){
 						<th>pairing (top:'+data.name+', bottom:piRNA)</th>\
 						</tr>\
 						</thead><tbody></tbody></table>';
-	$('#targetedTable').append(table_html);
-	open_table(data.piRNA_info_name);
+	$('#'+divId+'-targetedTable').append(table_html);
+	open_table(divId,data.piRNA_info_name);
 
 
 	data.newout = data.newout.sort(function (a, b) {
@@ -47,12 +47,12 @@ function noBulgeData(data){
 		table_html += '<td class="mid">'+data.newout[key][6]+'</td>';
 		table_html += '<td class="mid">'+data.newout[key][7]+'</td>';
 		table_html += '<td class="mid">'+data.newout[key][8]+'</td>';
-		table_html += '<td id="detail" width= 400>'+data.newout[key][9]+'<br><div id="test'+key+'">'+data.newout[key][10]+'</div></td></tr>'
-		$('#targetedTable').find('tbody').append(table_html);						
+		table_html += '<td id="detail" width= 400>'+data.newout[key][9]+'<br><div id="'+divId+'-test'+key+'">'+data.newout[key][10]+'</div></td></tr>'
+		$('#'+divId+'-targetedTable').find('tbody').append(table_html);						
 		// if ($('#nematodeType').val()=='C.briggsae') {pock();}
 		first = parseInt(data.newout[key][1].split('~')[0]);
 		fts.push([first,parseInt(data.newout[key][1].split('~')[1]),data.newout[key][0]]);
-		var x = 'div#test' + key;
+		var x = '#'+divId+'-test' + key;
 		var QQQQ = $(x).text();
 		QQQQ = QQQQ.replace(/[\d '|]/g,'');
 		var stack = 0;
@@ -92,36 +92,9 @@ function noBulgeData(data){
 		});
 		firstlast = first;
 	}
-	piRNA_info(data.newout,data.piRNA_info_name,$('#nematodeType').val());
-	if(data.newout.length != 0){
-		// suggestion(
-		// data.suggestion.inCDS,
-		// data.suggestion.notInCDS,
-		// $('#opt1').val(),
-		// $('#opt2').val(),
-		// $('#opt3').val(),
-		// $('#opt4').val(),
-		// $('#opt5').val(),
-		// );
-		shit(
-			data.suggestion.inCDS,
-			data.suggestion.notInCDS,
-			$('#opt1').val(),
-			$('#opt2').val(),
-			$('#opt3').val(),
-			$('#opt4').val(),
-			$('#opt5').val(),
-			data.name,
-			data.gene,
-			$('#nematodeType').val(),
-			$('#CDS_1').val(),
-			$('#CDS_2').val(),
-			data.csrf,
-			data,
-		);
-	}
+	piRNA_info(divId,data.newout,data.piRNA_info_name,data.options.nematodeType);
 	seqViewDataArr.unshift({most:most});
-	resultTable = $('#myTable').DataTable({
+	resultTable = $('#'+divId+'-myTable').DataTable({
 		"ordering": false,
 		// info:false,
 		"searching": false,

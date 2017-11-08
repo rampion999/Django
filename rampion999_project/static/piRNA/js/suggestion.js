@@ -102,8 +102,8 @@ function suggestion(sug,sugNotCDS,a,b,c,d,e){
 
 }
 
-function shit(sug,sugNotCDS,a,b,c,d,e,name,gene,nematodeType,CDS1,CDS2,csrf,ori_data){
-	var table_html = '<table id="sugPicTable" class="display" width= 100%><thead><tr><th>piRNA</th>';
+function shit(divId,sug,sugNotCDS,a,b,c,d,e,name,gene,nematodeType,CDS1,CDS2,csrf,ori_data,pic2src,scanUrl){
+	var table_html = '<table id="'+divId+'-sugPicTable" class="sugTable" width= 100%><thead><tr><th>piRNA</th>';
 	table_html += '<th width= 100>targeted region in the input sequences</th>';
 	table_html += '<th width= 100>original situation</th>';
 	table_html += '<th colspan="7">methods<br>escape condition{ rule1 : seed-xGU > '+a+' , rule2 : seed-GU > '+b+' , rule3 : non-seed-xGU > '+c+' ,<br>rule4 : non-seed-GU > '+d+' , rule5 : total mis > '+e+'}</th>';
@@ -191,7 +191,7 @@ function shit(sug,sugNotCDS,a,b,c,d,e,name,gene,nematodeType,CDS1,CDS2,csrf,ori_
 
 	var frontText = '';
 	var lastText = '';
-	$('#sugTable').append(table_html);
+	$('#'+divId+'-sugTable').append(table_html);
 
 
 	
@@ -362,7 +362,7 @@ function shit(sug,sugNotCDS,a,b,c,d,e,name,gene,nematodeType,CDS1,CDS2,csrf,ori_
 	}
 
 
-	$('#sugPicTable').find('tbody').prepend(frontText);
+	$('#'+divId+'-sugPicTable').find('tbody').prepend(frontText);
 	console.log(frontDuplicateFir);
 	for(var dupEffect in frontDuplicateFir){
 		// duplicateFir  0:修改位置 1:相同位置幾種改法 2:最外層count 3:內層count (通通都是int)
@@ -387,7 +387,7 @@ function shit(sug,sugNotCDS,a,b,c,d,e,name,gene,nematodeType,CDS1,CDS2,csrf,ori_
 		}
 	}
 
-	$('#sugPicTable tbody').append(lastText);
+	$('#'+divId+'-sugPicTable tbody').append(lastText);
 	for(var dupEffect in lastDuplicateFir){
 		// duplicateFir  0:修改位置 1:相同位置幾種改法 2:最外層count 3:內層count (通通都是int)
 		// console.log(range(duplicateFir[dupEffect][2]));
@@ -411,10 +411,11 @@ function shit(sug,sugNotCDS,a,b,c,d,e,name,gene,nematodeType,CDS1,CDS2,csrf,ori_
 		}
 	}
 	
-	$('#sugTable').parent().after('<div id="update_footer" class="card-footer text-center"><button type="button" id="update" class="btn btn-primary btn-lg" style="width: 50%;">update input sequence</button></div>');
-	$('#update').on({
+	$('#'+divId+'-sugTable').parent().after('<div id="update_footer" class="card-footer text-center"><button type="button" id="'+divId+'-update" class="btn btn-primary btn-lg" style="width: 50%;">update input sequence</button></div>');
+	$('#'+divId+'-update').on({
 		click:function(){
-			update(sug,sugNotCDS,name,gene,a,b,c,d,e,nematodeType,CDS1,CDS2,csrf,ori_data);
+			var modifyCount = $("#overallTab > li").length;
+			update(modifyCount,sug,sugNotCDS,name,gene,a,b,c,d,e,nematodeType,CDS1,CDS2,csrf,ori_data,pic2src,scanUrl);
 		},
 	});
 

@@ -66,7 +66,7 @@ fieldset {
     position:relative;
     }
 legend {
-    font-size: 2.5rem;
+    font-size: 1.8rem;
     width:inherit;
     padding:0px 10px;
     border-bottom:none;
@@ -82,32 +82,9 @@ legend {
     left:10px;top:-11px;
     }
 
-/*.nav-tabs{
-  background-color:#ddd;
+#overallTab a{
+    font-size: 1.5em;
 }
-.tab-content{
-    background-color:#fff;
-    color:#000;
-    padding:5px
-}*/
-
-
-/*#result .nav-tabs > li > a{
-  border: medium none;
-}
-#result .nav-tabs > li > a:hover{
-    background-color: #303136 !important;
-    border: medium none;
-    border-top-left-radius: .25rem!important;
-    border-top-right-radius: .25rem!important;
-    color:#fff;
-}*/
-/*
-.nav-tabs > li > a:focus{
-    background-color: #303136 !important;
-    color: red;
-}*/
-
 
 /*使SVG變成動態*/
 

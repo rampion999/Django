@@ -1,4 +1,4 @@
-function overView(mRNA,data,CDS_1,CDS_2){
+function overView(divId,mRNA,data,CDS_1,CDS_2){
   var mRNAlen = mRNA.length;
   var big = 0;
   for (key in data[0].most){
@@ -11,7 +11,8 @@ function overView(mRNA,data,CDS_1,CDS_2){
 
   var width = 1700;
   var height = (5+big)*17.5;
-  var svg = d3.select('#overView').attr({
+  console.log('#'+divId+'-overView');
+  var svg = d3.select('#'+divId+'-overView').attr({
       'width': width,
       'height': height
     });  

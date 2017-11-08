@@ -1,4 +1,4 @@
-function seqView(mRNA,data,CDS,CDS_1,CDS_2){
+function seqView(divId,mRNA,data,CDS,CDS_1,CDS_2){
   var mRNAlen = mRNA.length;
   var exceptHeight = 5;  //預估piRNA行數
   for (key in data[0].most){
@@ -37,7 +37,7 @@ function seqView(mRNA,data,CDS,CDS_1,CDS_2){
   //   .classed("svg-content-responsive", true); 
 
 
-  var svg = d3.select('#seqView').attr({
+  var svg = d3.select('#'+divId+'-seqView').attr({
       'width': width,
       'height': height
     });

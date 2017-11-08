@@ -1,4 +1,4 @@
-function preSeqView(data){
+function preSeqView(divId,data){
 	var CDS_1 = data.CDS1;
 	var CDS_2 = data.CDS2;
 	var mRNA = data.gene.split('');
@@ -17,7 +17,7 @@ function preSeqView(data){
 		.domain([0, 99]);
 
 
-	var svg = d3.select('#preSeqView').attr({
+	var svg = d3.select('#'+divId).attr({
 		'width': width,
 		'height': height,
 		'style':"margin-left:auto; margin-right:auto; display:block;",

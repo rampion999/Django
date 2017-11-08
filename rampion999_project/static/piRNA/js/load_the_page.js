@@ -1,4 +1,52 @@
-function loadDaShit(pic2src,data){
+function loadDaShit(pic2src,data,modifyCount){
+		$("#gene").val('>'+data.name+'\n'+data.gene);
+		var CDS_switch = 1;
+		$("#opt1_"+modifyCount).val(data.options['core_non_GU']);
+		$("#opt2_"+modifyCount).val(data.options['core_GU']);
+		$("#opt3_"+modifyCount).val(data.options['non_core_non_GU']);
+		$("#opt4_"+modifyCount).val(data.options['non_core_GU']);
+		$("#opt5_"+modifyCount).val(data.options['total']);
+		$("#nematodeType_"+modifyCount).val(data.options['nematodeType']);
+		var NCDS_1 = data.CDS1;
+		var NCDS_2 = data.CDS2;
+		if (NCDS_1 < 0 || NCDS_2 < 0){
+			NCDS_1 = '';
+			NCDS_2 = '';
+			$('#CDS_ck_'+modifyCount).prop('checked',false);
+			$('.CDS_'+modifyCount).prop('disabled',true);
+			CDS_switch = 0;
+		}
+		$('#CDS_1_'+modifyCount).val(NCDS_1);
+		$('#CDS_2_'+modifyCount).val(NCDS_2);
+		$("#reset_to_default_"+modifyCount).click(function(){
+			$("#nematodeType_"+modifyCount).val(data.options['nematodeType']);
+			$("#opt1_"+modifyCount).val(data.options['core_non_GU']);
+			$("#opt2_"+modifyCount).val(data.options['core_GU']);
+			$("#opt3_"+modifyCount).val(data.options['non_core_non_GU']);
+			$("#opt4_"+modifyCount).val(data.options['non_core_GU']);
+			$("#opt5_"+modifyCount).val(data.options['total']);
+			if(CDS_switch==1){
+				$('#CDS_1_'+modifyCount).val(NCDS_1);
+				$('#CDS_2_'+modifyCount).val(NCDS_2);
+			}
+		  });
+		$('#CDS_ck_'+modifyCount).click(function(){
+			if (CDS_switch == 0){
+			  // $('#overView,#seqView,#div_name3,#div_name').empty();
+			  $('.CDS_'+modifyCount).removeAttr('disabled');
+			  $('#CDS_1_'+modifyCount).val(NCDS_1);
+			  $('#CDS_2_'+modifyCount).val(NCDS_2);
+			  CDS_switch++;
+			}
+			else{
+			  // $('#overView,#seqView,#div_name3,#div_name').empty();
+			  $('.CDS_'+modifyCount).val('');
+			  $('.CDS_'+modifyCount).attr('disabled','');
+			  CDS_switch--;
+			}
+		})
+}
+
 	// var page_text = '<p><b style="font-size: 21;">Scan filter options: </b>&nbsp;\
 	// 	<input type="button" value="default" id="reset_to_default"><br>\
 	// 	<img src = "'+pic2src+'" style="width:435px;height:162px;"><br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;\
@@ -45,50 +93,3 @@ function loadDaShit(pic2src,data){
 	// 	<p>This web tool is maintained by Dr. <a href="https://www.researchgate.net/profile/Wei-Sheng_Wu">Wei-Sheng Wu</a>\'s lab at National Cheng Kung University, Taiwan.</p>\
 	// 	<hr><div id="test"></div><svg id="overView"></svg><svg id="seqView"></svg><div id="div_name"></div><div id="div_name2"></div><div id="div_name3"></div>';
 	// 	$('#loadPage').append(page_text);
-		$("#gene").val('>'+data.name+'\n'+data.gene);
-		var CDS_switch = 1;
-		$("#opt1").val(data.options['core_non_GU']);
-		$("#opt2").val(data.options['core_GU']);
-		$("#opt3").val(data.options['non_core_non_GU']);
-		$("#opt4").val(data.options['non_core_GU']);
-		$("#opt5").val(data.options['total']);
-		$("#nematodeType").val(data.options['nematodeType']);
-		var NCDS_1 = data.CDS1;
-		var NCDS_2 = data.CDS2;
-		if (NCDS_1 < 0 || NCDS_2 < 0){
-			NCDS_1 = '';
-			NCDS_2 = '';
-			$('#CDS_ck').prop('checked',false);
-			$('.CDS').prop('disabled',true);
-			CDS_switch = 0;
-		}
-		$('#CDS_1').val(NCDS_1);
-		$('#CDS_2').val(NCDS_2);
-		$("#reset_to_default").click(function(){
-			$("#nematodeType").val(data.options['nematodeType']);
-			$("#opt1").val(data.options['core_non_GU']);
-			$("#opt2").val(data.options['core_GU']);
-			$("#opt3").val(data.options['non_core_non_GU']);
-			$("#opt4").val(data.options['non_core_GU']);
-			$("#opt5").val(data.options['total']);
-			if(CDS_switch==1){
-				$('#CDS_1').val(NCDS_1);
-				$('#CDS_2').val(NCDS_2);
-			}
-		  });
-		$('#CDS_ck').click(function(){
-			if (CDS_switch == 0){
-			  // $('#overView,#seqView,#div_name3,#div_name').empty();
-			  $('.CDS').removeAttr('disabled');
-			  $('#CDS_1').val(NCDS_1);
-			  $('#CDS_2').val(NCDS_2);
-			  CDS_switch++;
-			}
-			else{
-			  // $('#overView,#seqView,#div_name3,#div_name').empty();
-			  $('.CDS').val('');
-			  $('.CDS').attr('disabled','');
-			  CDS_switch--;
-			}
-		})
-}
