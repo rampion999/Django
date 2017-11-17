@@ -1,0 +1,710 @@
+{% load staticfiles %}
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="UTF-8">
+	<title>Document</title>
+	
+	<link rel="stylesheet" type="text/css" href='{% static "piRNA/css/sweetalert2.min.css" %}'>
+	<link rel="stylesheet" type="text/css" href='{% static "piRNA/css/ex.css" %}'>
+	<link rel="stylesheet" type="text/css" href='{% static "piRNA/css/suggestion.css" %}'>
+
+	<script src="{% static 'vendor/jquery/jquery.min.js' %}"></script>
+	<script type="text/javascript" src="{% static 'piRNA/js/d3.min.js' %}"></script>
+	<script type="text/javascript" src="{% static 'piRNA/js/sweetalert2.min.js' %}"></script>
+	<script type="text/javascript" src="{% static 'piRNA/js/cookie.js' %}"></script>	
+</head>
+<script>
+	var csrftoken = Cookies.get('csrftoken');
+    function csrfSafeMethod(method) {
+        // these HTTP methods do not require CSRF protection
+        return (/^(GET|HEAD|OPTIONS|TRACE)$/.test(method));
+    }
+    $.ajaxSetup({
+        beforeSend: function(xhr, settings) {
+            if (!csrfSafeMethod(settings.type) && !this.crossDomain) {
+                xhr.setRequestHeader("X-CSRFToken", csrftoken);
+            }
+        }
+    });
+
+  $(document).ready(function(){
+	  $.ajax({
+	    url: "tableTest/", 
+	    data:{ 
+	      QQ:'QQ',
+	    },
+	    type: "POST", 
+	    dataType:'json',
+	    error: function(no){
+	      console.log(no);
+	      swal(
+	        'Scan cancelled',
+	        'System memory overload',
+	        'error'
+	      )
+	      },
+	    success: function(data){
+	      console.log(data);
+	      var newSug = arrangeSug(data.suggestion);
+	      console.log(newSug);
+	      shit(newSug.inCDS,
+	      			data.options.core_non_GU,
+              data.options.core_GU,
+              data.options.non_core_non_GU,
+              data.options.non_core_GU,
+              data.options.total,);
+	      allPlot(newSug.inCDS);
+	    },
+
+	  });
+	});
+
+
+function arrangeSug(data){
+	var output = data;
+	for (var x in data.inCDS){
+		var newArr = [];
+		var tempPos = 0;
+		for (var y in data.inCDS[x][7]){
+			if(data.inCDS[x][7][y][1] != tempPos){
+				tempPos = data.inCDS[x][7][y][1];
+				newArr.push([data.inCDS[x][7][y]]);
+			}
+			else{
+				newArr[newArr.length-1].push(data.inCDS[x][7][y]);
+			}		
+		}
+		output.inCDS[x][7] = newArr;
+	}
+	for (var x in data.notInCDS){
+		var newArr = [];
+		var tempPos = 0;
+		for (var y in data.notInCDS[x][7]){
+			if(data.notInCDS[x][7][y][0] != tempPos){
+				tempPos = data.notInCDS[x][7][y][0];
+				newArr.push([data.notInCDS[x][7][y]]);
+			}
+			else{
+				newArr[newArr.length-1].push(data.notInCDS[x][7][y]);
+			}		
+		}
+		output.notInCDS[x][7] = newArr;
+	}
+	return data
+};
+
+function shit(sug,a,b,c,d,e){
+	var table = '';
+	var duplicateFir = []; //有重複的checkbox第一個位置
+	var duplicateDict = {};
+	for (var i in sug){
+		var span = sug[i][7].length+1;
+		table += '<tr><td class="mid" rowspan="'+(span+1)+'">'+sug[i][0]+'</td>';
+		table += '<td class="mid" rowspan="'+(span+1)+'">'+sug[i][1]+'~'+(sug[i][1]+(sug[i][2]-1))+'</td>';
+		table += '<td colspan="4">original situation</td><td id="piPic'+i+'" class="mid"><svg id = "pic'+i+'"></svg></td><td colspan="2"></td></tr>';
+		table += '<tr><td></td><td>CDS</td><td>position</td><td>change to</td><td>after changed</td><td>breaked rules</td><td>escape?</td></tr>';
+		var temp = '';
+
+		for (var pics in sug[i][7]){		
+			var rule = '';
+			var new_sxgu = sug[i][7][pics][0][4][0];
+			var new_sgu = sug[i][7][pics][0][4][1];
+			var new_nsxgu = sug[i][7][pics][0][4][2];
+			var new_nsgu = sug[i][7][pics][0][4][3];
+			var new_total = sug[i][7][pics][0][4][0] + sug[i][7][pics][0][4][1] + sug[i][7][pics][0][4][2] + sug[i][7][pics][0][4][3];
+			
+			temp += '<tr id="r'+i+'_'+pics+'"><td><input type="checkbox" id="ck'+i+'_'+pics+'" value="'+sug[i][7][pics][0][1]+','+sug[i][7][pics][0][3]+','+sug[i][7][pics][0][0]+'"></td>';
+					
+				temp += '<td>'+sug[i][7][pics][0][0]+'</td><td>'+sug[i][7][pics][0][1]+'</td>';
+				duplicateFir.push([sug[i][7][pics][0][1],sug[i][15][sug[i][7][pics][0][1]],Number(i),Number(pics)]);
+				duplicateDict[sug[i][7][pics][0][1]+'_'+i] = pics;
+
+				if(sug[i][7][pics].length == 1){
+					temp += '<td>'+sug[i][7][pics][0][2]+' → '+sug[i][7][pics][0][3]+'</td><td><svg id = "pic'+i+'_'+pics+'"></svg></td>';
+				}
+				else{
+					temp +=	'<td>'+sug[i][7][pics][0][2]+' → <select class="drop">';
+					for(var z in sug[i][7][pics]){
+						temp += '<option value="'+i+'_'+pics+'_'+z+'">'+sug[i][7][pics][z][3]+'</option>';
+					}
+					temp += '</select></td><td id="chart'+i+'_'+pics+'"><svg id = "pic'+i+'_'+pics+'"></svg></td>';
+				}
+
+				if (new_sxgu > a){
+					rule += ' rule1 ';
+				}
+
+				if (new_sgu > b){
+					rule += ' rule2 ';
+				} 
+
+				if (new_nsxgu > c){
+					rule += ' rule3 ';
+				}
+				
+				if (new_nsgu > d){
+					rule += ' rule4 ';
+				}
+				
+				if (new_total > e){
+					rule += ' rule5 ';
+				}
+				
+				if (rule != ''){
+					temp += '<td id="rule'+i+'_'+pics+'" class="mid">'+rule+'</td>';
+				}
+				else{
+					temp += '<td id="rule'+i+'_'+pics+'" class="mid">N/A</td>';
+				}
+
+				if (new_sxgu > a || new_sgu > b || new_nsxgu > c || new_nsgu > d || new_total >e){
+					temp += '<td id="escape'+i+'_'+pics+'" class="mid">✓</td></tr>';
+				}
+				else{
+					temp += '<td id="escape'+i+'_'+pics+'" class="mid">✕</td></tr>';
+				}			
+
+		}
+		table+=temp;
+	}
+	$('#suggestion').find('tbody').append(table);
+	$('.drop').change(function(){
+		var val = this.value.split('_');
+		$('#pic'+val[0]+'_'+val[1]).empty();
+		plot(val[0],val[1],val[2],sug);
+		var new_sxgu = sug[val[0]][7][val[1]][val[2]][4][0];
+		var new_sgu = sug[val[0]][7][val[1]][val[2]][4][1];
+		var new_nsxgu = sug[val[0]][7][val[1]][val[2]][4][2];
+		var new_nsgu = sug[val[0]][7][val[1]][val[2]][4][3];
+		var new_total = sug[val[0]][7][val[1]][val[2]][4][0] + sug[val[0]][7][val[1]][val[2]][4][1] + sug[val[0]][7][val[1]][val[2]][4][2] + sug[val[0]][7][val[1]][val[2]][4][3];
+		var rule = '';
+		if (new_sxgu > a){
+			rule += ' rule1 ';
+		}
+
+		if (new_sgu > b){
+			rule += ' rule2 ';
+		} 
+
+		if (new_nsxgu > c){
+			rule += ' rule3 ';
+		}
+		
+		if (new_nsgu > d){
+			rule += ' rule4 ';
+		}
+		
+		if (new_total > e){
+			rule += ' rule5 ';
+		}
+		
+		if (rule != ''){
+			$('#rule'+val[0]+'_'+val[1]).empty();
+			$('#rule'+val[0]+'_'+val[1]).html(rule);
+		}
+		else{
+			$('#rule'+val[0]+'_'+val[1]).empty();
+			$('#rule'+val[0]+'_'+val[1]).html('N/A');
+		}
+
+		if (new_sxgu > a || new_sgu > b || new_nsxgu > c || new_nsgu > d || new_total >e){
+			$('#escape'+val[0]+'_'+val[1]).empty();
+			$('#escape'+val[0]+'_'+val[1]).html('✓');
+		}
+		else{
+			$('#escape'+val[0]+'_'+val[1]).empty();
+			$('#escape'+val[0]+'_'+val[1]).html('✕');
+		}
+	})
+};
+
+function allPlot(sug){
+	for (var x in sug){
+		var transX = 22.5;
+		var transY = -17.5;
+		var width = 500;
+		var height = 140;
+		var svg = d3.select('#pic'+x).attr({
+			'width': width,
+			'height': 80
+			});
+		var scaleY = d3.scale.linear()
+			.range([0, height])
+			.domain([0, height/17.5]);
+		var scaleA = d3.scale.linear()
+			.range([0, sug[x][11].length*16])
+			.domain([0, sug[x][11].length-1]);
+		var axisX = d3.svg.axis()
+			.scale(scaleA)
+			.orient('top')
+			.tickFormat(function(d){return sug[x][11][d];})	
+			.ticks(sug[x][11].length);
+		svg.append('g')
+			.call(axisX)
+			.attr({
+			'fill':'none',
+			'stroke':'#000',
+			'transform':'translate('+transX+','+(transY+scaleY(-1+5))+')' 
+			})
+			.selectAll('text')
+			.attr({
+			'fill':'#000',
+			'stroke':'none',
+			}).style({
+			'font-size':'15px'
+			});
+		var cc = 0;
+		for (var seq in sug[x][8]){
+			// console.log(String(sug[x][2]-Number(seq)));
+			// console.log(sug[x][9])
+			if( sug[x][9].indexOf(String(sug[x][2]-Number(seq))) != -1 || sug[x][10].indexOf(String(sug[x][2]-Number(seq))) != -1){				
+				if (sug[x][9].indexOf(String(sug[x][2]-Number(seq))) != -1){
+					if (String(sug[x][2]-Number(seq)) == '1'){var color = 'lightgreen';}
+					else{var color = 'yellow';}
+				}
+				else{
+					var color = 'lightblue';
+				}
+				svg.append('rect').attr({
+					'x':scaleA(3+Number(seq)),
+					'y':scaleY(-1+6-1),
+					'width':'15', 
+					'height':'15',
+					'transform':'translate('+(transX-7.5)+','+(transY+4.2)+')',
+					'fill':color
+				});	
+			};	
+
+
+			svg.append('text')
+			.text(sug[x][8][seq])
+			.attr({
+				'class':'text',
+				'x':scaleA(3+Number(seq)),
+				'y':scaleY(-1+6),
+				// 'style':'text-anchor: middle, font-size:15px',
+				'transform':'translate('+transX+','+transY+')',       
+			}).style({
+				'text-anchor':'middle',
+				'font-size':'15px'
+			});;
+
+
+			if(seq==13 || seq==19){
+				svg.append('text')
+					.text("|")
+					.attr({
+						'class':'text',
+						'x':scaleA(3+Number(seq)+0.5),
+						'y':scaleY(-1+6),
+						'fill':'red', 
+						'style':'text-anchor: middle;font-family:Arial;',
+						'transform':'translate('+transX+','+(transY-1)+')', 
+					});
+			}
+
+
+			for (var yoyoyo in sug[x][13]){
+				if (cc!=0) {break;}
+				svg.append('line').attr({
+					x1: scaleA(sug[x][12]+3*Number(yoyoyo)),
+					y1: scaleY(-1+5-1.2),
+					x2: scaleA(sug[x][12]+3*Number(yoyoyo)),
+					y2: scaleY(-1+5-1.8),
+					'transform':'translate('+transX+','+(transY-1)+')',
+				})
+				.style({
+					stroke: 'green',
+					'stroke-width': 2
+				});
+
+				svg.append('line').attr({
+					x1: scaleA(sug[x][12]+3*Number(yoyoyo)),
+					y1: scaleY(-1+5-1.8),
+					x2: scaleA(sug[x][12]+3*Number(yoyoyo)+2),
+					y2: scaleY(-1+5-1.8),
+					'transform':'translate('+transX+','+(transY-1)+')',
+				})
+				.style({
+					stroke: 'green',
+					'stroke-width': 2
+				});
+
+				svg.append('line').attr({
+					x1: scaleA(sug[x][12]+3*Number(yoyoyo)+2),
+					y1: scaleY(-1+5-1.8),
+					x2: scaleA(sug[x][12]+3*Number(yoyoyo)+2),
+					y2: scaleY(-1+5-1.2),
+					'transform':'translate('+transX+','+(transY-1)+')',
+				})
+				.style({
+					stroke: 'green',
+					'stroke-width': 2
+				});
+
+				svg.append('text')
+				.attr({
+					'x':scaleA(sug[x][12]+3*Number(yoyoyo)+1),
+					'y':scaleY(-1+5-2),
+					'style':'text-anchor: middle; font-size: 15px',
+					'transform':'translate('+transX+','+(transY-1)+')',    
+				})
+				.text(sug[x][13][yoyoyo]);
+				
+			}
+			cc+=1;
+		}
+
+		for (var y in sug[x][7]){
+			var transX = 22.5;
+			var transY = -17.5;
+			var width = 500;
+			var height = 140;
+			var svg = d3.select('#pic'+x+'_'+y).attr({
+				'width': width,
+				'height': 80
+				});
+			var scaleY = d3.scale.linear()
+				.range([0, height])
+				.domain([0, height/17.5]);
+			var scaleA = d3.scale.linear()
+				.range([0, sug[x][11].length*16])
+				.domain([0, sug[x][11].length-1]);
+			var axisX = d3.svg.axis()
+				.scale(scaleA)
+				.orient('top')
+				.tickFormat(function(d){
+					if(d == sug[x][7][y][0][1]-sug[x][1]+sug[x][14]){
+						return sug[x][7][y][0][3];
+					}
+					return sug[x][11][d];
+				})	
+				.ticks(sug[x][11].length);
+			svg.append('g')
+				.call(axisX)
+				.attr({
+				'fill':'none',
+				'stroke':'#000',
+				'transform':'translate('+transX+','+(transY+scaleY(-1+5))+')' 
+				})
+				.selectAll('text')
+				.attr({
+				'fill':'#000',
+				'stroke':'none',
+				}).style({
+				'color':'red',
+				'font-size':'15px'
+				});	
+							
+			svg.select('g:nth-of-type('+(sug[x][7][y][0][1]-sug[x][1]+sug[x][14]+1)+') text')
+				.attr({
+				'fill':'red',
+				'stroke':'none',
+				});
+			var cc = 0;
+			for (var seq in sug[x][8]){
+				// console.log(String(sug[x][2]-Number(seq)));
+				// console.log(sug[x][9])
+				if( (sug[x][9].indexOf(String(sug[x][2]-Number(seq))) != -1 || sug[x][10].indexOf(String(sug[x][2]-Number(seq))) != -1) && Number(seq) != sug[x][7][y][0][1]-sug[x][1]){				
+					if (sug[x][9].indexOf(String(sug[x][2]-Number(seq))) != -1){
+						if (String(sug[x][2]-Number(seq)) == '1'){var color = 'lightgreen';}
+						else{var color = 'yellow';}
+					}
+					else{
+						var color = 'lightblue';
+					}
+					svg.append('rect').attr({
+						'x':scaleA(3+Number(seq)),
+						'y':scaleY(-1+6-1),
+						'width':'15', 
+						'height':'15',
+						'transform':'translate('+(transX-7.5)+','+(transY+4.2)+')',
+						'fill':color
+					});
+
+				}
+				// console.log(sug[x][2]-Number(seq));
+				// console.log(sug[x][7][y][0][1]-sug[x][1]+sug[x][14]);
+				if(Number(seq) == sug[x][7][y][0][1]-sug[x][1]){
+					if (sug[x][7][y][0][5] == 0){
+						var color = 'yellow';
+					}
+					else{
+						var color = 'lightblue';
+					}
+					svg.append('rect').attr({
+						'x':scaleA(3+Number(seq)),
+						'y':scaleY(-1+6-1),
+						'width':'15', 
+						'height':'15',
+						'transform':'translate('+(transX-7.5)+','+(transY+4.2)+')',
+						'fill':color
+					});
+				}
+
+
+
+
+				svg.append('text')
+				.text(sug[x][8][seq])
+				.attr({
+					'class':'text',
+					'x':scaleA(3+Number(seq)),
+					'y':scaleY(-1+6),
+					// 'style':'text-anchor: middle, font-size:15px',
+					'transform':'translate('+transX+','+transY+')',       
+				}).style({
+					'text-anchor':'middle',
+					'font-size':'15px'
+				});;
+
+
+				if(seq==13 || seq==19){
+					svg.append('text')
+						.text("|")
+						.attr({
+							'class':'text',
+							'x':scaleA(3+Number(seq)+0.5),
+							'y':scaleY(-1+6),
+							'fill':'red', 
+							'style':'text-anchor: middle;font-family:Arial;',
+							'transform':'translate('+transX+','+(transY-1)+')', 
+						});
+				}
+
+
+				for (var yoyoyo in sug[x][13]){
+					if (cc!=0) {break;}
+					svg.append('line').attr({
+						x1: scaleA(sug[x][12]+3*Number(yoyoyo)),
+						y1: scaleY(-1+5-1.2),
+						x2: scaleA(sug[x][12]+3*Number(yoyoyo)),
+						y2: scaleY(-1+5-1.8),
+						'transform':'translate('+transX+','+(transY-1)+')',
+					})
+					.style({
+						stroke: 'green',
+						'stroke-width': 2
+					});
+
+					svg.append('line').attr({
+						x1: scaleA(sug[x][12]+3*Number(yoyoyo)),
+						y1: scaleY(-1+5-1.8),
+						x2: scaleA(sug[x][12]+3*Number(yoyoyo)+2),
+						y2: scaleY(-1+5-1.8),
+						'transform':'translate('+transX+','+(transY-1)+')',
+					})
+					.style({
+						stroke: 'green',
+						'stroke-width': 2
+					});
+
+					svg.append('line').attr({
+						x1: scaleA(sug[x][12]+3*Number(yoyoyo)+2),
+						y1: scaleY(-1+5-1.8),
+						x2: scaleA(sug[x][12]+3*Number(yoyoyo)+2),
+						y2: scaleY(-1+5-1.2),
+						'transform':'translate('+transX+','+(transY-1)+')',
+					})
+					.style({
+						stroke: 'green',
+						'stroke-width': 2
+					});
+
+					svg.append('text')
+					.attr({
+						'x':scaleA(sug[x][12]+3*Number(yoyoyo)+1),
+						'y':scaleY(-1+5-2),
+						'style':'text-anchor: middle; font-size: 15px',
+						'transform':'translate('+transX+','+(transY-1)+')',    
+					})
+					.text(sug[x][13][yoyoyo]);
+					
+				}
+				cc+=1;
+			}
+			
+		}
+		
+	}
+}
+
+function plot(x,y,z,sug){
+	var transX = 22.5;
+	var transY = -17.5;
+	var width = 500;
+	var height = 140;
+	var svg = d3.select('#pic'+x+'_'+y).attr({
+		'width': width,
+		'height': 80
+		});
+	var scaleY = d3.scale.linear()
+		.range([0, height])
+		.domain([0, height/17.5]);
+	var scaleA = d3.scale.linear()
+		.range([0, sug[x][11].length*16])
+		.domain([0, sug[x][11].length-1]);
+	var axisX = d3.svg.axis()
+		.scale(scaleA)
+		.orient('top')
+		.tickFormat(function(d){
+			if(d == sug[x][7][y][z][1]-sug[x][1]+sug[x][14]){
+				return sug[x][7][y][z][3];
+			}
+			return sug[x][11][d];
+		})	
+		.ticks(sug[x][11].length);
+	svg.append('g')
+		.call(axisX)
+		.attr({
+		'fill':'none',
+		'stroke':'#000',
+		'transform':'translate('+transX+','+(transY+scaleY(-1+5))+')' 
+		})
+		.selectAll('text')
+		.attr({
+		'fill':'#000',
+		'stroke':'none',
+		}).style({
+		'color':'red',
+		'font-size':'15px'
+		});	
+					
+	svg.select('g:nth-of-type('+(sug[x][7][y][z][1]-sug[x][1]+sug[x][14]+1)+') text')
+		.attr({
+		'fill':'red',
+		'stroke':'none',
+		});
+	var cc = 0;
+	for (var seq in sug[x][8]){
+		if( (sug[x][9].indexOf(String(sug[x][2]-Number(seq))) != -1 || sug[x][10].indexOf(String(sug[x][2]-Number(seq))) != -1) && Number(seq) != sug[x][7][y][z][1]-sug[x][1]){				
+			if (sug[x][9].indexOf(String(sug[x][2]-Number(seq))) != -1){
+				if (String(sug[x][2]-Number(seq)) == '1'){var color = 'lightgreen';}
+				else{var color = 'yellow';}
+			}
+			else{
+				var color = 'lightblue';
+			}
+			svg.append('rect').attr({
+				'x':scaleA(3+Number(seq)),
+				'y':scaleY(-1+6-1),
+				'width':'15', 
+				'height':'15',
+				'transform':'translate('+(transX-7.5)+','+(transY+4.2)+')',
+				'fill':color
+			});
+
+		}
+		if(Number(seq) == sug[x][7][y][z][1]-sug[x][1]){
+			if (sug[x][7][y][z][5] == 0){
+				var color = 'yellow';
+			}
+			else{
+				var color = 'lightblue';
+			}
+			svg.append('rect').attr({
+				'x':scaleA(3+Number(seq)),
+				'y':scaleY(-1+6-1),
+				'width':'15', 
+				'height':'15',
+				'transform':'translate('+(transX-7.5)+','+(transY+4.2)+')',
+				'fill':color
+			});
+		}
+
+
+		svg.append('text')
+		.text(sug[x][8][seq])
+		.attr({
+			'class':'text',
+			'x':scaleA(3+Number(seq)),
+			'y':scaleY(-1+6),
+			// 'style':'text-anchor: middle, font-size:15px',
+			'transform':'translate('+transX+','+transY+')',       
+		}).style({
+			'text-anchor':'middle',
+			'font-size':'15px'
+		});;
+
+
+		if(seq==13 || seq==19){
+			svg.append('text')
+				.text("|")
+				.attr({
+					'class':'text',
+					'x':scaleA(3+Number(seq)+0.5),
+					'y':scaleY(-1+6),
+					'fill':'red', 
+					'style':'text-anchor: middle;font-family:Arial;',
+					'transform':'translate('+transX+','+(transY-1)+')', 
+				});
+		}
+
+		for (var yoyoyo in sug[x][13]){
+			if (cc!=0) {break;}
+			svg.append('line').attr({
+				x1: scaleA(sug[x][12]+3*Number(yoyoyo)),
+				y1: scaleY(-1+5-1.2),
+				x2: scaleA(sug[x][12]+3*Number(yoyoyo)),
+				y2: scaleY(-1+5-1.8),
+				'transform':'translate('+transX+','+(transY-1)+')',
+			})
+			.style({
+				stroke: 'green',
+				'stroke-width': 2
+			});
+
+			svg.append('line').attr({
+				x1: scaleA(sug[x][12]+3*Number(yoyoyo)),
+				y1: scaleY(-1+5-1.8),
+				x2: scaleA(sug[x][12]+3*Number(yoyoyo)+2),
+				y2: scaleY(-1+5-1.8),
+				'transform':'translate('+transX+','+(transY-1)+')',
+			})
+			.style({
+				stroke: 'green',
+				'stroke-width': 2
+			});
+
+			svg.append('line').attr({
+				x1: scaleA(sug[x][12]+3*Number(yoyoyo)+2),
+				y1: scaleY(-1+5-1.8),
+				x2: scaleA(sug[x][12]+3*Number(yoyoyo)+2),
+				y2: scaleY(-1+5-1.2),
+				'transform':'translate('+transX+','+(transY-1)+')',
+			})
+			.style({
+				stroke: 'green',
+				'stroke-width': 2
+			});
+
+			svg.append('text')
+			.attr({
+				'x':scaleA(sug[x][12]+3*Number(yoyoyo)+1),
+				'y':scaleY(-1+5-2),
+				'style':'text-anchor: middle; font-size: 15px',
+				'transform':'translate('+transX+','+(transY-1)+')',    
+			})
+			.text(sug[x][13][yoyoyo]);
+			
+		}
+		cc+=1;
+	}
+}
+</script>
+
+<body>
+	<table id="suggestion" class="sugTable">
+		<thead>
+			<tr>
+				<th>piRNA</th>
+				<th>targeted region in the input sequences</th>
+				<th colspan="7">methods</th>			
+			</tr>
+		</thead>
+		<tbody>		
+		</tbody>
+	</table>
+</body>
+</html>

@@ -89,11 +89,12 @@
           var pic2src = "{% static 'piRNA/img/QQ.jpg' %}";
           var scanUrl = "{% static 'piRNA/img/Magnify.gif' %}"
           var seqViewDataArr = noBulgeData('originalResult',data);
+          var newSug = arrangeSug(data.suggestion);
           if(data.newout.length != 0){
             shit(
               'originalResult',
-              data.suggestion.inCDS,
-              data.suggestion.notInCDS,
+              newSug.inCDS,
+              newSug.notInCDS,
               data.options.core_non_GU,
               data.options.core_GU,
               data.options.non_core_non_GU,
@@ -122,7 +123,38 @@
         },
       });
     };
-
+    function arrangeSug(data){
+      var output = data;
+      for (var x in data.inCDS){
+        var newArr = [];
+        var tempPos = 0;
+        for (var y in data.inCDS[x][7]){
+          if(data.inCDS[x][7][y][1] != tempPos){
+            tempPos = data.inCDS[x][7][y][1];
+            newArr.push([data.inCDS[x][7][y]]);
+          }
+          else{
+            newArr[newArr.length-1].push(data.inCDS[x][7][y]);
+          }   
+        }
+        output.inCDS[x][7] = newArr;
+      }
+      for (var x in data.notInCDS){
+        var newArr = [];
+        var tempPos = 0;
+        for (var y in data.notInCDS[x][7]){
+          if(data.notInCDS[x][7][y][0] != tempPos){
+            tempPos = data.notInCDS[x][7][y][0];
+            newArr.push([data.notInCDS[x][7][y]]);
+          }
+          else{
+            newArr[newArr.length-1].push(data.notInCDS[x][7][y]);
+          }   
+        }
+        output.notInCDS[x][7] = newArr;
+      }
+      return data
+    };
   </script>
 
 

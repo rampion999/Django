@@ -7,7 +7,7 @@ $(document).ready(function(){
     $("#opt2").val("1");
     $("#opt3").val("3");
     $("#opt4").val("3");
-    $("#opt5").val("3");
+    $("#opt5").val("4");
     if(CDS_switch==1){
       $('#CDS_1').val(CDS_ex1);
       $('#CDS_2').val(CDS_ex2);
@@ -47,7 +47,7 @@ tctcaaattgacacagcatttttttgctattttatccgctccatatctaaaatatatctttatgtcatcattgaaagttt
     $('.CDS').removeAttr('disabled');
     $('#CDS_1').val('9');
     $('#CDS_2').val('1460');
-    $("#opt5").val("3");
+    $("#opt5").val("4");
     CDS_ex1=9;
     CDS_ex2=1460;
     CDS_switch=1;

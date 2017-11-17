@@ -187,6 +187,14 @@ def scan_main(request):
 				json.dump(data,w1,indent=4)
 	return JsonResponse(data)
 
+def keepOld(request):
+	module_dir = os.path.dirname(__file__)
+	with open(os.path.join(module_dir,'ori_result.json'),'r') as w1:
+		data = json.load(w1)
+	with open(os.path.join(module_dir,'ori_base_result.json'),'w') as w1:
+		json.dump(data,w1,indent=4)
+	return JsonResponse(data)	
+
 def scan(q,num):
 	global piRNA_Length
 	module_dir = os.path.dirname(__file__)
@@ -1017,7 +1025,7 @@ def showDaTable(request):
 
 def firstResult(request):
 	module_dir = os.path.dirname(__file__)
-	with open(os.path.join(module_dir,'ori_result.json'),'r') as w1:
+	with open(os.path.join(module_dir,'ori_base_result.json'),'r') as w1:
 		data = json.load(w1)
 	return JsonResponse(data)
 

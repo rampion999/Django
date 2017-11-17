@@ -1,18 +1,3 @@
-// var csrftoken = Cookies.get('csrftoken');
-// function csrfSafeMethod(method) {
-//     // these HTTP methods do not require CSRF protection
-//     return (/^(GET|HEAD|OPTIONS|TRACE)$/.test(method));
-// }
-// $.ajaxSetup({
-//     beforeSend: function(xhr, settings) {
-//         if (!csrfSafeMethod(settings.type) && !this.crossDomain) {
-//             xhr.setRequestHeader("X-CSRFToken", csrftoken);
-//         }
-//     }
-// });
-
-
-
 function update(modifyCount,sug,sugNotCDS,name,gene,a,b,c,d,e,f,g,h,csrf,ori_data,pic2src,scanUrl){
 	var new_gene = gene.split('');
 	var selected = {};
@@ -20,16 +5,19 @@ function update(modifyCount,sug,sugNotCDS,name,gene,a,b,c,d,e,f,g,h,csrf,ori_dat
 	var posss = [];
 	var ori_piRNA = {};
 	var preCount = 0;
+  var midCount = 0;
 	var check_dict = {}; //檢查有沒有重複用的dictionary
 	var repeated = [];
 	console.log(g);
 	console.log(h);
+
+
 	for (var i in sugNotCDS){
 		var selectArr = [];
 		if(sugNotCDS[i][1] < g){
 			for (var j in sugNotCDS[i][7]){
-				if ( $('#Preck'+i+'_'+j).prop('checked') ) {
-					var nnname = $('#Preck'+i+'_'+j).val();
+				if ( $('#ck'+i+'_'+j).prop('checked') ) {
+					var nnname = $('#ck'+i+'_'+j).val();
 					nnname = nnname.split(',');
 					var pos = Number(nnname[0]);
 					var to = nnname[1];
@@ -55,7 +43,7 @@ function update(modifyCount,sug,sugNotCDS,name,gene,a,b,c,d,e,f,g,h,csrf,ori_dat
 		}
 		if(selectArr.length != 0){
 			// console.log('#piPic'+j);
-			ori_piRNA[count] = sugNotCDS[i][0]+'@@@'+sugNotCDS[i][1]+'@@@'+$('#NCpiPic'+i).html().replace('id="NCpic'+i,'id="new_NCpic'+i);
+			ori_piRNA[count] = sugNotCDS[i][0]+'@@@'+sugNotCDS[i][1]+'@@@'+$('#piPic'+i).html().replace('id="pic'+i,'id="new_pic'+i);
 			selected[count] = selectArr.join('@@@');
 			count+=1;
 		}
@@ -63,9 +51,10 @@ function update(modifyCount,sug,sugNotCDS,name,gene,a,b,c,d,e,f,g,h,csrf,ori_dat
 
 
 
-	for (var i in sug){
+	for (var x in sug){
+    var i = Number(x) + preCount;
 		var selectArr = [];
-		for (var j in sug[i][7]){
+		for (var j in sug[x][7]){
 			if ( $('#ck'+i+'_'+j).prop('checked') ) {
 				var nnname = $('#ck'+i+'_'+j).val();
 				nnname = nnname.split(',');
@@ -88,18 +77,21 @@ function update(modifyCount,sug,sugNotCDS,name,gene,a,b,c,d,e,f,g,h,csrf,ori_dat
 		}
 		if(selectArr.length != 0){
 			// console.log('#piPic'+j);
-			ori_piRNA[count] = sug[i][0]+'@@@'+sug[i][1]+'@@@'+$('#piPic'+i).html().replace('id="pic'+i,'id="new_pic'+i);
+			ori_piRNA[count] = sug[x][0]+'@@@'+sug[x][1]+'@@@'+$('#piPic'+i).html().replace('id="pic'+i,'id="new_pic'+i);
 			selected[count] = selectArr.join('@@@');
 			count+=1;
 		}
+    midCount +=1;
 	}
 	
-	for (var i in sugNotCDS){
+
+	for (var x in sugNotCDS){
+    var i = Number(x) + preCount + midCount;
 		var selectArr = [];
-		if(Number(i) >= preCount){
-			for (var j in sugNotCDS[i][7]){
-				if ( $('#Lastck'+i+'_'+j).prop('checked') ) {
-					var nnname = $('#Lastck'+i+'_'+j).val();
+		if(Number(x) >= preCount){
+			for (var j in sugNotCDS[x][7]){
+				if ( $('#ck'+i+'_'+j).prop('checked') ) {
+					var nnname = $('#ck'+i+'_'+j).val();
 					nnname = nnname.split(',');
 					var pos = Number(nnname[0]);
 					var to = nnname[1];
@@ -120,16 +112,15 @@ function update(modifyCount,sug,sugNotCDS,name,gene,a,b,c,d,e,f,g,h,csrf,ori_dat
 				}		
 			}
 		}
-		// console.log(Object.keys(check_dicthe));
 		if(selectArr.length != 0){
 			// console.log('#piPic'+j);
-			ori_piRNA[count] = sugNotCDS[i][0]+'@@@'+sugNotCDS[i][1]+'@@@'+$('#NCpiPic'+i).html().replace('id="NCpic'+i,'id="new_NCpic'+i);
+			ori_piRNA[count] = sugNotCDS[x][0]+'@@@'+sugNotCDS[x][1]+'@@@'+$('#piPic'+i).html().replace('id="pic'+i,'id="new_pic'+i);
 			selected[count] = selectArr.join('@@@');
 			count+=1;
 		}
 	}
 	if (posss.length==0){
-		alert('you selected nothing T_T');
+		alert('you selected nothing');
 	}
 	else if(repeated.length != 0){
 		alert(repeated.toString() + ' selected different sequence');
@@ -139,10 +130,6 @@ function update(modifyCount,sug,sugNotCDS,name,gene,a,b,c,d,e,f,g,h,csrf,ori_dat
 		var posString = posss.join('@')
 
 		new_gene = new_gene.join('');
-		// new_gene = '>'+name+'\n'+new_gene;
-		// $('#gene').val(new_gene);
-		// var teee = {'a':'1','b':'2','c':'3'};
-		// console.log(selected.length);
 		$.ajax({
 			url: "create_data/",
 			data:{ 
@@ -160,7 +147,7 @@ function update(modifyCount,sug,sugNotCDS,name,gene,a,b,c,d,e,f,g,h,csrf,ori_dat
 				select_num:count,
 				posString:posString,
 				ori_piRNA:ori_piRNA,
-				ori_result:ori_data,
+				// ori_result:ori_data,
 				// csrfmiddlewaretoken: '{{ csrf_token }}',
 			},
 			type: "POST", 

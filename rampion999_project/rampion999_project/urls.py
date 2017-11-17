@@ -15,7 +15,7 @@ Including another URLconf
 """
 from django.conf.urls import url,include
 from django.contrib import admin
-from testAPP import views
+from testAPP import views as testAPP
 from piRNA_scan import views as views_piRNA
 from piRNA_demo import views as views_piRNA_demo
 from bulge import views as bulge
@@ -26,7 +26,6 @@ urlpatterns = [
     url(r'^admin/', admin.site.urls),
     url(r'^polls/', include('polls.urls')),
     url(r'^blog/', include('polls.blog.urls')),
-    url(r'^sleep/$', views.sleep),
     url(r'^piRNA/$', views_piRNA.piRNA),
     url(r'^bulge/$', bulge.bulge),
     url(r'^bulge_demo/$', bulge_d.bulge_demo),
@@ -36,6 +35,7 @@ urlpatterns = [
     url(r'^piRNA/Contact/$', views_piRNA.goContact),
     url(r'^piRNA/Result/$', views_piRNA.goResult),
     url(r'^piRNA/Scan/scanOperation/', views_piRNA.scan_main),
+    url(r'^piRNA/Scan/keepOld/', views_piRNA.keepOld),
     url(r'^bulge/scan/', bulge.scan_main),  
     url(r'^piRNA/Scan(?:/update)*/create_data/', views_piRNA.create_data),
     url(r'^piRNA/Scan(?:/update)+/create_data/', views_piRNA.create_data),
@@ -50,7 +50,8 @@ urlpatterns = [
     url(r'^piRNA_demo(?:/update)+/scan/', views_piRNA_demo.scan_main),
     url(r'^piRNA_demo/update/', views_piRNA_demo.update),
     url(r'^piRNA_demo/scan/', views_piRNA_demo.scan_main),
-    url(r'^[^\t]*/CNZ/', views_piRNA.myajaxview),
+    url(r'^table/$', testAPP.table),
+    url(r'^table/tableTest/$', testAPP.tableTest),
     url(r'^[^\t]*/test/', views_piRNA.test),
     url(r'^QT/$', QT.QT),
 ]

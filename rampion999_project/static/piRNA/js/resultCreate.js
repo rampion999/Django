@@ -113,8 +113,7 @@ function modifyResultCreate(divId,modifyCount){
 		$('#original-tab').tab('show');
 		$('#originalResult-suggetions-tab').tab('show');
 		$(document).ready(function(){
-			$('html, body').animate({ scrollTop: $('#overallTabContent').offset().top-20 }, 300);
+			$('html, body').animate({scrollTop: '0px'}, 300);
 		});	
-		// $('html, body').animate({scrollTop: '0px'}, 300);
 	});
 }

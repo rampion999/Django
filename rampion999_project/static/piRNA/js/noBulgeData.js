@@ -22,11 +22,11 @@ function noBulgeData(divId,data){
 		return a1 > b1 ? 1 : -1;
 	});
 
-	data.newout = data.newout.sort(function (a, b) {
-		a1 = a[13];
-		b1 = b[13];
-		return a1 > b1 ? 1 : -1;
-	});
+	// data.newout = data.newout.sort(function (a, b) {
+	// 	a1 = a[13];
+	// 	b1 = b[13];
+	// 	return a1 > b1 ? 1 : -1;
+	// });
 
 	var fts=[];
 	var seqViewDataArr = [];
@@ -96,6 +96,8 @@ function noBulgeData(divId,data){
 	seqViewDataArr.unshift({most:most});
 	resultTable = $('#'+divId+'-myTable').DataTable({
 		"ordering": false,
+		"bLengthChange": false,
+		"iDisplayLength": 5,
 		// info:false,
 		"searching": false,
 		// "paging":false
