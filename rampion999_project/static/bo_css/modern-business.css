@@ -37,6 +37,14 @@ body {
     background-color: #343a40;
 }
 
+.darkC{
+    border-color: #000;
+}
+
+.darkCH{
+    color: #fff;
+    background-color: #343a40;
+}
 /*#charts .card{
     border-color: #000;
 }
@@ -102,4 +110,10 @@ legend {
     position: absolute;
     top: 10px;
     left: 0;
+}
+
+
+.chartScroll {
+  height:150px;
+  overflow-y: scroll;
 }

@@ -2,14 +2,14 @@ function noBulgeData(divId,data){
 	var table_html = '<table id="'+divId+'-myTable" class="display"><thead>\
 						<tr>\
 						<th width= 150>piRNA</th>\
-						<th>targeted region in the input sequences</th>\
-						<th>total number of mismatches</th>\
-						<th>position of mismatches in piRNA</th>\
-						<th>number of non-GU mismatches in seed region</th>\
-						<th>number of GU mismatches in seed region</th>\
-						<th>number of non-GU mismatches in non-seed region</th>\
-						<th>number of GU mismatches in non-seed region</th>\
-						<th>pairing (top:'+data.name+', bottom:piRNA)</th>\
+						<th>targeted region in input sequence</th>\
+						<th># mismatches</th>\
+						<th>position in piRNA</th>\
+						<th># non-GU mismatches in seed region</th>\
+						<th># GU mismatches in non-seed region</th>\
+						<th># non-GU mismatches in non-seed region</th>\
+						<th># GU mismatches in non-seed region</th>\
+						<th>pairing (top:Input sequence, bottom:piRNA)</th>\
 						</tr>\
 						</thead><tbody></tbody></table>';
 	$('#'+divId+'-targetedTable').append(table_html);
@@ -17,8 +17,8 @@ function noBulgeData(divId,data){
 
 
 	data.newout = data.newout.sort(function (a, b) {
-		a1 = parseInt(a[1].split('~')[0]);
-		b1 = parseInt(b[1].split('~')[0]);
+		a1 = parseInt(a[1].split('-')[0]);
+		b1 = parseInt(b[1].split('-')[0]);
 		return a1 > b1 ? 1 : -1;
 	});
 
@@ -50,8 +50,8 @@ function noBulgeData(divId,data){
 		table_html += '<td id="detail" width= 400>'+data.newout[key][9]+'<br><div id="'+divId+'-test'+key+'">'+data.newout[key][10]+'</div></td></tr>'
 		$('#'+divId+'-targetedTable').find('tbody').append(table_html);						
 		// if ($('#nematodeType').val()=='C.briggsae') {pock();}
-		first = parseInt(data.newout[key][1].split('~')[0]);
-		fts.push([first,parseInt(data.newout[key][1].split('~')[1]),data.newout[key][0]]);
+		first = parseInt(data.newout[key][1].split('-')[0]);
+		fts.push([first,parseInt(data.newout[key][1].split('-')[1]),data.newout[key][0]]);
 		var x = '#'+divId+'-test' + key;
 		var QQQQ = $(x).text();
 		QQQQ = QQQQ.replace(/[\d '|]/g,'');
@@ -96,11 +96,24 @@ function noBulgeData(divId,data){
 	seqViewDataArr.unshift({most:most});
 	resultTable = $('#'+divId+'-myTable').DataTable({
 		"ordering": false,
-		"bLengthChange": false,
-		"iDisplayLength": 5,
+		// "aLengthMenu": [[5,10, 25, 50, -1], [5,10, 25, 50, "All"]],
+		// "iDisplayLength": 5,
 		// info:false,
 		"searching": false,
 		// "paging":false
 	});
+	
+	$('#'+divId+'-myTable_length').removeClass('dataTables_length');
+	$('#'+divId+'-myTable_length').addClass('text-left');
+	$('#'+divId+'-myTable_length > label').css('display','block');
+	var symbol = '';
+	symbol += '<span class="float-right">';
+	symbol += 	'  <mark style="color: yellow">&nbsp;&nbsp;&nbsp;&nbsp;</mark>  non-GU mismatch &nbsp;&nbsp;&nbsp;&nbsp;';
+	symbol += 	'  <mark style="color: lightblue; background-color: lightblue;">&nbsp;&nbsp;&nbsp;&nbsp;</mark>  GU mismatch &nbsp;&nbsp;&nbsp;&nbsp;';
+	symbol += 	'  <mark style="color: lightgreen; background-color: lightgreen;">&nbsp;&nbsp;&nbsp;&nbsp;</mark>  mismatch at the 1st position of piRNA &nbsp;&nbsp;&nbsp;&nbsp;';
+	symbol += 	'  <span id="detail"><span id="L">|</span>&nbsp;&nbsp;<span id="L">|</span></span>  seed region &nbsp;&nbsp;&nbsp;&nbsp;';
+	symbol += '</span>';
+	$('#'+divId+'-myTable_length > label').append(symbol);
+
 	return seqViewDataArr
 }

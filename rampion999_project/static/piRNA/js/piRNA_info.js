@@ -33,6 +33,8 @@ function piRNA_info(divId,data,piRNA_name,nematode){
 							"aoColumnDefs": [
 								{ "bSortable": false, "aTargets": [ 0 ] }
 							],
+							"bLengthChange": false,
+							"iDisplayLength": 5,
 						});
 	}
 	else{
@@ -48,6 +50,8 @@ function piRNA_info(divId,data,piRNA_name,nematode){
 							"aoColumnDefs": [
 								{ "bSortable": false, "aTargets": [ 0 ] }
 							],
+							"bLengthChange": false,
+							"iDisplayLength": 5,
 						});
 	}
 

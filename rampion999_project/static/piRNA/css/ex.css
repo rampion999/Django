@@ -8,9 +8,9 @@
   font-size:15pt;
 }
 
-/*th{
+th{
   text-align:center;
-}*/
+}
 
 mark{
   background-color: yellow;
@@ -57,7 +57,7 @@ div.blue{
 }
 div.tooltip { 
     visibility: hidden;
-    width: 200px;
+    width: 250px;
     background-color: #555;
     color: #fff;
     text-align: center;
@@ -67,4 +67,37 @@ div.tooltip {
     z-index: 1;
     opacity: 0;
     transition: opacity 1s;    
+}
+
+.escape{
+  padding: 1.25rem;
+  margin-top: 1.25rem;
+  margin-bottom: 1.25rem;
+  border: 1px solid #eee;
+  border-left-color: #17a2b8;
+  border-left-width: .25rem;
+  border-radius: .25rem;
+}
+
+.escape h2{
+  text-align: left;
+  margin-top: 0;
+  margin-bottom: .25rem;
+  color: #17a2b8;
+}
+
+.escape p{
+  text-align: left;
+  margin-bottom: 0;
+}
+
+.CDSLine{
+  stroke: green;
+  stroke-width: 2;
+}
+
+.btn-outline-light:hover {
+color: #000;
+background-color: #f8f9fa;
+border-color: #f8f9fa;
 }

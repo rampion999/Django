@@ -1,6 +1,6 @@
 function seqView(divId,mRNA,data,CDS,CDS_1,CDS_2){
   var mRNAlen = mRNA.length;
-  var exceptHeight = 5;  //預估piRNA行數
+  var exceptHeight = 3;  //預估piRNA行數
   for (key in data[0].most){
     // if(data[0].most[key]<=3){exceptHeight+=7;}
     // else{exceptHeight+=(data[0].most[key]+5);}
@@ -21,7 +21,7 @@ function seqView(divId,mRNA,data,CDS,CDS_1,CDS_2){
   console.log("exceptHeight :"+(Math.floor(mRNAlen/100)+1));
   var width = 1700;
   var height = (2.5*(Math.floor(mRNAlen/100)+1)+exceptHeight)*17.5; //坐標軸行數加上預估piRNA行數乘每單位高
-  console.log(height);
+  // console.log(height);
   var scaleY = d3.scale.linear()
         .range([0, height])
         .domain([0, height/17.5]);
@@ -42,8 +42,8 @@ function seqView(divId,mRNA,data,CDS,CDS_1,CDS_2){
       'height': height
     });
   
-  var y=5;
-  var axisPos = [5];
+  var y=3;
+  var axisPos = [3];
   var scaleA = d3.scale.linear()
         .range([0, 1600])
         .domain([0, 99]);
@@ -103,13 +103,13 @@ function seqView(divId,mRNA,data,CDS,CDS_1,CDS_2){
         'style':'text-anchor: middle',
         'transform':'translate(40,0)',       
         }).text(100*i+1);
-
+    
     var axisX = d3.svg.axis()
         .scale(scaleX)
         .orient('top')
         .tickFormat(function(d){
           // console.log('d='+d+' mRNA:'+mRNA[d]);
-          if(CDS_1=='' && CDS_2==''){return mRNA[d];}
+          if(CDS_1=='' && CDS_2==''){return mRNA[d].toLowerCase();}
           else{
             if(d<CDS_1-1 || d>CDS_2-1){return mRNA[d].toLowerCase();}
             else{return mRNA[d];}
@@ -138,7 +138,7 @@ function seqView(divId,mRNA,data,CDS,CDS_1,CDS_2){
        /*****************坐標軸預始位置(CDS@部分)*******************/
     if(i>=(Math.floor((CDS_1-1)/100))-1 && (i<Math.floor((CDS_2-1)/100)) && (data[0].most[i+1]!=0 && data[0].most[i+1]!=undefined)){
           y+=2;
-          console.log(i);
+          // console.log(i);
         }
         /*****************坐標軸預始位置(CDS@部分)*******************/
 
@@ -156,14 +156,14 @@ function seqView(divId,mRNA,data,CDS,CDS_1,CDS_2){
 
 
 
-  console.log(axisPos);
+  // console.log(axisPos);
     /*****************坐標軸預始位置***************************************/
 
 
 
     /***********************CDS@圖************************/
 
-  console.log(CDS);
+  // console.log(CDS);
   if(CDS_1!='' && CDS_2!=''){
     for(var mis in data){
 
@@ -314,15 +314,28 @@ function seqView(divId,mRNA,data,CDS,CDS_1,CDS_2){
             });
         }
         else if((posOfMis.indexOf(21-Number(seq))!=-1) && (posOfMisxGU.indexOf(21-Number(seq))==-1)){
-          svg.append('rect').attr({
+          if(Number(seq)==20){
+            svg.append('rect').attr({
             'id':data[piRNA].piRNA,
             'x':scaleA(((Number(data[piRNA].firstPos)-1)%100+Number(seq))%100),
             'y':scaleY(axisPos[Math.floor((Number(data[piRNA].firstPos)-1)/100)+a]+Number(data[piRNA].stack)),
             'width':'15', 
             'height':'15',
             'transform':'translate(32.5,4)',
-            'fill':'lightblue'
-          });
+            'fill':'lightgreen'
+            });
+          }
+          else{
+            svg.append('rect').attr({
+              'id':data[piRNA].piRNA,
+              'x':scaleA(((Number(data[piRNA].firstPos)-1)%100+Number(seq))%100),
+              'y':scaleY(axisPos[Math.floor((Number(data[piRNA].firstPos)-1)/100)+a]+Number(data[piRNA].stack)),
+              'width':'15', 
+              'height':'15',
+              'transform':'translate(32.5,4)',
+              'fill':'lightblue'
+            });
+          }
           svg.append('text')
             .text(data[piRNA].detail[seq])
             .attr({
@@ -382,8 +395,8 @@ function seqView(divId,mRNA,data,CDS,CDS_1,CDS_2){
           'fill':'red',
           'opacity': 0,
         }).on("mouseover", function(d) {
-                var gettt = 'piRNA : ' + $(this).attr('id') + '<br>' + 'region : ' + $(this).attr('pos')
-                            + ' ~ ' + (parseInt($(this).attr('pos'))+20);   
+                var gettt = 'piRNA name: ' + $(this).attr('id') + '<br>' + 'positions: ' + $(this).attr('pos')
+                            + ' - ' + (parseInt($(this).attr('pos'))+20);   
                 div.transition()    
                   .duration(1)    
                   .style("opacity", 1)
@@ -410,8 +423,8 @@ function seqView(divId,mRNA,data,CDS,CDS_1,CDS_2){
           'fill':'red',
           'opacity': 0,
         }).on("mouseover", function(d) {
-                var gettt = 'piRNA : ' + $(this).attr('id') + '<br>' + 'region : ' + $(this).attr('pos')
-                            + ' ~ ' + (parseInt($(this).attr('pos'))+20);   
+                var gettt = 'piRNA name: ' + $(this).attr('id') + '<br>' + 'positions: ' + $(this).attr('pos')
+                            + ' - ' + (parseInt($(this).attr('pos'))+20);   
                 div.transition()    
                   .duration(1)    
                   .style("opacity", 1)
@@ -440,8 +453,8 @@ function seqView(divId,mRNA,data,CDS,CDS_1,CDS_2){
           'fill':'red',
           'opacity': 0,
         }).on("mouseover", function(d) {
-                var gettt = 'piRNA : ' + $(this).attr('id') + '<br>' + 'region : ' + $(this).attr('pos')
-                            + ' ~ ' + (parseInt($(this).attr('pos'))+20);   
+                var gettt = 'piRNA name: ' + $(this).attr('id') + '<br>' + 'positions: ' + $(this).attr('pos')
+                            + ' - ' + (parseInt($(this).attr('pos'))+20);   
                 div.transition()
                   .duration(1)
                   .style("opacity", 1)      

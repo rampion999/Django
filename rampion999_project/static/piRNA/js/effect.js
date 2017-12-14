@@ -1,6 +1,6 @@
 var CDS_switch = 0;
-var CDS_ex1 = 1;
-var CDS_ex2 = 717;
+var CDS_ex1 = '';
+var CDS_ex2 = '';
 $(document).ready(function(){
   $("#reset_to_default").click(function(){
     $("#opt1").val("0");
@@ -19,14 +19,18 @@ $(document).ready(function(){
   $("#example").click(function(){
     // $('#overView,#seqView,#div_name3,#div_name').empty();
     $("#gene").val(">GFP_DNA_sequence_without_introns\natgagtaaaggagaagaacttttcactggagttgtcccaattcttgttgaattagatggtgatgttaatgggcacaaattttctgtcagtggagagggtgaaggtgatgcaacatacggaaaacttacccttaaatttatttgcactactggaaaactacctgttccatggccaacacttgtcactactctcacttatggtgttcaatgcttctcgagatacccagatcatatgaaacagcatgactttttcaagagtgccatgcccgaaggttatgtacaggaaagaactatatttttcaaagatgacgggaactacaagacacgtgctgaagtcaagtttgaaggtgatacccttgttaatagaatcgagttaaaaggtattgattttaaagaagatggaaacattcttggacacaaattggaatacaactataactcacacaatgtatacatcatggcagacaaacaaaagaatggaatcaaagttaacttcaaaattagacacaacattgaagatggaagcgttcaactagcagaccattatcaacaaaatactccaattggcgatggccctgtccttttaccagacaaccattacctgtccacacaatctgccctttcgaaagatcccaacgaaaagagagaccacatggtccttcttgagtttgtaacagctgctgggattacacatggcatggatgaactatacaaatag");
-    $('#CDS_ck').prop('checked',false);
-    $('.CDS').prop('disabled',true);
+    // $('#CDS_ck').prop('checked',false);
+    // $('.CDS').prop('disabled',true);
     $('#CDS_1').val('');
     $('#CDS_2').val('');
     $("#opt5").val("4");
+    $('#CDS_ck').prop('checked',true);
+    $('.CDS').removeAttr('disabled');
+    $('#CDS_1').val('1');
+    $('#CDS_2').val('717');
     CDS_ex1=1;
     CDS_ex2=717;
-    CDS_switch=0;
+    CDS_switch=1;
 
   });
   $("#example2").click(function(){
@@ -71,6 +75,21 @@ tctcaaattgacacagcatttttttgctattttatccgctccatatctaaaatatatctttatgtcatcattgaaagttt
     // $('#overView,#seqView,#div_name3,#div_name').empty();
   })
 
+  $('#clean').on('click',function(){
+    CDS_switch = 0;
+    CDS_ex1 = '';
+    CDS_ex2 = '';
+    $("#gene").val('');
+    $("#opt1").val("0");
+    $("#opt2").val("1");
+    $("#opt3").val("3");
+    $("#opt4").val("3");
+    $("#opt5").val("4");
+    $('#CDS_ck').prop('checked',false);
+    $('.CDS').prop('disabled',true);
+    $('#CDS_1').val('');
+    $('#CDS_2').val('');
+  })
 
   
 });

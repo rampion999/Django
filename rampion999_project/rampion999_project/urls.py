@@ -43,6 +43,8 @@ urlpatterns = [
     url(r'^piRNA/Scan(?:/update)+/selectedPreData/$', views_piRNA.selectedPreData),
     url(r'^piRNA/Scan(?:/update)+/showDaTable/', views_piRNA.showDaTable),
     url(r'^piRNA/Scan(?:/update)+/scanOperation/', views_piRNA.scan_main),
+    url(r'^piRNA/Scan(?:/update)+/sucData/', views_piRNA.sucData),
+    url(r'^Download/([0-9]+)', views_piRNA.download_course),
     url(r'^piRNA/Scan/update/', views_piRNA.update),
     url(r'^piRNA_demo(?:/update)*/create_data/', views_piRNA_demo.create_data),
     url(r'^piRNA_demo(?:/update)+/selectedPreData/', views_piRNA_demo.selectedPreData),
@@ -52,6 +54,6 @@ urlpatterns = [
     url(r'^piRNA_demo/scan/', views_piRNA_demo.scan_main),
     url(r'^table/$', testAPP.table),
     url(r'^table/tableTest/$', testAPP.tableTest),
-    url(r'^[^\t]*/test/', views_piRNA.test),
+    # url(r'^[^\t]*/test/', views_piRNA.test),
     url(r'^QT/$', QT.QT),
 ]

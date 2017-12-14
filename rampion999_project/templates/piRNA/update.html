@@ -22,6 +22,7 @@
     <link rel="stylesheet" type="text/css" href='{% static "piRNA/css/suggestion.css" %}'>
     <link rel="stylesheet" type="text/css" href='{% static "piRNA/css/jquery.dataTables.min.css" %}'>
     <link rel="stylesheet" type="text/css" href='{% static "piRNA/css/ex.css" %}'>
+    <!-- <link rel="stylesheet" type="text/css" href='{% static "piRNA/css/dataTables.bootstrap4.min.css" %}'> -->
     
     <!-- Bootstrap core JavaScript -->
     <script src="{% static 'vendor/jquery/jquery.min.js' %}"></script>
@@ -48,6 +49,7 @@
     <script type="text/javascript" src="{% static 'piRNA/js/showDaTable.js' %}"></script>
     <script type="text/javascript" src="{% static 'piRNA/js/preSeqView.js' %}"></script>
     <script type="text/javascript" src="{% static 'piRNA/js/newScan.js' %}"></script>
+    <!-- <script type="text/javascript" src="{% static 'piRNA/js/dataTables.bootstrap4.min.js' %}"></script> -->
   </head>
 
 
@@ -109,17 +111,23 @@
               data,
               pic2src,
               scanUrl,
+              seqViewDataArr,
             );
           } 
           var geneArr = data.gene.split("");
           console.log(geneArr);
           overView('originalResult',geneArr,seqViewDataArr,data.CDS1,data.CDS2);
           seqView('originalResult',geneArr,seqViewDataArr,data.CDS[0].split(''),data.CDS1,data.CDS2);
-          $('#original-tab').click(function(){
-            $(document).ready(function(){
-              $('#originalResult-charts-tab').tab('show');
-            });            
-          });
+          // $('#original-tab').click(function(e){
+          //   console.log(e.relatedTarget);
+          //   $(document).ready(function(e){              
+          //     $('#originalResult-charts-tab').tab('show');
+          //   });            
+          // });
+          // $('a[data-toggle="tab"]').on('shown.bs.tab', function (e) {
+          //   console.log(e.target); // newly activated tab
+          //   console.log(e.relatedTarget); // previous active tab
+          // });
         },
       });
     };
@@ -190,18 +198,15 @@
     <!-- Page Content -->
     <div class="container-fluid" id='wrap'>  
       <!-- Page Heading/Breadcrumbs -->
-      <h1 class="mt-4 mb-3 display-4">New gene scan
+      <h1 class="mt-4 mb-3 display-4">piRNA Target Site Scan Result
         <!-- <small>Updated gene piRNA target operation</small> -->
       </h1>
       <div class="card mb-5">
         <div class="card-header">
           <ul class="nav nav-tabs card-header-tabs" id="overallTab" role="tablist">
             <li class="nav-item">
-              <a class="nav-link active" id="original-tab" data-toggle="tab" href="#original" role="tab" aria-controls="original" aria-selected="true">Original</a>
+              <a class="nav-link active" id="original-tab" data-toggle="tab" href="#original" role="tab" aria-controls="original" aria-selected="true">Original Sequence</a>
             </li>
-            <!-- <li class="nav-item">
-              <a class="nav-link" id="modify_1-tab" data-toggle="tab" href="#modify_1" role="tab" aria-controls="modify_1" aria-selected="false">Modify #1</a>
-            </li> -->
           </ul>
         </div>
         <div class="card-body tab-content" id="overallTabContent">

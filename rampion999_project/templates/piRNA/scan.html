@@ -61,111 +61,139 @@
             }
         }
     });
-
-    $(document).ready(function(){
-      function Submit(){
-        var start = 0;
-        var end = 0;
-        start = new Date().getTime();
-        swal.queue([{
-        title : 'Scanning',
-        imageUrl: "{% static 'piRNA/img/Magnify.gif' %}",
-        disableButtons: true,
-        showConfirmButton: false,
-        allowOutsideClick : false,
-        }]);
-        $('#result').empty();
-          $.ajax({
-            url: "scanOperation/", 
-              data:{ 
-              data1:$('#gene').val(),
-              opt1:$('#opt1').val(),
-              opt2:$('#opt2').val(),
-              opt3:$('#opt3').val(),
-              opt4:$('#opt4').val(),
-              opt5:$('#opt5').val(),
-              nematodeType:$('#nematodeType').val(),
-              CDS_1:$('#CDS_1').val(),
-              CDS_2:$('#CDS_2').val(),
-              // csrfmiddlewaretoken: '{{ csrf_token }}',
+    function Submit(){
+      var start = 0;
+      var end = 0;
+      start = new Date().getTime();
+      swal.queue([{
+      title : 'Scanning...\nPlease allow up to 20 seconds',
+      text: "Running time : 0 sec",
+      imageUrl: "{% static 'piRNA/img/Magnify.gif' %}",
+      disableButtons: true,
+      showConfirmButton: false,
+      allowOutsideClick : false,
+      }]);
+      $('#result').empty();        
+      var clockTime = 1;
+      var clock = setInterval(function(){
+        $('#swal2-content').html('Running time : '+clockTime+' sec');
+        clockTime++;
+      }, 1050);
+        $.ajax({
+          url: "scanOperation/", 
+            data:{ 
+            data1:$('#gene').val(),
+            opt1:$('#opt1').val(),
+            opt2:$('#opt2').val(),
+            opt3:$('#opt3').val(),
+            opt4:$('#opt4').val(),
+            opt5:$('#opt5').val(),
+            nematodeType:$('#nematodeType').val(),
+            CDS_1:$('#CDS_1').val(),
+            CDS_2:$('#CDS_2').val(),
+            // csrfmiddlewaretoken: '{{ csrf_token }}',
+          },
+          type: "POST", 
+          dataType:'json',
+          error: function(no){
+            console.log(no);
+            swal(
+              'Scan cancelled',
+              'System memory overload',
+              'error'
+            )
             },
-            type: "POST", 
-            dataType:'json',
-            error: function(no){
-              console.log(no);
+          success: function(data){
+            clearInterval(clock);
+            if(data.state=='nothing'){
               swal(
-                'Scan cancelled',
-                'System memory overload',
-                'error'
+              'Scan cancelled',
+              'The input aera is empty, please enter some sequence :)',
+              'error'
               )
-              },
-            success: function(data){
-              if(data.state=='nothing'){
-                swal(
-                'Scan cancelled',
-                'The input aera is empty, please enter some sequence :)',
-                'error'
-                )
-              }
-              else if(data.state=='formatX'){
-                swal(
-                'Scan cancelled',
-                'The input sequence format is wrong!!<br>\
-                Please check it and try again!!<br>\
-                <br>Note!!<br>\
-                DNAseq is compose of "A"."T"."C"."G"<br>\
-                RNAseq is compose of "A"."U"."C"."G"',
-                'error'
-                )
-              }
-              else if(data.state=='notfasta'){
-                swal(
-                'Scan cancelled',
-                'The input is not in fasta format',
-                'error'
-                )
-              }
-              else if(data.state=='CDSX'){
-                swal(
-                'Scan cancelled',
-                'The input CDS regions have some problem',
-                'error'
-                )
-              }
-              else if(data.state=='nematode'){
-                swal(
-                'Scan cancelled',
-                "Sorry, this part hasn't opened yet",
-                'error'
-                )
-              }
-              else{
-                $.ajax({
-                  url: "keepOld/", 
-                  data:{ 
-                    QQ:'QQ',
+            }
+            else if(data.state=='formatX'){
+              swal(
+              'Scan cancelled',
+              'The input sequence format is wrong!!<br>\
+              Please check it and try again!!<br>\
+              <br>Note!!<br>\
+              DNAseq is compose of "A"."T"."C"."G"<br>\
+              RNAseq is compose of "A"."U"."C"."G"',
+              'error'
+              )
+            }
+            else if(data.state=='notfasta'){
+              swal(
+              'Scan cancelled',
+              'The input is not in fasta format',
+              'error'
+              )
+            }
+            else if(data.state=='CDSX'){
+              swal(
+              'Scan cancelled',
+              'The input CDS regions have some problem',
+              'error'
+              )
+            }
+            else if(data.state=='nematode'){
+              swal(
+              'Scan cancelled',
+              "Sorry, this part hasn't opened yet",
+              'error'
+              )
+            }
+            else{
+              $.ajax({
+                url: "keepOld/", 
+                data:{ 
+                  QQ:'QQ',
+                },
+                type: "POST", 
+                dataType:'json',
+                error: function(no){
+                  console.log(no);
+                  swal(
+                    'Scan cancelled',
+                    'System memory overload',
+                    'error'
+                  )
                   },
-                  type: "POST", 
-                  dataType:'json',
-                  error: function(no){
-                    console.log(no);
-                    swal(
-                      'Scan cancelled',
-                      'System memory overload',
-                      'error'
-                    )
-                    },
-                  success: function(data){
-                    console.log('OK');
-                  },
-                })
-                window.location = document.URL.replace(/\?fref=gc&dti=[0-9]+/,'')+"update/",'_blank';
-              }
-            },
-          })
-      };
-      $(document).on('click','#TransformBTN',Submit);
-    }); 
+                success: function(data){
+                  console.log('OK');
+                },
+              })
+              window.location = document.URL.replace(/\?fref=gc&dti=[0-9]+/,'')+"update/",'_blank';
+            }
+          },
+        })
+    };
+    // $(document).ready(function(){
+    //   console.log("{% static 'piRNA/img/Magnify.gif' %}");
+    //   var col7_body_h = $('#input > div.row > div.col-sm-7 > div > div').height();
+    //   var col5_footer_h = $('#input > div.row > div.col-sm-5 > div > div.card-footer').height();
+
+
+
+    //   console.log(col7_body_h)
+    //   console.log(col5_footer_h)
+
+    //   var col5_body_h = col7_body_h - col5_footer_h;
+    //   console.log(col5_body_h)
+
+
+    //   $('#input > div.row > div.col-sm-5 > div > div.card-body').css('height',col5_body_h+'px');
+
+    //   // var col5_body_padding_bottom = $('#input > div.row > div.col-sm-5 > div > div.card-body').css('padding-bottom').split('px')[0];
+    //   // var col5_body_padding_top = $('#input > div.row > div.col-sm-5 > div > div.card-body').css('padding-top').split('px')[0];
+
+    //   // var h2 = $('#input > div.row > div.col-sm-5 > div > div.card-body').height(col5_body_h);
+
+    //   // console.log(col5_body_padding)
+    //   console.log($('#input > div.row > div.col-sm-5 > div > div.card-body').height())
+    // }); 
+    $(document).on('click','#TransformBTN',Submit);
   </script>
 
 
@@ -202,53 +230,64 @@
     <div class="container-fluid" id='input'>  
       <!-- Page Heading/Breadcrumbs -->
       <h1 class="mt-4 mb-3">Scan
-        <small>piRNA target operation</small>
+        <select class="custom-select" style="font-size: medium;" id="nematodeType">
+          <option class = "clean" selected value="C.elegans">C. elegans</option>
+          <option class = "clean" value="C.briggsae">C. briggsae</option>
+          <option class = "clean" value="C.remanei">C. remanei</option>
+          <option class = "clean" value="C.brenneri">C. brenneri</option>
+        </select>
+        <small>piRNA target sites in your sequence</small>
       </h1>
       <div class="row">
         <!-- input area -->
         <div class="col-sm-5">
           <div class="card mb-2 h-100">
-            <h4 class="card-header">Input area</h4>
-            <div class="card-body form-group mb-0" style="padding-bottom: 10px; height: 100%;">
-              <label for="gene"><b>Input cDNA or (spliced) RNA sequence(in fasta format):</b></label>
-              <textarea class="form-control mb-1" name="gene" id="gene" value="QQ" style="height: 90%; width:100%; box-sizing: border-box; resize: none;"></textarea>
-            </div>
-            <div class="card-footer">
-            <small class="text-muted mt-1">Please make sure that you type in is fasta format.</small>
-              <div class="btn-group btn-group-sm mt-1 float-right" role="group" aria-label="Basic example">
-                <button type="button" class="btn btn-secondary" id="example">Example 1</button>
-                <button type="button" class="btn btn-secondary" id="example2">Example 2</button>
+            <h4 class="card-header">Input</h4>
+            <div class="card-body">
+              <label for="gene" class="d-block"><b>Input your DNA (without introns) or spliced RNA sequence (in <a href="https://blast.ncbi.nlm.nih.gov/Blast.cgi?CMD=Web&PAGE_TYPE=BlastDocs&DOC_TYPE=BlastHelp" target="_blank">FASTA format</a>)</b><button type="button" class="btn btn-secondary btn-sm float-right mb-2" id="clean">Clear</button></label>
+              <textarea class="form-control " name="gene" id="gene" value="QQ" rows="9" style="width:100%; box-sizing: border-box; resize: none;"></textarea>
+              <div class="mt-3">
+                <input type="checkbox" id='CDS_ck'><b>Coding sequence (CDS) region: &nbsp;&nbsp;&nbsp;</b>
+                <input type="number" style="width: 60px" id='CDS_1' class='CDS' disabled>&nbsp;-&nbsp;
+                <input type="number" style="width: 60px" id='CDS_2' class='CDS' disabled>
+                <div class="=mt-1 float-right" role="group" aria-label="Basic example">
+                  <button type="button" class="btn btn-secondary btn-sm" id="example">Example 1</button>
+                  <button type="button" class="btn btn-secondary btn-sm" id="example2">Example 2</button>
+                </div>
               </div>
             </div>
+            <!-- <div class="card-footer"> -->
+              <!-- <div class="=mt-1 float-right" role="group" aria-label="Basic example">
+                <button type="button" class="btn btn-secondary btn-sm" id="example">Example 1</button>
+                <button type="button" class="btn btn-secondary btn-sm" id="example2">Example 2</button>
+              </div> -->
+            <!-- </div> -->
           </div>
         </div>
         
         <!-- Scan filter options -->
         <div class="col-sm-7">
           <div class="card mb-2 h-100">
-            <h4 class="card-header">Scan filter options</h4>
+            <h4 class="card-header">piRNA targeting rules</h4>
             <div class="card-body">
+              <!-- <div class="float-right mb-3">
+                <button type="button" class="btn btn-secondary" id="reset_to_default">Default Setting</button>
+              </div> -->
               <div class="row">
                 <div class="col-lg-5 align-self-center">
                   <a href="#">
                     <img class="img-fluid rounded" src="{% static 'piRNA/img/QQ.jpg' %}" alt="">
-                  </a>
-                  <button type="button" class="btn btn-outline-dark btn-block" id="reset_to_default">Set to default</button>
+                  </a>                  
                 </div>
                 <!-- <div class="col-lg-1">
                 </div> -->
                 <div class="col-lg-7">
                   <ul class="list-unstyled">             
-                    <li class="card-text">
-                      <!-- <b>Choose nematode species :&nbsp;&nbsp;</b> -->
-                      <label class="mr-sm-2" for="nematodeType"><b>Choose nematode species :</b></label>
-                      <select class="custom-select mb-2 mr-sm-2 mb-sm-0" id="nematodeType">
-                        <option class = "clean" selected value="C.elegans">C. elegans</option>
-                        <option class = "clean" value="C.briggsae">C. briggsae</option>
-                        <option class = "clean" value="C.remanei">C. remanei</option>
-                        <option class = "clean" value="C.brenneri">C. brenneri</option>
-                      </select>
+                    
+                    <li class="card-text float-right">
+                      <button type="button" class="btn btn-secondary" id="reset_to_default">Default Setting</button>
                     </li>
+                    
                     <li class="card-text">
                       <b>Number of mismatches allowed at seed region:</b>
                     </li>
@@ -284,6 +323,7 @@
                       </ul>
                     </li>
                     
+                    <br>
 
                     <li class="card-text">
                       <b>Number of mismatches allowed at non-seed region:</b>
@@ -335,6 +375,7 @@
                       </ul>
                     </li>
 
+                    <br>  
 
                     <li>
                       <label class="mr-sm-2" for="opt5"><b>Total number of mismatches at seed & non-seed regions ≤&nbsp;</b></label>
@@ -365,12 +406,10 @@
                     </li>
 
 
-                    <li>
-                      <input type="checkbox" id='CDS_ck'><b>Show CDS &nbsp;&nbsp;&nbsp;</b>
-                    </li>
+                    
                     
 
-                    <li>
+                    <!-- <li>
                       <ul>
                         <li>
                         choose region :
@@ -378,7 +417,7 @@
                         <input type="number" style="width: 60px" id='CDS_2' class='CDS' disabled>
                         </li>
                       </ul>
-                    </li>
+                    </li> -->
                   </ul>
                 </div>
               </div>
@@ -386,8 +425,8 @@
           </div>
         </div>
       </div>
-      <div class="text-center">
-        <button type="button" class="btn btn-lg btn-primary mb-2 mt-4" id="TransformBTN" style="width: 50%;">SCAN</button>
+      <div class="text-center mb-3">
+        <button type="button" class="btn btn-lg btn-primary mb-2 mt-4" id="TransformBTN" style="width: 15%;">SCAN</button>
       </div>    
     </div>
     <div id="result"></div>
@@ -395,7 +434,7 @@
   <!-- Footer -->
   <footer id='footer' class="py-5 bg-dark">
     <div class="container">
-      <p class="m-0 text-center text-white">This web tool is maintained by Dr. <a href="https://www.researchgate.net/profile/Wei-Sheng_Wu">Wei-Sheng Wu</a>'s lab at National Cheng Kung University, Taiwan.</p>
+      <p class="m-0 text-center text-white">This web tool is maintained by Dr. <a href="https://www.researchgate.net/profile/Wei-Sheng_Wu" target="_blank">Wei-Sheng Wu</a>'s lab at National Cheng Kung University, Taiwan.</p>
     </div>
     <!-- /.container -->
   </footer>

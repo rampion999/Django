@@ -3,7 +3,7 @@ function suggestion(sug,sugNotCDS,a,b,c,d,e){
 	// console.log(a,b,c,d,e)
 	// $('#sugTable').append('<h1 style= "text-align: center;"><b>Suggestions</b></h1>');
 	var table_html = '<table id="sugTable" class="display"><thead><tr><th width= 150>piRNA</th>';
-	table_html += '<th width= 100>targeted region in the input sequences</th>';
+	table_html += '<th width= 100>targeted region in input sequence</th>';
 	table_html += '<th width= 70>number of non-GU mismatches in seed region</th>';
 	table_html += '<th width= 70>number of GU mismatches in seed region</th>';
 	table_html += '<th width= 70>number of non-GU mismatches in non-seed region</th>';
@@ -97,32 +97,101 @@ function suggestion(sug,sugNotCDS,a,b,c,d,e){
 		$('#sugTable').find('tbody').append(table);
 	}
 
-
-
-
 }
 
-function shit(divId,sug,sugNotCDS,a,b,c,d,e,name,gene,nematodeType,CDS1,CDS2,csrf,ori_data,pic2src,scanUrl){
+function shit(divId,sug,sugNotCDS,a,b,c,d,e,name,gene,nematodeType,CDS1,CDS2,csrf,ori_data,pic2src,scanUrl,seqViewDataArr){
 	var duplicateFir = []; //有重複的checkbox第一個位置
 	var duplicateDict = {};
 	var frontCount = 0;
 	var midCount = 0;
+	var lastCount = 0;
+
+	//////////////Rule說明
+	var ruleText = '<div class="escape" style="text-align:left;">';
+	ruleText += 		'<h2>Rules for piRNA targeting</h2>';
+	ruleText +=			'<div class="row pt-4">';
+
+	// ruleText +=				'<div class="col-1">';
+	// ruleText +=				'</div>';
+
+	ruleText +=				'<div class="col-4">';
+	ruleText +=					'<ul class="list-unstyled">';
+	ruleText +=						'<li class="card-text">';
+	ruleText +=							'<b>Number of mismatches allowed at seed region:</b>';
+	ruleText +=						'</li>';
+
+
+	ruleText +=						'<li class="card-text">';
+	ruleText +=							'<ul>';
+	ruleText +=								'<li>';
+	ruleText +=									'<span class="badge badge-dark">Rule 1</span> number of non-GU pairs &nbsp;≤&nbsp;'+a;
+	ruleText +=								'</li>';
+	ruleText +=								'<li>';
+	ruleText +=									'<span class="badge badge-dark">Rule 2</span> number of GU pairs &nbsp;≤&nbsp;'+b;
+	ruleText +=								'</li>';
+	ruleText +=							'</ul>';
+	ruleText +=						'</li>';
+	ruleText +=					'</ul>';
+	ruleText +=				'</div>';
+
+	ruleText +=				'<div class="col-4">';
+	ruleText +=					'<ul class="list-unstyled">';
+	ruleText +=						'<li class="card-text">';
+	ruleText +=							'<b>Number of mismatches allowed at non-seed region:</b>';
+	ruleText +=						'</li>';
+
+
+	ruleText +=						'<li class="card-text">';
+	ruleText +=							'<ul>';
+	ruleText +=								'<li>';
+	ruleText +=									'<span class="badge badge-dark">Rule 3</span> number of non-GU pairs &nbsp;≤&nbsp;'+c;
+	ruleText +=								'</li>';
+	ruleText +=								'<li>';
+	ruleText +=									'<span class="badge badge-dark">Rule 4</span> number of GU pairs &nbsp;≤&nbsp;'+d;
+	ruleText +=								'</li>';
+	ruleText +=							'</ul>';
+	ruleText +=						'</li>';
+	ruleText +=					'</ul>';
+	ruleText +=				'</div>';
+
+	ruleText +=				'<div class="col-4">';
+	ruleText +=					'<ul class="list-unstyled">';
+	ruleText +=						'<li class="card-text">';
+	ruleText +=							'<span class="badge badge-dark">Rule 5</span> <b>Total number of mismatches at seed & non-seed regions ≤&nbsp;</b>'+e;
+	ruleText +=						'</li>';
+	ruleText +=					'</ul>';
+	ruleText +=				'</div>';
+
+	// ruleText +=				'<div class="col-1">';
+	// ruleText +=				'</div>';
+
+
+	ruleText +=			'</div>';
+	$('#'+divId+'-sugTable').append(ruleText);
+	//////////////Rule說明
+
+
+
+
+
+
 
 	///////////////先創CDS前表格
 	for (var i in sugNotCDS){
 		if(sugNotCDS[i][1] > CDS1){break;}
 		var table_html = '';
 		var table = '';
-		table_html += '<div class="my-4"><table id="sugPicTable_'+i+'" class="sugTable" width= 100%><thead><tr><th style="width: 200px;">piRNA</th>';
-		table_html += '<th style="width: 100px;">targeted region in the input sequences</th>';
+		table_html += '<div class="my-4 py-4"><table id="sugPicTable_'+i+'" class="sugTable" width= 100%><thead><tr><th style="width: 200px;">piRNA</th>';
+		table_html += '<th style="width: 100px;">targeted region in input sequence</th>';
 		// table_html += '<th width= 100>original situation</th>';
-		table_html += '<th colspan="7">methods<br>escape condition{ rule1 : seed-xGU > '+a+' , rule2 : seed-GU > '+b+' , rule3 : non-seed-xGU > '+c+' ,<br>rule4 : non-seed-GU > '+d+' , rule5 : total mis > '+e+'}</th>';
+		table_html += '<td colspan="7"><svg id="overView_'+i+'"></svg></td>';
 		table_html += '</tr></thead><tbody>';
 		var span = sugNotCDS[i][7].length+1;
-		table += '<tr><td class="mid" rowspan="'+(span+1)+'">'+sugNotCDS[i][0]+'</td>';
-		table += '<td class="mid" rowspan="'+(span+1)+'">'+sugNotCDS[i][1]+'~'+(sugNotCDS[i][1]+(sugNotCDS[i][2]-1))+'</td>';
-		table += '<td colspan="4">original situation</td><td id="piPic'+i+'" class="mid"><svg id = "pic'+i+'"></svg></td><td colspan="2"></td></tr>';
-		table += '<tr><td></td><td>CDS</td><td>position</td><td>change to</td><td>after changed</td><td>breaked rules</td><td>escape?</td></tr>';
+		table += '<tr><td class="mid" rowspan="'+(span+2)+'">'+sugNotCDS[i][0]+'</td>';
+		table += '<td class="mid" rowspan="'+(span+2)+'">'+sugNotCDS[i][1]+'~'+(sugNotCDS[i][1]+(sugNotCDS[i][2]-1))+'</td>';
+		table += '<td colspan="4" rowspan="2"></td><td>pairing (top: input sequence, bottom: piRNA)</td><td rowspan="2"></td></tr>';
+		table += '<tr><td id="piPic'+i+'" class="mid"><svg id = "pic'+i+'"></svg></td></tr>';
+		table += '<tr><td></td><td>amino acid</td><td>modified position</td><td>suggested change</td><td>pairing after change(top: modified sequence, bottom: piRNA)</td><td>rule(s) broken</td></tr>';
 		table_html+=table;
 		var temp = '';
 		
@@ -134,11 +203,11 @@ function shit(divId,sug,sugNotCDS,a,b,c,d,e,name,gene,nematodeType,CDS1,CDS2,csr
 			var new_nsgu = sugNotCDS[i][7][pics][0][3][3];
 			var new_total = sugNotCDS[i][7][pics][0][3][0] + sugNotCDS[i][7][pics][0][3][1] + sugNotCDS[i][7][pics][0][3][2] + sugNotCDS[i][7][pics][0][3][3];
 					
-			temp += '<tr id="r'+i+'_'+pics+'"><td><input type="checkbox" id="ck'+i+'_'+pics+'" value="'+sugNotCDS[i][7][pics][0][0]+','+sugNotCDS[i][7][pics][0][3]+','+sugNotCDS[i][7][pics][0][0]+'"></td>';
+			temp += '<tr id="r'+i+'_'+pics+'"><td><input type="checkbox" id="ck'+i+'_'+pics+'" value="'+sugNotCDS[i][7][pics][0][0]+','+sugNotCDS[i][7][pics][0][1]+','+sugNotCDS[i][7][pics][0][2]+',"></td>';
 					
 			temp += '<td></td><td>'+sugNotCDS[i][7][pics][0][0]+'</td>';
-			duplicateFir.push([sugNotCDS[i][7][pics][0][0],sugNotCDS[i][15][sugNotCDS[i][7][pics][0][0]],Number(i),Number(pics)]);
-			duplicateDict[sugNotCDS[i][7][pics][0][0]+'_'+i] = pics;
+			// duplicateFir.push([sugNotCDS[i][7][pics][0][0],sugNotCDS[i][15][sugNotCDS[i][7][pics][0][0]],Number(i),Number(pics)]);
+			// duplicateDict[sugNotCDS[i][7][pics][0][0]+'_'+i] = pics;
 
 			if(sugNotCDS[i][7][pics].length == 1){
 				temp += '<td>'+sugNotCDS[i][7][pics][0][1]+' → '+sugNotCDS[i][7][pics][0][2]+'</td><td><svg id = "pic'+i+'_'+pics+'"></svg></td>';
@@ -146,52 +215,53 @@ function shit(divId,sug,sugNotCDS,a,b,c,d,e,name,gene,nematodeType,CDS1,CDS2,csr
 			else{
 				temp +=	'<td>'+sugNotCDS[i][7][pics][0][1]+' → <select class="drop">';
 				for(var z in sugNotCDS[i][7][pics]){
-					temp += '<option value="'+i+'_'+pics+'_'+z+'">'+sugNotCDS[i][7][pics][z][2]+'</option>';
+					temp += '<option value="'+i+'_'+pics+'_'+z+'_'+i+'">'+sugNotCDS[i][7][pics][z][2]+'</option>';
 				}
 				temp += '</select></td><td id="chart'+i+'_'+pics+'"><svg id = "pic'+i+'_'+pics+'"></svg></td>';
 			}
 
 			if (new_sxgu > a){
-				rule += ' rule1 ';
+				rule += '<span class="badge badge-dark"> Rule 1 </span>&nbsp;';
 			}
 
 			if (new_sgu > b){
-				rule += ' rule2 ';
+				rule += '<span class="badge badge-dark"> Rule 2 </span>&nbsp;';
 			} 
 
 			if (new_nsxgu > c){
-				rule += ' rule3 ';
+				rule += '<span class="badge badge-dark"> Rule 3 </span>&nbsp;';
 			}
 			
 			if (new_nsgu > d){
-				rule += ' rule4 ';
+				rule += '<span class="badge badge-dark"> Rule 4 </span>&nbsp;';
 			}
 			
 			if (new_total > e){
-				rule += ' rule5 ';
+				rule += '<span class="badge badge-dark"> Rule 5 </span>&nbsp;';
 			}
 			
 			if (rule != ''){
 				temp += '<td id="rule'+i+'_'+pics+'" class="mid">'+rule+'</td>';
 			}
 			else{
-				temp += '<td id="rule'+i+'_'+pics+'" class="mid">N/A</td>';
+				temp += '<td id="rule'+i+'_'+pics+'" class="mid">✕</td>';
 			}
 
-			if (new_sxgu > a || new_sgu > b || new_nsxgu > c || new_nsgu > d || new_total >e){
-				temp += '<td id="escape'+i+'_'+pics+'" class="mid">✓</td></tr>';
-			}
-			else{
-				temp += '<td id="escape'+i+'_'+pics+'" class="mid">✕</td></tr>';
-			}
+			// if (new_sxgu > a || new_sgu > b || new_nsxgu > c || new_nsgu > d || new_total >e){
+			// 	temp += '<td id="escape'+i+'_'+pics+'" class="mid">✓</td></tr>';
+			// }
+			// else{
+			// 	temp += '<td id="escape'+i+'_'+pics+'" class="mid">✕</td></tr>';
+			// }
 		}
 		table_html+=temp;
-		console.log(duplicateFir);
+		// console.log(sugNotCDS);
 		table_html+='</tbody></table></div>';
 		$('#'+divId+'-sugTable').append(table_html);
 		$('.drop').change(function(){
 			var val = this.value.split('_');
 			$('#pic'+val[0]+'_'+val[1]).empty();
+			// console.log(val);
 			plotOutCDS(val[3],val[1],val[2],sugNotCDS,val[0]);
 			var new_sxgu = sugNotCDS[val[3]][7][val[1]][val[2]][3][0];
 			var new_sgu = sugNotCDS[val[3]][7][val[1]][val[2]][3][1];
@@ -200,23 +270,23 @@ function shit(divId,sug,sugNotCDS,a,b,c,d,e,name,gene,nematodeType,CDS1,CDS2,csr
 			var new_total = sugNotCDS[val[3]][7][val[1]][val[2]][3][0] + sugNotCDS[val[3]][7][val[1]][val[2]][3][1] + sugNotCDS[val[3]][7][val[1]][val[2]][3][2] + sugNotCDS[val[3]][7][val[1]][val[2]][3][3];
 			var rule = '';
 			if (new_sxgu > a){
-				rule += ' rule1 ';
+				rule += '<span class="badge badge-dark"> Rule 1 </span>&nbsp;';
 			}
 
 			if (new_sgu > b){
-				rule += ' rule2 ';
+				rule += '<span class="badge badge-dark"> Rule 2 </span>&nbsp;';
 			} 
 
 			if (new_nsxgu > c){
-				rule += ' rule3 ';
+				rule += '<span class="badge badge-dark"> Rule 3 </span>&nbsp;';
 			}
 			
 			if (new_nsgu > d){
-				rule += ' rule4 ';
+				rule += '<span class="badge badge-dark"> Rule 4 </span>&nbsp;';
 			}
 			
 			if (new_total > e){
-				rule += ' rule5 ';
+				rule += '<span class="badge badge-dark"> Rule 5 </span>&nbsp;';
 			}
 			
 			if (rule != ''){
@@ -225,18 +295,18 @@ function shit(divId,sug,sugNotCDS,a,b,c,d,e,name,gene,nematodeType,CDS1,CDS2,csr
 			}
 			else{
 				$('#rule'+val[0]+'_'+val[1]).empty();
-				$('#rule'+val[0]+'_'+val[1]).html('N/A');
+				$('#rule'+val[0]+'_'+val[1]).html('✕');
 			}
 
-			if (new_sxgu > a || new_sgu > b || new_nsxgu > c || new_nsgu > d || new_total >e){
-				$('#escape'+val[0]+'_'+val[1]).empty();
-				$('#escape'+val[0]+'_'+val[1]).html('✓');
-			}
-			else{
-				$('#escape'+val[0]+'_'+val[1]).empty();
-				$('#escape'+val[0]+'_'+val[1]).html('✕');
-			}
-			$('#ck'+val[0]+'_'+val[1]).attr('value',sugNotCDS[val[3]][7][val[1]][val[2]][0]+','+sugNotCDS[val[3]][7][val[1]][val[2]][2]+', ');
+			// if (new_sxgu > a || new_sgu > b || new_nsxgu > c || new_nsgu > d || new_total >e){
+			// 	$('#escape'+val[0]+'_'+val[1]).empty();
+			// 	$('#escape'+val[0]+'_'+val[1]).html('✓');
+			// }
+			// else{
+			// 	$('#escape'+val[0]+'_'+val[1]).empty();
+			// 	$('#escape'+val[0]+'_'+val[1]).html('✕');
+			// }
+			$('#ck'+val[0]+'_'+val[1]).attr('value',sugNotCDS[val[3]][7][val[1]][val[2]][0]+','+sugNotCDS[val[3]][7][val[1]][val[2]][1]+','+sugNotCDS[val[3]][7][val[1]][val[2]][2]+', ');
 		})
 		frontCount += 1;
 	}
@@ -249,16 +319,17 @@ function shit(divId,sug,sugNotCDS,a,b,c,d,e,name,gene,nematodeType,CDS1,CDS2,csr
 		var table_html = '';
 		var table = '';
 		var midX = Number(i)+frontCount;
-		table_html += '<div class="my-4"><table id="sugPicTable_'+midX+'" class="sugTable" width= 100%><thead><tr><th style="width: 200px;">piRNA</th>';
-		table_html += '<th style="width: 100px;">targeted region in the input sequences</th>';
+		table_html += '<div class="my-4 py-4"><table id="sugPicTable_'+midX+'" class="sugTable" width= 100%><thead><tr><th style="width: 200px;">piRNA</th>';
+		table_html += '<th style="width: 100px;">targeted region in input sequence</th>';
 		// table_html += '<th width= 100>original situation</th>';
-		table_html += '<th colspan="7">methods<br>escape condition{ rule1 : seed-xGU > '+a+' , rule2 : seed-GU > '+b+' , rule3 : non-seed-xGU > '+c+' ,<br>rule4 : non-seed-GU > '+d+' , rule5 : total mis > '+e+'}</th>';
+		table_html += '<td colspan="7"><svg id="overView_'+midX+'"></svg></td>';
 		table_html += '</tr></thead><tbody>';
 		var span = sug[i][7].length+1;
-		table += '<tr><td class="mid" rowspan="'+(span+1)+'">'+sug[i][0]+'</td>';
-		table += '<td class="mid" rowspan="'+(span+1)+'">'+sug[i][1]+'~'+(sug[i][1]+(sug[i][2]-1))+'</td>';
-		table += '<td colspan="4">original situation</td><td id="piPic'+midX+'" class="mid"><svg id = "pic'+midX+'"></svg></td><td colspan="2"></td></tr>';
-		table += '<tr><td></td><td>CDS</td><td>position</td><td>change to</td><td>after changed</td><td>breaked rules</td><td>escape?</td></tr>';
+		table += '<tr><td class="mid" rowspan="'+(span+2)+'">'+sug[i][0]+'</td>';
+		table += '<td class="mid" rowspan="'+(span+2)+'">'+sug[i][1]+'~'+(sug[i][1]+(sug[i][2]-1))+'</td>';
+		table += '<td colspan="4" rowspan="2"></td><td>pairing (top: input sequence, bottom: piRNA)</td><td rowspan="2"></td></tr>';
+		table += '<tr><td id="piPic'+midX+'" class="mid"><svg id = "pic'+midX+'"></svg></td></tr>';
+		table += '<tr><td></td><td>amino acid</td><td>modified position</td><td>suggested change</td><td>pairing after change(top: modified sequence, bottom: piRNA)</td><td>rule(s) broken</td></tr>';
 		table_html+=table;
 		var temp = '';
 		
@@ -270,7 +341,7 @@ function shit(divId,sug,sugNotCDS,a,b,c,d,e,name,gene,nematodeType,CDS1,CDS2,csr
 			var new_nsgu = sug[i][7][pics][0][4][3];
 			var new_total = sug[i][7][pics][0][4][0] + sug[i][7][pics][0][4][1] + sug[i][7][pics][0][4][2] + sug[i][7][pics][0][4][3];
 					
-			temp += '<tr id="r'+midX+'_'+pics+'"><td><input type="checkbox" id="ck'+midX+'_'+pics+'" value="'+sug[i][7][pics][0][1]+','+sug[i][7][pics][0][3]+','+sug[i][7][pics][0][0]+'"></td>';
+			temp += '<tr id="r'+midX+'_'+pics+'"><td><input type="checkbox" id="ck'+midX+'_'+pics+'" value="'+sug[i][7][pics][0][1]+','+sug[i][7][pics][0][2]+','+sug[i][7][pics][0][3]+','+sug[i][7][pics][0][0]+'"></td>';
 					
 			temp += '<td>'+sug[i][7][pics][0][0]+'</td><td>'+sug[i][7][pics][0][1]+'</td>';
 			duplicateFir.push([sug[i][7][pics][0][1],sug[i][15][sug[i][7][pics][0][1]],Number(i),Number(pics)]);
@@ -282,77 +353,77 @@ function shit(divId,sug,sugNotCDS,a,b,c,d,e,name,gene,nematodeType,CDS1,CDS2,csr
 			else{
 				temp +=	'<td>'+sug[i][7][pics][0][2]+' → <select class="dropCDS">';
 				for(var z in sug[i][7][pics]){
-					temp += '<option value="'+midX+'_'+pics+'_'+z+'">'+sug[i][7][pics][z][3]+'</option>';
+					temp += '<option value="'+midX+'_'+pics+'_'+z+'_'+i+'">'+sug[i][7][pics][z][3]+'</option>';
 				}
 				temp += '</select></td><td id="chart'+midX+'_'+pics+'"><svg id = "pic'+midX+'_'+pics+'"></svg></td>';
 			}
 
 			if (new_sxgu > a){
-				rule += ' rule1 ';
+				rule += '<span class="badge badge-dark"> Rule 1 </span>&nbsp;';
 			}
 
 			if (new_sgu > b){
-				rule += ' rule2 ';
+				rule += '<span class="badge badge-dark"> Rule 2 </span>&nbsp;';
 			} 
 
 			if (new_nsxgu > c){
-				rule += ' rule3 ';
+				rule += '<span class="badge badge-dark"> Rule 3 </span>&nbsp;';
 			}
 			
 			if (new_nsgu > d){
-				rule += ' rule4 ';
+				rule += '<span class="badge badge-dark"> Rule 4 </span>&nbsp;';
 			}
 			
 			if (new_total > e){
-				rule += ' rule5 ';
+				rule += '<span class="badge badge-dark"> Rule 5 </span>&nbsp;';
 			}
 			
 			if (rule != ''){
 				temp += '<td id="rule'+midX+'_'+pics+'" class="mid">'+rule+'</td>';
 			}
 			else{
-				temp += '<td id="rule'+midX+'_'+pics+'" class="mid">N/A</td>';
+				temp += '<td id="rule'+midX+'_'+pics+'" class="mid">✕</td>';
 			}
 
-			if (new_sxgu > a || new_sgu > b || new_nsxgu > c || new_nsgu > d || new_total >e){
-				temp += '<td id="escape'+midX+'_'+pics+'" class="mid">✓</td></tr>';
-			}
-			else{
-				temp += '<td id="escape'+midX+'_'+pics+'" class="mid">✕</td></tr>';
-			}
+			// if (new_sxgu > a || new_sgu > b || new_nsxgu > c || new_nsgu > d || new_total >e){
+			// 	temp += '<td id="escape'+midX+'_'+pics+'" class="mid">✓</td></tr>';
+			// }
+			// else{
+			// 	temp += '<td id="escape'+midX+'_'+pics+'" class="mid">✕</td></tr>';
+			// }
 		}
 		table_html+=temp;
-		console.log(duplicateFir);
+		// console.log(duplicateFir);
 		table_html+='</tbody></table></div>';
 		$('#'+divId+'-sugTable').append(table_html);
 		$('.dropCDS').change(function(){
 			var val = this.value.split('_');
 			$('#pic'+val[0]+'_'+val[1]).empty();
-			plot(val[0],val[1],val[2],sug);
-			var new_sxgu = sug[val[0]][7][val[1]][val[2]][4][0];
-			var new_sgu = sug[val[0]][7][val[1]][val[2]][4][1];
-			var new_nsxgu = sug[val[0]][7][val[1]][val[2]][4][2];
-			var new_nsgu = sug[val[0]][7][val[1]][val[2]][4][3];
-			var new_total = sug[val[0]][7][val[1]][val[2]][4][0] + sug[val[0]][7][val[1]][val[2]][4][1] + sug[val[0]][7][val[1]][val[2]][4][2] + sug[val[0]][7][val[1]][val[2]][4][3];
+			plot(val[3],val[1],val[2],sug,val[0]);
+			var new_sxgu = sug[val[3]][7][val[1]][val[2]][4][0];
+			var new_sgu = sug[val[3]][7][val[1]][val[2]][4][1];
+			var new_nsxgu = sug[val[3]][7][val[1]][val[2]][4][2];
+			var new_nsgu = sug[val[3]][7][val[1]][val[2]][4][3];
+			var new_total = sug[val[3]][7][val[1]][val[2]][4][0] + sug[val[3]][7][val[1]][val[2]][4][1] + sug[val[3]][7][val[1]][val[2]][4][2] + sug[val[3]][7][val[1]][val[2]][4][3];
 			var rule = '';
 			if (new_sxgu > a){
-				rule += ' rule1 ';
+				rule += '<span class="badge badge-dark"> Rule 1 </span>&nbsp;';
 			}
 
 			if (new_sgu > b){
-				rule += ' rule2 ';
+				rule += '<span class="badge badge-dark"> Rule 2 </span>&nbsp;';
 			} 
 
 			if (new_nsxgu > c){
-				rule += ' rule3 ';
+				rule += '<span class="badge badge-dark"> Rule 3 </span>&nbsp;';
 			}
 			
 			if (new_nsgu > d){
-				rule += ' rule4 ';
+				rule += '<span class="badge badge-dark"> Rule 4 </span>&nbsp;';
 			}
 			
 			if (new_total > e){
-				rule += ' rule5 ';
+				rule += '<span class="badge badge-dark"> Rule 5 </span>&nbsp;';
 			}
 			
 			if (rule != ''){
@@ -361,18 +432,18 @@ function shit(divId,sug,sugNotCDS,a,b,c,d,e,name,gene,nematodeType,CDS1,CDS2,csr
 			}
 			else{
 				$('#rule'+val[0]+'_'+val[1]).empty();
-				$('#rule'+val[0]+'_'+val[1]).html('N/A');
+				$('#rule'+val[0]+'_'+val[1]).html('✕');
 			}
 
-			if (new_sxgu > a || new_sgu > b || new_nsxgu > c || new_nsgu > d || new_total >e){
-				$('#escape'+val[0]+'_'+val[1]).empty();
-				$('#escape'+val[0]+'_'+val[1]).html('✓');
-			}
-			else{
-				$('#escape'+val[0]+'_'+val[1]).empty();
-				$('#escape'+val[0]+'_'+val[1]).html('✕');
-			}
-			$('#ck'+val[0]+'_'+val[1]).attr('value',sug[val[0]][7][val[1]][val[2]][1]+','+sug[val[0]][7][val[1]][val[2]][3]+','+sug[val[0]][7][val[1]][val[2]][0]);
+			// if (new_sxgu > a || new_sgu > b || new_nsxgu > c || new_nsgu > d || new_total >e){
+			// 	$('#escape'+val[0]+'_'+val[1]).empty();
+			// 	$('#escape'+val[0]+'_'+val[1]).html('✓');
+			// }
+			// else{
+			// 	$('#escape'+val[0]+'_'+val[1]).empty();
+			// 	$('#escape'+val[0]+'_'+val[1]).html('✕');
+			// }
+			$('#ck'+val[0]+'_'+val[1]).attr('value',sug[val[3]][7][val[1]][val[2]][1]+','+sug[val[3]][7][val[1]][val[2]][2]+','+sug[val[3]][7][val[1]][val[2]][3]+','+sug[val[3]][7][val[1]][val[2]][0]);
 		})
 		midCount += 1;	
 	}
@@ -386,16 +457,17 @@ function shit(divId,sug,sugNotCDS,a,b,c,d,e,name,gene,nematodeType,CDS1,CDS2,csr
 			var table_html = '';
 			var table = '';
 			var lastX = Number(i) + frontCount + midCount;
-			table_html += '<div class="my-4"><table id="sugPicTable_'+lastX+'" class="sugTable" width= 100%><thead><tr><th style="width: 200px;">piRNA</th>';
-			table_html += '<th style="width: 100px;">targeted region in the input sequences</th>';
+			table_html += '<div class="my-4 py-4"><table id="sugPicTable_'+lastX+'" class="sugTable" width= 100%><thead><tr><th style="width: 200px;">piRNA</th>';
+			table_html += '<th style="width: 100px;">targeted region in input sequence</th>';
 			// table_html += '<th width= 100>original situation</th>';
-			table_html += '<th colspan="7">methods<br>escape condition{ rule1 : seed-xGU > '+a+' , rule2 : seed-GU > '+b+' , rule3 : non-seed-xGU > '+c+' ,<br>rule4 : non-seed-GU > '+d+' , rule5 : total mis > '+e+'}</th>';
+			table_html += '<td colspan="7"><svg id="overView_'+lastX+'"></svg></td>';
 			table_html += '</tr></thead><tbody>';
 			var span = sugNotCDS[i][7].length+1;
-			table += '<tr><td class="mid" rowspan="'+(span+1)+'">'+sugNotCDS[i][0]+'</td>';
-			table += '<td class="mid" rowspan="'+(span+1)+'">'+sugNotCDS[i][1]+'~'+(sugNotCDS[i][1]+(sugNotCDS[i][2]-1))+'</td>';
-			table += '<td colspan="4">original situation</td><td id="piPic'+lastX+'" class="mid"><svg id = "pic'+lastX+'"></svg></td><td colspan="2"></td></tr>';
-			table += '<tr><td></td><td>CDS</td><td>position</td><td>change to</td><td>after changed</td><td>breaked rules</td><td>escape?</td></tr>';
+			table += '<tr><td class="mid" rowspan="'+(span+2)+'">'+sugNotCDS[i][0]+'</td>';
+			table += '<td class="mid" rowspan="'+(span+2)+'">'+sugNotCDS[i][1]+'~'+(sugNotCDS[i][1]+(sugNotCDS[i][2]-1))+'</td>';
+			table += '<td colspan="4" rowspan="2"></td><td>pairing (top: input sequence, bottom: piRNA)</td><td rowspan="2"></td></tr>';
+			table += '<tr><td id="piPic'+lastX+'" class="mid"><svg id = "pic'+lastX+'"></svg></td></tr>';
+			table += '<tr><td></td><td>amino acid</td><td>modified position</td><td>suggested change</td><td>pairing after change(top: modified sequence, bottom: piRNA)</td><td>rule(s) broken</td></tr>';
 			table_html+=table;
 			var temp = '';
 			for (var pics in sugNotCDS[i][7]){
@@ -406,7 +478,7 @@ function shit(divId,sug,sugNotCDS,a,b,c,d,e,name,gene,nematodeType,CDS1,CDS2,csr
 				var new_nsgu = sugNotCDS[i][7][pics][0][3][3];
 				var new_total = sugNotCDS[i][7][pics][0][3][0] + sugNotCDS[i][7][pics][0][3][1] + sugNotCDS[i][7][pics][0][3][2] + sugNotCDS[i][7][pics][0][3][3];
 						
-				temp += '<tr id="r'+lastX+'_'+pics+'"><td><input type="checkbox" id="ck'+lastX+'_'+pics+'" value="'+sugNotCDS[i][7][pics][0][0]+','+sugNotCDS[i][7][pics][0][2]+', "></td>';
+				temp += '<tr id="r'+lastX+'_'+pics+'"><td><input type="checkbox" id="ck'+lastX+'_'+pics+'" value="'+sugNotCDS[i][7][pics][0][0]+','+sugNotCDS[i][7][pics][0][1]+','+sugNotCDS[i][7][pics][0][2]+', "></td>';
 						
 				temp += '<td></td><td>'+sugNotCDS[i][7][pics][0][0]+'</td>';
 				// duplicateFir.push([sugNotCDS[i][7][pics][0][0],sugNotCDS[i][15][sugNotCDS[i][7][pics][0][0]],Number(i),Number(pics)]);
@@ -424,38 +496,38 @@ function shit(divId,sug,sugNotCDS,a,b,c,d,e,name,gene,nematodeType,CDS1,CDS2,csr
 				}
 
 				if (new_sxgu > a){
-					rule += ' rule1 ';
+					rule += '<span class="badge badge-dark"> Rule 1 </span>&nbsp;';
 				}
 
 				if (new_sgu > b){
-					rule += ' rule2 ';
+					rule += '<span class="badge badge-dark"> Rule 2 </span>&nbsp;';
 				} 
 
 				if (new_nsxgu > c){
-					rule += ' rule3 ';
+					rule += '<span class="badge badge-dark"> Rule 3 </span>&nbsp;';
 				}
 				
 				if (new_nsgu > d){
-					rule += ' rule4 ';
+					rule += '<span class="badge badge-dark"> Rule 4 </span>&nbsp;';
 				}
 				
 				if (new_total > e){
-					rule += ' rule5 ';
+					rule += '<span class="badge badge-dark"> Rule 5 </span>&nbsp;';
 				}
 				
 				if (rule != ''){
 					temp += '<td id="rule'+lastX+'_'+pics+'" class="mid">'+rule+'</td>';
 				}
 				else{
-					temp += '<td id="rule'+lastX+'_'+pics+'" class="mid">N/A</td>';
+					temp += '<td id="rule'+lastX+'_'+pics+'" class="mid">✕</td>';
 				}
 
-				if (new_sxgu > a || new_sgu > b || new_nsxgu > c || new_nsgu > d || new_total >e){
-					temp += '<td id="escape'+lastX+'_'+pics+'" class="mid">✓</td></tr>';
-				}
-				else{
-					temp += '<td id="escape'+lastX+'_'+pics+'" class="mid">✕</td></tr>';
-				}
+				// if (new_sxgu > a || new_sgu > b || new_nsxgu > c || new_nsgu > d || new_total >e){
+				// 	temp += '<td id="escape'+lastX+'_'+pics+'" class="mid">✓</td></tr>';
+				// }
+				// else{
+				// 	temp += '<td id="escape'+lastX+'_'+pics+'" class="mid">✕</td></tr>';
+				// }
 			}
 			table_html+=temp;
 			table_html+='</tbody></table></div>';
@@ -471,23 +543,23 @@ function shit(divId,sug,sugNotCDS,a,b,c,d,e,name,gene,nematodeType,CDS1,CDS2,csr
 				var new_total = sugNotCDS[val[3]][7][val[1]][val[2]][3][0] + sugNotCDS[val[3]][7][val[1]][val[2]][3][1] + sugNotCDS[val[3]][7][val[1]][val[2]][3][2] + sugNotCDS[val[3]][7][val[1]][val[2]][3][3];
 				var rule = '';
 				if (new_sxgu > a){
-					rule += ' rule1 ';
+					rule += '<span class="badge badge-dark"> Rule 1 </span>&nbsp;';
 				}
 
 				if (new_sgu > b){
-					rule += ' rule2 ';
+					rule += '<span class="badge badge-dark"> Rule 2 </span>&nbsp;';
 				} 
 
 				if (new_nsxgu > c){
-					rule += ' rule3 ';
+					rule += '<span class="badge badge-dark"> Rule 3 </span>&nbsp;';
 				}
 				
 				if (new_nsgu > d){
-					rule += ' rule4 ';
+					rule += '<span class="badge badge-dark"> Rule 4 </span>&nbsp;';
 				}
 				
 				if (new_total > e){
-					rule += ' rule5 ';
+					rule += '<span class="badge badge-dark"> Rule 5 </span>&nbsp;';
 				}
 				
 				if (rule != ''){
@@ -496,20 +568,21 @@ function shit(divId,sug,sugNotCDS,a,b,c,d,e,name,gene,nematodeType,CDS1,CDS2,csr
 				}
 				else{
 					$('#rule'+val[0]+'_'+val[1]).empty();
-					$('#rule'+val[0]+'_'+val[1]).html('N/A');
+					$('#rule'+val[0]+'_'+val[1]).html('✕');
 				}
 
-				if (new_sxgu > a || new_sgu > b || new_nsxgu > c || new_nsgu > d || new_total >e){
-					$('#escape'+val[0]+'_'+val[1]).empty();
-					$('#escape'+val[0]+'_'+val[1]).html('✓');
-				}
-				else{
-					$('#escape'+val[0]+'_'+val[1]).empty();
-					$('#escape'+val[0]+'_'+val[1]).html('✕');
-				}
-				$('#ck'+val[0]+'_'+val[1]).attr('value',sugNotCDS[val[3]][7][val[1]][val[2]][0]+','+sugNotCDS[val[3]][7][val[1]][val[2]][2]+', ');
+				// if (new_sxgu > a || new_sgu > b || new_nsxgu > c || new_nsgu > d || new_total >e){
+				// 	$('#escape'+val[0]+'_'+val[1]).empty();
+				// 	$('#escape'+val[0]+'_'+val[1]).html('✓');
+				// }
+				// else{
+				// 	$('#escape'+val[0]+'_'+val[1]).empty();
+				// 	$('#escape'+val[0]+'_'+val[1]).html('✕');
+				// }
+				$('#ck'+val[0]+'_'+val[1]).attr('value',sugNotCDS[val[3]][7][val[1]][val[2]][0]+','+sugNotCDS[val[3]][7][val[1]][val[2]][1]+','+sugNotCDS[val[3]][7][val[1]][val[2]][2]+', ');
 			})
 		}
+		lastCount += 1;
 	}
 	///////////////創CDS後表格
 
@@ -548,7 +621,7 @@ function shit(divId,sug,sugNotCDS,a,b,c,d,e,name,gene,nematodeType,CDS1,CDS2,csr
 
 
 	// $('#'+divId+'-sugPicTable').find('tbody').prepend(frontText);
-	console.log(frontDuplicateFir);
+	// console.log(frontDuplicateFir);
 	for(var dupEffect in frontDuplicateFir){
 		// duplicateFir  0:修改位置 1:相同位置幾種改法 2:最外層count 3:內層count (通通都是int)
 		// console.log(range(duplicateFir[dupEffect][2]));
@@ -595,8 +668,12 @@ function shit(divId,sug,sugNotCDS,a,b,c,d,e,name,gene,nematodeType,CDS1,CDS2,csr
 			});
 		}
 	}
+	var totalCount = frontCount + midCount + lastCount;
+	for (var i = 0; i < totalCount; i++) {
+		eachOverView(i,gene,seqViewDataArr,CDS1,CDS2);
+	}
 	
-	$('#'+divId+'-sugTable').parent().after('<div id="update_footer" class="card-footer text-center"><button type="button" id="'+divId+'-update" class="btn btn-primary btn-lg" style="width: 50%;">update input sequence</button></div>');
+	// $('#'+divId+'-sugTable').parent().after('<div id="update_footer" class="card-footer text-center"><button type="button" id="'+divId+'-update" class="btn btn-primary btn-lg" style="width: 25%;">Modify input sequence</button></div>');
 	$('#'+divId+'-update').on({
 		click:function(){
 			var modifyCount = $("#overallTab > li").length;
@@ -651,7 +728,10 @@ function shit(divId,sug,sugNotCDS,a,b,c,d,e,name,gene,nematodeType,CDS1,CDS2,csr
 					else{var color = 'yellow';}
 				}
 				else{
-					var color = 'lightblue';
+					if (String(sug[x][2]-Number(seq)) == '1'){var color = 'lightgreen';}
+					else{
+						var color = 'lightblue';
+					}				
 				}
 				svg.append('rect').attr({
 					'x':scaleA(3+Number(seq)),
@@ -799,7 +879,10 @@ function shit(divId,sug,sugNotCDS,a,b,c,d,e,name,gene,nematodeType,CDS1,CDS2,csr
 						else{var color = 'yellow';}
 					}
 					else{
-						var color = 'lightblue';
+						if (String(sug[x][2]-Number(seq)) == '1'){var color = 'lightgreen';}
+						else{
+							var color = 'lightblue';
+						}			
 					}
 					svg.append('rect').attr({
 						'x':scaleA(3+Number(seq)),
@@ -862,51 +945,55 @@ function shit(divId,sug,sugNotCDS,a,b,c,d,e,name,gene,nematodeType,CDS1,CDS2,csr
 
 
 				for (var yoyoyo in sug[x][13]){
-					if (cc!=0) {break;}
-					svg.append('line').attr({
-						x1: scaleA(sug[x][12]+3*Number(yoyoyo)),
-						y1: scaleY(-1+5-1.2),
-						x2: scaleA(sug[x][12]+3*Number(yoyoyo)),
-						y2: scaleY(-1+5-1.8),
-						'transform':'translate('+transX+','+(transY-1)+')',
-					})
-					.style({
-						stroke: 'green',
-						'stroke-width': 2
-					});
+					if((sug[x][7][y][0][1]-sug[x][1]+sug[x][14]) - ( sug[x][12]+3*Number(yoyoyo) ) <= 2 &&
+						(sug[x][7][y][0][1]-sug[x][1]+sug[x][14]) - ( sug[x][12]+3*Number(yoyoyo) ) >= 0){
+						if (cc!=0) {break;}
+						svg.append('line').attr({
+							x1: scaleA(sug[x][12]+3*Number(yoyoyo)),
+							y1: scaleY(-1+5-1.2),
+							x2: scaleA(sug[x][12]+3*Number(yoyoyo)),
+							y2: scaleY(-1+5-1.8),
+							'transform':'translate('+transX+','+(transY-1)+')',
+						})
+						.style({
+							stroke: 'green',
+							'stroke-width': 2
+						});
 
-					svg.append('line').attr({
-						x1: scaleA(sug[x][12]+3*Number(yoyoyo)),
-						y1: scaleY(-1+5-1.8),
-						x2: scaleA(sug[x][12]+3*Number(yoyoyo)+2),
-						y2: scaleY(-1+5-1.8),
-						'transform':'translate('+transX+','+(transY-1)+')',
-					})
-					.style({
-						stroke: 'green',
-						'stroke-width': 2
-					});
+						svg.append('line').attr({
+							x1: scaleA(sug[x][12]+3*Number(yoyoyo)),
+							y1: scaleY(-1+5-1.8),
+							x2: scaleA(sug[x][12]+3*Number(yoyoyo)+2),
+							y2: scaleY(-1+5-1.8),
+							'transform':'translate('+transX+','+(transY-1)+')',
+						})
+						.style({
+							stroke: 'green',
+							'stroke-width': 2
+						});
 
-					svg.append('line').attr({
-						x1: scaleA(sug[x][12]+3*Number(yoyoyo)+2),
-						y1: scaleY(-1+5-1.8),
-						x2: scaleA(sug[x][12]+3*Number(yoyoyo)+2),
-						y2: scaleY(-1+5-1.2),
-						'transform':'translate('+transX+','+(transY-1)+')',
-					})
-					.style({
-						stroke: 'green',
-						'stroke-width': 2
-					});
+						svg.append('line').attr({
+							x1: scaleA(sug[x][12]+3*Number(yoyoyo)+2),
+							y1: scaleY(-1+5-1.8),
+							x2: scaleA(sug[x][12]+3*Number(yoyoyo)+2),
+							y2: scaleY(-1+5-1.2),
+							'transform':'translate('+transX+','+(transY-1)+')',
+						})
+						.style({
+							stroke: 'green',
+							'stroke-width': 2
+						});
 
-					svg.append('text')
-					.attr({
-						'x':scaleA(sug[x][12]+3*Number(yoyoyo)+1),
-						'y':scaleY(-1+5-2),
-						'style':'text-anchor: middle; font-size: 15px',
-						'transform':'translate('+transX+','+(transY-1)+')',    
-					})
-					.text(sug[x][13][yoyoyo]);
+						svg.append('text')
+						.attr({
+							'x':scaleA(sug[x][12]+3*Number(yoyoyo)+1),
+							'y':scaleY(-1+5-2),
+							'style':'text-anchor: middle; font-size: 15px',
+							'transform':'translate('+transX+','+(transY-1)+')',    
+						})
+						.text(sug[x][13][yoyoyo]);
+						
+					}
 					
 				}
 				cc+=1;
@@ -966,7 +1053,10 @@ function shit(divId,sug,sugNotCDS,a,b,c,d,e,name,gene,nematodeType,CDS1,CDS2,csr
 					else{var color = 'yellow';}
 				}
 				else{
-					var color = 'lightblue';
+					if (String(sugNotCDS[x][2]-Number(seq)) == '1'){var color = 'lightgreen';}
+					else{
+						var color = 'lightblue';
+					}					
 				}
 				svg.append('rect').attr({
 					'x':scaleA(3+Number(seq)),
@@ -1064,7 +1154,10 @@ function shit(divId,sug,sugNotCDS,a,b,c,d,e,name,gene,nematodeType,CDS1,CDS2,csr
 						else{var color = 'yellow';}
 					}
 					else{
-						var color = 'lightblue';
+						if (String(sugNotCDS[x][2]-Number(seq)) == '1'){var color = 'lightgreen';}
+						else{
+							var color = 'lightblue';
+						}						
 					}
 					svg.append('rect').attr({
 						'x':scaleA(3+Number(seq)),
@@ -1133,12 +1226,12 @@ function shit(divId,sug,sugNotCDS,a,b,c,d,e,name,gene,nematodeType,CDS1,CDS2,csr
 	//畫CDS外的
 }
 
-function plot(x,y,z,sug){
+function plot(x,y,z,sug,midX){
 	var transX = 22.5;
 	var transY = -17.5;
 	var width = 500;
 	var height = 140;
-	var svg = d3.select('#pic'+x+'_'+y).attr({
+	var svg = d3.select('#pic'+midX+'_'+y).attr({
 		'width': width,
 		'height': 80
 		});
@@ -1245,52 +1338,54 @@ function plot(x,y,z,sug){
 		}
 
 		for (var yoyoyo in sug[x][13]){
-			if (cc!=0) {break;}
-			svg.append('line').attr({
-				x1: scaleA(sug[x][12]+3*Number(yoyoyo)),
-				y1: scaleY(-1+5-1.2),
-				x2: scaleA(sug[x][12]+3*Number(yoyoyo)),
-				y2: scaleY(-1+5-1.8),
-				'transform':'translate('+transX+','+(transY-1)+')',
-			})
-			.style({
-				stroke: 'green',
-				'stroke-width': 2
-			});
+			if((sug[x][7][y][z][1]-sug[x][1]+sug[x][14]) - ( sug[x][12]+3*Number(yoyoyo) ) <= 2 &&
+				(sug[x][7][y][z][1]-sug[x][1]+sug[x][14]) - ( sug[x][12]+3*Number(yoyoyo) ) >= 0){
+				if (cc!=0) {break;}
+				svg.append('line').attr({
+					x1: scaleA(sug[x][12]+3*Number(yoyoyo)),
+					y1: scaleY(-1+5-1.2),
+					x2: scaleA(sug[x][12]+3*Number(yoyoyo)),
+					y2: scaleY(-1+5-1.8),
+					'transform':'translate('+transX+','+(transY-1)+')',
+				})
+				.style({
+					stroke: 'green',
+					'stroke-width': 2
+				});
 
-			svg.append('line').attr({
-				x1: scaleA(sug[x][12]+3*Number(yoyoyo)),
-				y1: scaleY(-1+5-1.8),
-				x2: scaleA(sug[x][12]+3*Number(yoyoyo)+2),
-				y2: scaleY(-1+5-1.8),
-				'transform':'translate('+transX+','+(transY-1)+')',
-			})
-			.style({
-				stroke: 'green',
-				'stroke-width': 2
-			});
+				svg.append('line').attr({
+					x1: scaleA(sug[x][12]+3*Number(yoyoyo)),
+					y1: scaleY(-1+5-1.8),
+					x2: scaleA(sug[x][12]+3*Number(yoyoyo)+2),
+					y2: scaleY(-1+5-1.8),
+					'transform':'translate('+transX+','+(transY-1)+')',
+				})
+				.style({
+					stroke: 'green',
+					'stroke-width': 2
+				});
 
-			svg.append('line').attr({
-				x1: scaleA(sug[x][12]+3*Number(yoyoyo)+2),
-				y1: scaleY(-1+5-1.8),
-				x2: scaleA(sug[x][12]+3*Number(yoyoyo)+2),
-				y2: scaleY(-1+5-1.2),
-				'transform':'translate('+transX+','+(transY-1)+')',
-			})
-			.style({
-				stroke: 'green',
-				'stroke-width': 2
-			});
+				svg.append('line').attr({
+					x1: scaleA(sug[x][12]+3*Number(yoyoyo)+2),
+					y1: scaleY(-1+5-1.8),
+					x2: scaleA(sug[x][12]+3*Number(yoyoyo)+2),
+					y2: scaleY(-1+5-1.2),
+					'transform':'translate('+transX+','+(transY-1)+')',
+				})
+				.style({
+					stroke: 'green',
+					'stroke-width': 2
+				});
 
-			svg.append('text')
-			.attr({
-				'x':scaleA(sug[x][12]+3*Number(yoyoyo)+1),
-				'y':scaleY(-1+5-2),
-				'style':'text-anchor: middle; font-size: 15px',
-				'transform':'translate('+transX+','+(transY-1)+')',    
-			})
-			.text(sug[x][13][yoyoyo]);
-			
+				svg.append('text')
+				.attr({
+					'x':scaleA(sug[x][12]+3*Number(yoyoyo)+1),
+					'y':scaleY(-1+5-2),
+					'style':'text-anchor: middle; font-size: 15px',
+					'transform':'translate('+transX+','+(transY-1)+')',    
+				})
+				.text(sug[x][13][yoyoyo]);
+			}
 		}
 		cc+=1;
 	}

@@ -5,6 +5,7 @@ from multiprocessing import Process, Lock, Queue ,JoinableQueue, active_children
 import time
 import csv
 from django.http import JsonResponse
+from django.utils.encoding import smart_str
 import json
 import os
 import re
@@ -36,7 +37,8 @@ def goResult(request):
 def create_data(request):
 	global ori_result
 	module_dir = os.path.dirname(__file__)
-	with open(os.path.join(module_dir,'modify.csv'),'w',encoding='utf8') as f1:
+	modifyCount = request.POST.get('modifyCount')
+	with open(os.path.join(module_dir,'modify'+modifyCount+'.csv'),'w',encoding='utf8') as f1:
 		mod = csv.writer(f1)
 		s1 = request.POST.get('name').strip()
 		s2 = request.POST.get('data1').strip()
@@ -51,6 +53,7 @@ def create_data(request):
 		mod.writerow([request.POST.get('CDS_1')])
 		mod.writerow([request.POST.get('CDS_2')])
 		mod.writerow([request.POST.get('posString')])
+		mod.writerow([request.POST.get('selectInfoStr')])
 	with open(os.path.join(module_dir,'selected.csv'),'w',encoding='utf8') as f1:
 		ww = csv.writer(f1)
 		for j in range(int(request.POST.get('select_num'))):
@@ -169,6 +172,10 @@ def scan_main(request):
 			sug = suggestion(result)
 			sug['inCDS'] = sorted(sug['inCDS'], key=operator.itemgetter(1))
 			sug['notInCDS'] = sorted(sug['notInCDS'], key=operator.itemgetter(1))
+			for i in sug['inCDS']:				
+				i[7] = sorted(i[7], key=operator.itemgetter(1),reverse=True)
+			for i in sug['notInCDS']:				
+				i[7] = sorted(i[7], key=operator.itemgetter(0),reverse=True)
 			data = {
 				'CDS':[CDSout],
 				'advice':[],
@@ -325,8 +332,8 @@ def scan(q,num):
 					if Arr2[a+len(Arr1)-1] != Arr1[len(Arr1)-1] :
 						if (Arr2[a+len(Arr1)-1]=='G' and Arr1[len(Arr1)-1]=='A') or (Arr2[a+len(Arr1)-1]=='U' and Arr1[len(Arr1)-1]=='C'):
 							#沒對到的是GU    
-							Arr5[len(Arr1)-1] = "<mark id='b'>"+Arr5[len(Arr1)-1]+"</mark>"
-							Arr4.insert(0,"<mark id='b'>1</mark>")
+							Arr5[len(Arr1)-1] = "<mark id='g'>"+Arr5[len(Arr1)-1]+"</mark>"
+							Arr4.insert(0,"<mark id='g'>1</mark>")
 						else:
 							#沒對到的不是GU
 							Arr5[len(Arr1)-1] = "<mark id='g'>"+Arr5[len(Arr1)-1]+"</mark>"
@@ -348,7 +355,7 @@ def scan(q,num):
 					# print(Arr4)
 				
 				
-					outArr.append([key[0],str(a+1)+'~'+str(a+21),o+d+e+m+n,','.join(Arr4),','.join(ArryxGU),d,m,e,n,"5' "+''.join(Arr3)+" 3'","3' "+''.join(Arr5)+" 5'",key[2],key[1][::-1]])
+					outArr.append([key[0],str(a+1)+'-'+str(a+21),o+d+e+m+n,','.join(Arr4),','.join(ArryxGU),d,m,e,n,"5' "+''.join(Arr3)+" 3'","3' "+''.join(Arr5)+" 5'",key[2],key[1][::-1]])
 					GG+=1
 					b-=1
 					c-=1
@@ -357,7 +364,7 @@ def scan(q,num):
 	q.put(outArr)
 
 def suggestion(data):
-	# data: 0:名字，1:mismatch位置(x~x+長度)，2:#mismatch，3:mismatch position(含tag)
+	# data: 0:名字，1:mismatch位置(x-x+長度)，2:#mismatch，3:mismatch position(含tag)
 	# 		4:xGU position，5:seed region non-GU#，6:seed region GU#，7:non-seed non-GU#
 	# 		8:non-seed GU#，9:input gene detail，10:piRNA detail，11:[piRNA資訊陣列]，12:piRNA序列
 	output = {'inCDS':[],'notInCDS':[]}
@@ -368,9 +375,9 @@ def suggestion(data):
 		nsGU = int(piRNA[8])
 		total_mis = int(piRNA[5]) + int(piRNA[6]) + int(piRNA[7]) + int(piRNA[8])
 		name = piRNA[0]
-		fir = int(piRNA[1].split('~')[0])
-		seq = piRNA[12]
-		length = len(seq)
+		fir = int(piRNA[1].split('-')[0])
+		piRNAseq = piRNA[12]
+		length = len(piRNAseq)
 		mis_pos = re.sub('<[^>]*>', '', piRNA[3]).split(',')
 		mis_xGU = piRNA[4].split(',')
 		mis_GU = list(set(mis_pos) - set(mis_xGU))
@@ -379,20 +386,21 @@ def suggestion(data):
 
 		if fir <= CDS1 - 21 or fir > CDS2:
 			seeds = range(2,8)
-			seqs = ['A','U','G','C']
-			for h in seeds:
+			seqs = ['A','U','G','C'] #能換成
+			for h in seeds:    #掃seed-region
 				for k in seqs:
-					nowCheckSeq = RNA[fir+length-1-h]
-					nowCheckPi = seq[length-h]
+					nowCheckSeq = RNA[fir+length-1-h] #mRNA上被check的字符
+					nowCheckPi = piRNAseq[length-h]	#對應位置的piRNA字符
+					#能換成的不相同且不會match且不是GU情況
 					if nowCheckSeq != k and k!= complement(nowCheckPi) and not((k=='G' and nowCheckPi=='U') or (k=='U' and nowCheckPi=='G')):
 						result.append([fir+length-h,nowCheckSeq.lower(),k.lower(),[sxGU+1,sGU,nsxGU,nsGU],0])
 			over = 3
 			new_RNA = RNA[fir-1:fir-1+length]
-			collect = [name,fir,length,sxGU,sGU,nsxGU,nsGU,result,seq,mis_xGU,mis_GU,new_RNA.lower()]
+			collect = [name,fir,length,sxGU,sGU,nsxGU,nsGU,result,piRNAseq,mis_xGU,mis_GU,new_RNA.lower()]
 			output['notInCDS'].append(collect)
 			continue
-		# print('**********************')
-		# print(name)
+
+
 		#確認最右邊第1組CDS狀態
 		mission = (fir+(length-2)-CDS1)%3
 
@@ -408,89 +416,93 @@ def suggestion(data):
 		can_method = 0
 		#檢查最右邊CDS
 
-		first_CDS_one = (length-1-mission)-1
+		first_CDS_leftPos = (length-1-mission)-1  #最右邊的CDS的左邊字符的位置，也就是第一組CDS的第一碼
 		if stop_num == 0:
-			CDS_seq = RNA[fir+(first_CDS_one)-1:fir+(first_CDS_one)-1+3]
-			CDS_right = CDS_ori[CDS_seq][0]
-			CDSSS.append(CDS_right)
-		CDS_plot_first = fir+(first_CDS_one)-1
-		# print('name : {0}, fir: {1}, mission :{2}, CDSs :{3}, CDS_right :{4} ,piRNA[5]:{5}'.format(name,fir,mission,CDSs,CDS_right,piRNA[5]))
-		# print('mis_pos: {0}'.format(mis_pos))
+			CDS_seq_of_mRNA = RNA[fir+(first_CDS_leftPos)-1:fir+(first_CDS_leftPos)-1+3]
+			CDS_codon = CDS_ori[CDS_seq_of_mRNA][0]
+			CDSSS.append(CDS_codon)
+		CDS_plot_first = fir+(first_CDS_leftPos)-1
 		result = []
 
-		
+		# 只有CUG改UUG和CGA改AGA兩個情況
 		if (mission == 0 or mission == 1) and stop_num == 0:
-			# 只有CUG改UUG和CGA改AGA兩個情況
-			if CDS_seq == 'CUG':
-				if seq[first_CDS_one] != 'G': #改完後不是GU，原本是C所以不可能是GU對，如果本來就是xGU的話就根本沒動所以不列出
-					if str(length-first_CDS_one) not in mis_xGU:
-						result.append([CDS_right,fir+(first_CDS_one),'C','U',[sxGU+1,sGU,nsxGU,nsGU],0])
-				else: #改完變成GU
+			#CDS序列是CUG要改成UUG且對到的piRNA第一個位置不能是A，不然會match
+			if CDS_seq_of_mRNA == 'CUG' and piRNAseq[first_CDS_leftPos] != 'A':
+				#改完後不是GU，原本是C所以不可能是GU對，如果本來就是xGU的話就根本沒動所以不列出 
+				if piRNAseq[first_CDS_leftPos] != 'G': 
+					if str(length-first_CDS_leftPos) not in mis_xGU:
+						result.append([CDS_codon,fir+(first_CDS_leftPos),'C','U',[sxGU+1,sGU,nsxGU,nsGU],0])
+				#改完變成GU
+				else: 
 					a = 0
-					if str(length-first_CDS_one) in mis_xGU: #如果原本就沒對到，要扣掉
+					if str(length-first_CDS_leftPos) in mis_xGU: #如果原本就沒對到，要扣掉
 						a = 1
-					result.append([CDS_right,fir+first_CDS_one,'C','U',[sxGU-a,sGU+1,nsxGU,nsGU],1])
+					result.append([CDS_codon,fir+first_CDS_leftPos,'C','U',[sxGU-a,sGU+1,nsxGU,nsGU],1])
 
-			elif CDS_seq == 'CGA':
-				if str(length-first_CDS_one) not in mis_xGU:
-					result.append([CDS_right,fir+first_CDS_one,'C','A',[sxGU+1,sGU,nsxGU,nsGU],0])
+			#CDS序列是CGA要改成AGA且對到的piRNA第一個位置不能是U，不然會match
+			elif CDS_seq_of_mRNA == 'CGA' and piRNAseq[first_CDS_leftPos] != 'U':
+				#改完後字符是A所以不可能是GU對，因此只要判斷他不是xGU就可以達成建議
+				if str(length-first_CDS_leftPos) not in mis_xGU:
+					result.append([CDS_codon,fir+first_CDS_leftPos,'C','A',[sxGU+1,sGU,nsxGU,nsGU],0])
 
 
 		elif mission == 2 and stop_num == 0:
-			if CDS_right == 'L' or CDS_right == 'S' or CDS_right == 'R' :
+			if CDS_codon == 'L' or CDS_codon == 'S' or CDS_codon == 'R' :
 				#-------------------定住後兩碼，看'第一碼'--------------
-				if CDS_seq == 'CUG':
-					if seq[first_CDS_one] != 'G':
-						if str(length-first_CDS_one) not in mis_xGU:
-							result.append([CDS_right,fir+first_CDS_one,'C','U',[sxGU+1,sGU,nsxGU,nsGU],0])
+				if CDS_seq_of_mRNA == 'CUG' and piRNAseq[first_CDS_leftPos] != 'A':
+					if piRNAseq[first_CDS_leftPos] != 'G':
+						if str(length-first_CDS_leftPos) not in mis_xGU:
+							result.append([CDS_codon,fir+first_CDS_leftPos,'C','U',[sxGU+1,sGU,nsxGU,nsGU],0])
 					else:
 						a = 0
-						if str(length-first_CDS_one) in mis_xGU: #如果原本就沒對到，要扣掉
+						if str(length-first_CDS_leftPos) in mis_xGU: #如果原本就沒對到，要扣掉
 							a = 1
-						result.append([CDS_right,fir+first_CDS_one,'C','U',[sxGU-a,sGU+1,nsxGU,nsGU],1])
+						result.append([CDS_codon,fir+first_CDS_leftPos,'C','U',[sxGU-a,sGU+1,nsxGU,nsGU],1])
 
-				elif CDS_seq == 'CGA':
-					if str(length-first_CDS_one) not in mis_xGU:
-						result.append([CDS_right,fir+first_CDS_one,'C','A',[sxGU+1,sGU,nsxGU,nsGU],0])
+				elif CDS_seq_of_mRNA == 'CGA' and piRNAseq[first_CDS_leftPos] != 'U':
+					if str(length-first_CDS_leftPos) not in mis_xGU:
+						result.append([CDS_codon,fir+first_CDS_leftPos,'C','A',[sxGU+1,sGU,nsxGU,nsGU],0])
 				#-------------------定住後兩碼，看'第一碼'--------------
 
 				#-------------------定住前兩碼，看'第三碼'--------------
-				for third in CDScodonDict[CDS_right]:
-					if third[0:2] != CDS_seq[0:2] or third == CDS_seq:
+				for third in CDScodonDict[CDS_codon]:
+					if third[0:2] != CDS_seq_of_mRNA[0:2] or third == CDS_seq_of_mRNA or (third[2] == complement(piRNAseq[first_CDS_leftPos+2])):
 						continue
 					# 下面是會對到GU的情形
-					elif (third[2] == 'G' and seq[first_CDS_one+2] =='U') or (third[2] == 'U' and seq[first_CDS_one+2] =='G'):
+					elif (third[2] == 'G' and piRNAseq[first_CDS_leftPos+2] =='U') or (third[2] == 'U' and piRNAseq[first_CDS_leftPos+2] =='G'):
 						a = 0
-						if str(length-(first_CDS_one+2)) in mis_xGU: #如果原本就沒對到，要扣掉
+						if str(length-(first_CDS_leftPos+2)) in mis_xGU: #如果原本就沒對到，要扣掉
 							a = 1
-						result.append([CDS_right,fir+first_CDS_one+2,RNA[fir+first_CDS_one+2-1],third[2],[sxGU-a,sGU+1,nsxGU,nsGU],1])
+						result.append([CDS_codon,fir+first_CDS_leftPos+2,RNA[fir+first_CDS_leftPos+2-1],third[2],[sxGU-a,sGU+1,nsxGU,nsGU],1])
 					# 下面是'不會'對到GU的情形
 					else: #如果原本是GU變成nonGU要把GU數量扣1
-						if str(length-(first_CDS_one+2)) not in mis_xGU :
+						if str(length-(first_CDS_leftPos+2)) not in mis_xGU :
 							b = 0
-							if str(length-(first_CDS_one+2)) in mis_GU:
+							if str(length-(first_CDS_leftPos+2)) in mis_GU:
 								b = 1
-							result.append([CDS_right,fir+first_CDS_one+2,RNA[fir+first_CDS_one+2-1],third[2],[sxGU+1,sGU-b,nsxGU,nsGU],0])
+							result.append([CDS_codon,fir+first_CDS_leftPos+2,RNA[fir+first_CDS_leftPos+2-1],third[2],[sxGU+1,sGU-b,nsxGU,nsGU],0])
 
 				#-------------------定住前兩碼，看'第三碼'--------------
 
-			elif CDS_right == 'M' or CDS_right == 'W':
+			elif CDS_codon == 'M' or CDS_codon == 'W':
 				pass
 			else:
-				for third in CDScodonDict[CDS_right]:
-					if third == CDS_seq[2]:
+				for third in CDScodonDict[CDS_codon]:
+					if third == CDS_seq_of_mRNA[2]:
 						continue
-					elif (third == 'G' and seq[first_CDS_one+2]=='U') or (third == 'U' and seq[first_CDS_one+2]=='G'):
+					elif third == complement(piRNAseq[first_CDS_leftPos+2]):
+						continue
+					elif (third == 'G' and piRNAseq[first_CDS_leftPos+2]=='U') or (third == 'U' and piRNAseq[first_CDS_leftPos+2]=='G'):
 						a = 0
-						if str(length-(first_CDS_one+2)) in mis_xGU: #如果原本就沒對到，要扣掉
+						if str(length-(first_CDS_leftPos+2)) in mis_xGU: #如果原本就沒對到，要扣掉
 							a = 1
-						result.append([CDS_right,fir+first_CDS_one+2,RNA[fir+first_CDS_one+2-1],third,[sxGU-a,sGU+1,nsxGU,nsGU],1])
+						result.append([CDS_codon,fir+first_CDS_leftPos+2,RNA[fir+first_CDS_leftPos+2-1],third,[sxGU-a,sGU+1,nsxGU,nsGU],1])
 					else:
-						if str(length-(first_CDS_one+2)) not in mis_xGU :
+						if str(length-(first_CDS_leftPos+2)) not in mis_xGU :
 							b = 0
-							if str(length-(first_CDS_one+2)) in mis_GU:
+							if str(length-(first_CDS_leftPos+2)) in mis_GU:
 								b = 1
-							result.append([CDS_right,fir+first_CDS_one+2,RNA[fir+first_CDS_one+2-1],third,[sxGU+1,sGU-b,nsxGU,nsGU],0])
+							result.append([CDS_codon,fir+first_CDS_leftPos+2,RNA[fir+first_CDS_leftPos+2-1],third,[sxGU+1,sGU-b,nsxGU,nsGU],0])
 
 
 
@@ -499,124 +511,126 @@ def suggestion(data):
 			if x < stop_num-1:
 				continue
 			move = 3*(x+1) 	#每一步都少一個move
-			CDS_seq = RNA[(fir+(first_CDS_one)-1)-move:(fir+(first_CDS_one)-1)-move+3]
-			CDS_right = CDS_ori[CDS_seq][0]
-			CDSSS.append(CDS_right)
-			if CDS_right == 'L' or CDS_right == 'S' or CDS_right == 'R' :
+			CDS_seq_of_mRNA = RNA[(fir+(first_CDS_leftPos)-1)-move:(fir+(first_CDS_leftPos)-1)-move+3] #CDS_seq_of_mRNA代表mRNA上的CDS組合
+			CDS_codon = CDS_ori[CDS_seq_of_mRNA][0] #CDS_codon代表codon代號 比如:'K'
+			CDSSS.append(CDS_codon)
+			if CDS_codon == 'L' or CDS_codon == 'S' or CDS_codon == 'R' :
 				#-------------------定住後兩碼，看'第一碼'--------------
-				if CDS_seq == 'CUG':
-					if seq[first_CDS_one-move] != 'G':
-						if str(length-(first_CDS_one-move)) not in mis_xGU :
+				if CDS_seq_of_mRNA == 'CUG' and piRNAseq[first_CDS_leftPos-move] != 'A':
+					if piRNAseq[first_CDS_leftPos-move] != 'G':
+						if str(length-(first_CDS_leftPos-move)) not in mis_xGU :
 							a = 0
 							c = 0
-							if length-(first_CDS_one-move) <= 7:
+							if length-(first_CDS_leftPos-move) <= 7:
 								a = 1
 							else:
 								c = 1
-							result.append([CDS_right,fir+(first_CDS_one)-move,'C','U',[sxGU+a,sGU,nsxGU+c,nsGU],0])
+							result.append([CDS_codon,fir+(first_CDS_leftPos)-move,'C','U',[sxGU+a,sGU,nsxGU+c,nsGU],0])
 					else:
 						b = 0
 						d = 0
-						if length-(first_CDS_one-move) <= 7:
+						if length-(first_CDS_leftPos-move) <= 7:
 							b = 1
 						else:
 							d = 1
 						a = 0
 						c = 0
-						if str(length-(first_CDS_one-move)) in mis_xGU: #如果原本就沒對到，要扣掉
-							if length-(first_CDS_one-move) <= 7:
+						if str(length-(first_CDS_leftPos-move)) in mis_xGU: #如果原本就沒對到，要扣掉
+							if length-(first_CDS_leftPos-move) <= 7:
 								a = 1
 							else:
 								c = 1
-						result.append([CDS_right,fir+first_CDS_one-move,'C','U',[sxGU-a,sGU+b,nsxGU-c,nsGU+d],1])
+						result.append([CDS_codon,fir+first_CDS_leftPos-move,'C','U',[sxGU-a,sGU+b,nsxGU-c,nsGU+d],1])
 
 
-				elif CDS_seq == 'CGA':
-					if str(length-(first_CDS_one-move)) not in mis_xGU:
+				elif CDS_seq_of_mRNA == 'CGA' and piRNAseq[first_CDS_leftPos-move] != 'U':
+					if str(length-(first_CDS_leftPos-move)) not in mis_xGU:
 						a = 0
 						c = 0
-						if length-(first_CDS_one-move) <= 7:
+						if length-(first_CDS_leftPos-move) <= 7:
 							a = 1
 						else:
 							c = 1
-						result.append([CDS_right,fir+first_CDS_one-move,'C','A',[sxGU+a,sGU,nsxGU+c,nsGU],0])
+						result.append([CDS_codon,fir+first_CDS_leftPos-move,'C','A',[sxGU+a,sGU,nsxGU+c,nsGU],0])
 				#-------------------定住後兩碼，看'第一碼'--------------
 
 				#-------------------定住前兩碼，看'第三碼'--------------
-				for third in CDScodonDict[CDS_right]:
-					if third[0:2] != CDS_seq[0:2] or third == CDS_seq:
+				for third in CDScodonDict[CDS_codon]:
+					if third[0:2] != CDS_seq_of_mRNA[0:2] or third == CDS_seq_of_mRNA or (third[2] == complement(piRNAseq[first_CDS_leftPos+2-move])):
 						continue
-					elif (third[2] == 'G' and seq[first_CDS_one+2-move] =='U') or (third[2] == 'U' and seq[first_CDS_one+2-move] =='G'):
+					elif (third[2] == 'G' and piRNAseq[first_CDS_leftPos+2-move] =='U') or (third[2] == 'U' and piRNAseq[first_CDS_leftPos+2-move] =='G'):
 						b = 0
 						d = 0
-						if length-(first_CDS_one-move+2) <= 7:
+						if length-(first_CDS_leftPos-move+2) <= 7:
 							b+=1
 						else:
 							d+=1
 						a = 0
 						c = 0
-						if str(length-(first_CDS_one-move+2)) in mis_xGU:
-							if length-(first_CDS_one-move+2) <= 7:
+						if str(length-(first_CDS_leftPos-move+2)) in mis_xGU:
+							if length-(first_CDS_leftPos-move+2) <= 7:
 								a = 1
 							else:
 								c = 1
-						result.append([CDS_right,fir+first_CDS_one+2-move,RNA[fir+first_CDS_one+2-1-move],third[2],[sxGU-a,sGU+b,nsxGU-c,nsGU+d],1])
+						result.append([CDS_codon,fir+first_CDS_leftPos+2-move,RNA[fir+first_CDS_leftPos+2-1-move],third[2],[sxGU-a,sGU+b,nsxGU-c,nsGU+d],1])
 					else:
-						if str(length-(first_CDS_one+2-move)) not in mis_xGU :
+						if str(length-(first_CDS_leftPos+2-move)) not in mis_xGU :
 							a = 0
 							b = 0
 							c = 0
 							d = 0
-							if length-(first_CDS_one-move+2) <= 7:
-								if str(length-(first_CDS_one-move+2)) in mis_GU:
+							if length-(first_CDS_leftPos-move+2) <= 7:
+								if str(length-(first_CDS_leftPos-move+2)) in mis_GU:
 									b = 1
 								a= 1
 							else:
-								if str(length-(first_CDS_one-move+2)) in mis_GU:
+								if str(length-(first_CDS_leftPos-move+2)) in mis_GU:
 									d = 1
 								c = 1
-							result.append([CDS_right,fir+first_CDS_one+2-move,RNA[fir+first_CDS_one+2-move-1],third[2],[sxGU+a,sGU-b,nsxGU+c,nsGU-d],0])
+							result.append([CDS_codon,fir+first_CDS_leftPos+2-move,RNA[fir+first_CDS_leftPos+2-move-1],third[2],[sxGU+a,sGU-b,nsxGU+c,nsGU-d],0])
 
 				#-------------------定住前兩碼，看'第三碼'--------------
 
 
-			elif CDS_right == 'M' or CDS_right == 'W':
+			elif CDS_codon == 'M' or CDS_codon == 'W':
 				pass
 			else:
-				for third in CDScodonDict[CDS_right]:
-					if third == CDS_seq[2]:
+				for third in CDScodonDict[CDS_codon]:
+					if third == CDS_seq_of_mRNA[2]:
 						continue
-					elif (third == 'G' and seq[first_CDS_one+2-move]=='U') or (third == 'U' and seq[first_CDS_one+2-move]=='G'):
+					elif third == complement(piRNAseq[first_CDS_leftPos+2-move]):
+						continue
+					elif (third == 'G' and piRNAseq[first_CDS_leftPos+2-move]=='U') or (third == 'U' and piRNAseq[first_CDS_leftPos+2-move]=='G'):
 						b = 0
 						d = 0
-						if length-(first_CDS_one-move+2) <= 7:
+						if length-(first_CDS_leftPos-move+2) <= 7:
 							b = 1
 						else:
 							d = 1
 						a = 0
 						c = 0
-						if str(length-(first_CDS_one-move+2)) in mis_xGU:
-							if length-(first_CDS_one-move+2) <= 7:
+						if str(length-(first_CDS_leftPos-move+2)) in mis_xGU:
+							if length-(first_CDS_leftPos-move+2) <= 7:
 								a = 1
 							else:
 								c = 1
-						result.append([CDS_right,fir+first_CDS_one+2-move,RNA[fir+first_CDS_one+2-move-1],third,[sxGU-a,sGU+b,nsxGU-c,nsGU+d],1])
+						result.append([CDS_codon,fir+first_CDS_leftPos+2-move,RNA[fir+first_CDS_leftPos+2-move-1],third,[sxGU-a,sGU+b,nsxGU-c,nsGU+d],1])
 
 					else:
-						if str(length-(first_CDS_one+2-move)) not in mis_xGU :
+						if str(length-(first_CDS_leftPos+2-move)) not in mis_xGU :
 							a = 0
 							b = 0
 							c = 0
 							d = 0
-							if length-(first_CDS_one-move+2) <= 7:
-								if str(length-(first_CDS_one-move+2)) in mis_GU:
-									b = 1
+							if length-(first_CDS_leftPos-move+2) <= 7:
+								if str(length-(first_CDS_leftPos-move+2)) in mis_GU:
+									b = 1								
 								a= 1
 							else:
-								if str(length-(first_CDS_one-move+2)) in mis_GU:
+								if str(length-(first_CDS_leftPos-move+2)) in mis_GU:
 									d = 1
 								c = 1
-							result.append([CDS_right,fir+first_CDS_one+2-move,RNA[fir+first_CDS_one+2-move-1],third,[sxGU+a,sGU-b,nsxGU+c,nsGU-d],0])
+							result.append([CDS_codon,fir+first_CDS_leftPos+2-move,RNA[fir+first_CDS_leftPos+2-move-1],third,[sxGU+a,sGU-b,nsxGU+c,nsGU-d],0])
 		
 		#掃他媽的後段
 		if fir < CDS1 :
@@ -632,204 +646,210 @@ def suggestion(data):
 			move += 3
 		
 		if (last_state == 1 or last_state == 2) and CDSs >= 2:
-			CDS_seq = RNA[(fir+(first_CDS_one)-1)-move:(fir+(first_CDS_one)-1)-move+3]
-			CDS_right = CDS_ori[CDS_seq][0]
-			CDSSS.append(CDS_right)
-			if CDS_right == 'L' or CDS_right == 'S' or CDS_right == 'R' :
+			CDS_seq_of_mRNA = RNA[(fir+(first_CDS_leftPos)-1)-move:(fir+(first_CDS_leftPos)-1)-move+3]
+			CDS_codon = CDS_ori[CDS_seq_of_mRNA][0]
+			CDSSS.append(CDS_codon)
+			if CDS_codon == 'L' or CDS_codon == 'S' or CDS_codon == 'R' :
 				#-------------------定住前兩碼，看'第三碼'--------------
-				for third in CDScodonDict[CDS_right]:
-					if third[0:2] != CDS_seq[0:2] or third == CDS_seq:
+				for third in CDScodonDict[CDS_codon]:
+					if third[0:2] != CDS_seq_of_mRNA[0:2] or third == CDS_seq_of_mRNA or (third[2] == complement(piRNAseq[first_CDS_leftPos+2-move])):
 						continue
-					elif (third[2] == 'G' and seq[first_CDS_one+2-move] =='U') or (third[2] == 'U' and seq[first_CDS_one+2-move] =='G'):
+					elif (third[2] == 'G' and piRNAseq[first_CDS_leftPos+2-move] =='U') or (third[2] == 'U' and piRNAseq[first_CDS_leftPos+2-move] =='G'):
 						b = 0
 						d = 0
-						if length-(first_CDS_one-move+2) <= 7:
+						if length-(first_CDS_leftPos-move+2) <= 7:
 							b+=1
 						else:
 							d+=1
 						a = 0
 						c = 0
-						if str(length-(first_CDS_one-move+2)) in mis_xGU:
-							if length-(first_CDS_one-move+2) <= 7:
+						if str(length-(first_CDS_leftPos-move+2)) in mis_xGU:
+							if length-(first_CDS_leftPos-move+2) <= 7:
 								a = 1
 							else:
 								c = 1
-						result.append([CDS_right,fir+first_CDS_one+2-move,RNA[fir+first_CDS_one+2-1-move],third[2],[sxGU-a,sGU+b,nsxGU-c,nsGU+d],1])
+						result.append([CDS_codon,fir+first_CDS_leftPos+2-move,RNA[fir+first_CDS_leftPos+2-1-move],third[2],[sxGU-a,sGU+b,nsxGU-c,nsGU+d],1])
 					else:
-						if str(length-(first_CDS_one+2-move)) not in mis_xGU :
+						if str(length-(first_CDS_leftPos+2-move)) not in mis_xGU :
 							a = 0
 							b = 0
 							c = 0
 							d = 0
-							if length-(first_CDS_one-move+2) <= 7:
-								if str(length-(first_CDS_one-move+2)) in mis_GU:
+							if length-(first_CDS_leftPos-move+2) <= 7:
+								if str(length-(first_CDS_leftPos-move+2)) in mis_GU:
 									b = 1
 								a= 1
 							else:
-								if str(length-(first_CDS_one-move+2)) in mis_GU:
+								if str(length-(first_CDS_leftPos-move+2)) in mis_GU:
 									d = 1
 								c = 1
-							result.append([CDS_right,fir+first_CDS_one+2-move,RNA[fir+first_CDS_one+2-move-1],third[2],[sxGU+a,sGU-b,nsxGU+c,nsGU-d],0])
+							result.append([CDS_codon,fir+first_CDS_leftPos+2-move,RNA[fir+first_CDS_leftPos+2-move-1],third[2],[sxGU+a,sGU-b,nsxGU+c,nsGU-d],0])
 
 				#-------------------定住前兩碼，看'第三碼'--------------
-			elif CDS_right == 'M' or CDS_right == 'W':
+			elif CDS_codon == 'M' or CDS_codon == 'W':
 				pass
 			else:
-				for third in CDScodonDict[CDS_right]:
-					if third == CDS_seq[2]:
+				for third in CDScodonDict[CDS_codon]:
+					if third == CDS_seq_of_mRNA[2]:
 						continue
-					elif (third == 'G' and seq[(length+1-mission)-1-move]=='U') or (third == 'U' and seq[(length+1-mission)-1-move]=='G'):
+					elif third == complement(piRNAseq[(length+1-mission)-1-move]):
+						continue
+					elif (third == 'G' and piRNAseq[(length+1-mission)-1-move]=='U') or (third == 'U' and piRNAseq[(length+1-mission)-1-move]=='G'):
 						b = 0
 						d = 0
-						if length-(first_CDS_one-move+2) <= 7:
+						if length-(first_CDS_leftPos-move+2) <= 7:
 							b = 1
 						else:
 							d = 1
 						a = 0
 						c = 0
-						if str(length-(first_CDS_one-move+2)) in mis_xGU:
-							if length-(first_CDS_one-move+2) <= 7:
+						if str(length-(first_CDS_leftPos-move+2)) in mis_xGU:
+							if length-(first_CDS_leftPos-move+2) <= 7:
 								a = 1
 							else:
 								c = 1
-						result.append([CDS_right,fir+first_CDS_one+2-move,RNA[fir+first_CDS_one+2-move-1],third,[sxGU-a,sGU+b,nsxGU-c,nsGU+d],1])
+						result.append([CDS_codon,fir+first_CDS_leftPos+2-move,RNA[fir+first_CDS_leftPos+2-move-1],third,[sxGU-a,sGU+b,nsxGU-c,nsGU+d],1])
 					else:
-						if str(length-(first_CDS_one+2-move)) not in mis_xGU :
+						if str(length-(first_CDS_leftPos+2-move)) not in mis_xGU :
 							a = 0
 							b = 0
 							c = 0
 							d = 0
-							if length-(first_CDS_one-move+2) <= 7:
-								if str(length-(first_CDS_one-move+2)) in mis_GU:
+							if length-(first_CDS_leftPos-move+2) <= 7:
+								if str(length-(first_CDS_leftPos-move+2)) in mis_GU:
 									b = 1
 								a= 1
 							else:
-								if str(length-(first_CDS_one-move+2)) in mis_GU:
+								if str(length-(first_CDS_leftPos-move+2)) in mis_GU:
 									d = 1
 								c = 1
-							result.append([CDS_right,fir+first_CDS_one+2-move,RNA[fir+first_CDS_one+2-move-1],third,[sxGU+a,sGU-b,nsxGU+c,nsGU-d],0])
+							result.append([CDS_codon,fir+first_CDS_leftPos+2-move,RNA[fir+first_CDS_leftPos+2-move-1],third,[sxGU+a,sGU-b,nsxGU+c,nsGU-d],0])
 
 		elif last_state == 0 and CDSs >= 2:
 			if CDSs == 2:
 				move = 3
-			CDS_seq = RNA[(fir+(first_CDS_one)-1)-move:(fir+(first_CDS_one)-1)-move+3]
-			CDS_right = CDS_ori[CDS_seq][0]
-			CDSSS.append(CDS_right)
-			if CDS_right == 'L' or CDS_right == 'S' or CDS_right == 'R' :
+			CDS_seq_of_mRNA = RNA[(fir+(first_CDS_leftPos)-1)-move:(fir+(first_CDS_leftPos)-1)-move+3]
+			CDS_codon = CDS_ori[CDS_seq_of_mRNA][0]
+			CDSSS.append(CDS_codon)
+			if CDS_codon == 'L' or CDS_codon == 'S' or CDS_codon == 'R' :
 				#-------------------定住後兩碼，看'第一碼'--------------
-				if CDS_seq == 'CUG':
-					if seq[first_CDS_one-move] != 'G':
-						if str(length-(first_CDS_one-move)) not in mis_xGU :
+				if CDS_seq_of_mRNA == 'CUG' and piRNAseq[first_CDS_leftPos-move] != 'A':
+					if piRNAseq[first_CDS_leftPos-move] != 'G':
+						if str(length-(first_CDS_leftPos-move)) not in mis_xGU :
 							a = 0
 							c = 0
-							if length-(first_CDS_one-move) <= 7:
+							if length-(first_CDS_leftPos-move) <= 7:
 								a = 1
 							else:
 								c = 1
-							result.append([CDS_right,fir+(first_CDS_one)-move,'C','U',[sxGU+a,sGU,nsxGU+c,nsGU],0])
+							result.append([CDS_codon,fir+(first_CDS_leftPos)-move,'C','U',[sxGU+a,sGU,nsxGU+c,nsGU],0])
 					else:
 						b = 0
 						d = 0
-						if length-(first_CDS_one-move) <= 7:
+						if length-(first_CDS_leftPos-move) <= 7:
 							b = 1
 						else:
 							d = 1
 						a = 0
 						c = 0
-						if str(length-(first_CDS_one-move)) in mis_xGU: #如果原本就沒對到，要扣掉
-							if length-(first_CDS_one-move) <= 7:
+						if str(length-(first_CDS_leftPos-move)) in mis_xGU: #如果原本就沒對到，要扣掉
+							if length-(first_CDS_leftPos-move) <= 7:
 								a = 1
 							else:
 								c = 1
-						result.append([CDS_right,fir+first_CDS_one-move,'C','U',[sxGU-a,sGU+b,nsxGU-c,nsGU+d],1])
+						result.append([CDS_codon,fir+first_CDS_leftPos-move,'C','U',[sxGU-a,sGU+b,nsxGU-c,nsGU+d],1])
 
 
-				elif CDS_seq == 'CGA':
-					if str(length-(first_CDS_one-move)) not in mis_xGU:
+				elif CDS_seq_of_mRNA == 'CGA' and piRNAseq[first_CDS_leftPos-move] != 'U':
+					if str(length-(first_CDS_leftPos-move)) not in mis_xGU:
 						a = 0
 						c = 0
-						if length-(first_CDS_one-move) <= 7:
+						if length-(first_CDS_leftPos-move) <= 7:
 							a = 1
 						else:
 							c = 1
-						result.append([CDS_right,fir+first_CDS_one-move,'C','A',[sxGU+a,sGU,nsxGU+c,nsGU],0])
+						result.append([CDS_codon,fir+first_CDS_leftPos-move,'C','A',[sxGU+a,sGU,nsxGU+c,nsGU],0])
 				#-------------------定住後兩碼，看'第一碼'--------------
 
 				#-------------------定住前兩碼，看'第三碼'--------------
-				for third in CDScodonDict[CDS_right]:
-					if third[0:2] != CDS_seq[0:2] or third == CDS_seq:
+				for third in CDScodonDict[CDS_codon]:
+					if third[0:2] != CDS_seq_of_mRNA[0:2] or third == CDS_seq_of_mRNA:
 						continue
-					elif (third[2] == 'G' and seq[first_CDS_one+2-move] =='U') or (third[2] == 'U' and seq[first_CDS_one+2-move] =='G'):
+					elif third == complement(piRNAseq[first_CDS_leftPos+2-move]):
+						continue
+					elif (third[2] == 'G' and piRNAseq[first_CDS_leftPos+2-move] =='U') or (third[2] == 'U' and piRNAseq[first_CDS_leftPos+2-move] =='G'):
 						b = 0
 						d = 0
-						if length-(first_CDS_one-move+2) <= 7:
+						if length-(first_CDS_leftPos-move+2) <= 7:
 							b+=1
 						else:
 							d+=1
 						a = 0
 						c = 0
-						if str(length-(first_CDS_one-move+2)) in mis_xGU:
-							if length-(first_CDS_one-move+2) <= 7:
+						if str(length-(first_CDS_leftPos-move+2)) in mis_xGU:
+							if length-(first_CDS_leftPos-move+2) <= 7:
 								a = 1
 							else:
 								c = 1
-						result.append([CDS_right,fir+first_CDS_one+2-move,RNA[fir+first_CDS_one+2-1-move],third[2],[sxGU-a,sGU+b,nsxGU-c,nsGU+d],1])
+						result.append([CDS_codon,fir+first_CDS_leftPos+2-move,RNA[fir+first_CDS_leftPos+2-1-move],third[2],[sxGU-a,sGU+b,nsxGU-c,nsGU+d],1])
 					else:
-						if str(length-(first_CDS_one+2-move)) not in mis_xGU :
+						if str(length-(first_CDS_leftPos+2-move)) not in mis_xGU :
 							a = 0
 							b = 0
 							c = 0
 							d = 0
-							if length-(first_CDS_one-move+2) <= 7:
-								if str(length-(first_CDS_one-move+2)) in mis_GU:
+							if length-(first_CDS_leftPos-move+2) <= 7:
+								if str(length-(first_CDS_leftPos-move+2)) in mis_GU:
 									b = 1
 								a= 1
 							else:
-								if str(length-(first_CDS_one-move+2)) in mis_GU:
+								if str(length-(first_CDS_leftPos-move+2)) in mis_GU:
 									d = 1
 								c = 1
-							result.append([CDS_right,fir+first_CDS_one+2-move,RNA[fir+first_CDS_one+2-move-1],third[2],[sxGU+a,sGU-b,nsxGU+c,nsGU-d],0])
+							result.append([CDS_codon,fir+first_CDS_leftPos+2-move,RNA[fir+first_CDS_leftPos+2-move-1],third[2],[sxGU+a,sGU-b,nsxGU+c,nsGU-d],0])
 
 				#-------------------定住前兩碼，看'第三碼'--------------
 
 
-			elif CDS_right == 'M' or CDS_right == 'W':
+			elif CDS_codon == 'M' or CDS_codon == 'W':
 				pass
 			else:
-				for third in CDScodonDict[CDS_right]:
-					if third == CDS_seq[2]:
+				for third in CDScodonDict[CDS_codon]:
+					if third == CDS_seq_of_mRNA[2]:
 						continue
-					elif (third == 'G' and seq[(length+1-mission)-1-move]=='U') or (third == 'U' and seq[(length+1-mission)-1-move]=='G'):
+					elif third == complement(piRNAseq[(length+1-mission)-1-move]):
+						continue
+					elif (third == 'G' and piRNAseq[(length+1-mission)-1-move]=='U') or (third == 'U' and piRNAseq[(length+1-mission)-1-move]=='G'):
 						b = 0
 						d = 0
-						if length-(first_CDS_one-move+2) <= 7:
+						if length-(first_CDS_leftPos-move+2) <= 7:
 							b = 1
 						else:
 							d = 1
 						a = 0
 						c = 0
-						if str(length-(first_CDS_one-move+2)) in mis_xGU:
-							if length-(first_CDS_one-move+2) <= 7:
+						if str(length-(first_CDS_leftPos-move+2)) in mis_xGU:
+							if length-(first_CDS_leftPos-move+2) <= 7:
 								a = 1
 							else:
 								c = 1
-						result.append([CDS_right,fir+first_CDS_one+2-move,RNA[fir+first_CDS_one+2-move-1],third,[sxGU-a,sGU+b,nsxGU-c,nsGU+d],1])
+						result.append([CDS_codon,fir+first_CDS_leftPos+2-move,RNA[fir+first_CDS_leftPos+2-move-1],third,[sxGU-a,sGU+b,nsxGU-c,nsGU+d],1])
 
 					else:
-						if str(length-(first_CDS_one+2-move)) not in mis_xGU :
+						if str(length-(first_CDS_leftPos+2-move)) not in mis_xGU :
 							a = 0
 							b = 0
 							c = 0
 							d = 0
-							if length-(first_CDS_one-move+2) <= 7:
-								if str(length-(first_CDS_one-move+2)) in mis_GU:
+							if length-(first_CDS_leftPos-move+2) <= 7:
+								if str(length-(first_CDS_leftPos-move+2)) in mis_GU:
 									b = 1
 								a= 1
 							else:
-								if str(length-(first_CDS_one-move+2)) in mis_GU:
+								if str(length-(first_CDS_leftPos-move+2)) in mis_GU:
 									d = 1
 								c = 1
-							result.append([CDS_right,fir+first_CDS_one+2-move,RNA[fir+first_CDS_one+2-move-1],third,[sxGU+a,sGU-b,nsxGU+c,nsGU-d],0])
+							result.append([CDS_codon,fir+first_CDS_leftPos+2-move,RNA[fir+first_CDS_leftPos+2-move-1],third,[sxGU+a,sGU-b,nsxGU+c,nsGU-d],0])
 		over = 3
 		if fir > len(RNA) - length+1 -2:
 			over = 0
@@ -852,7 +872,7 @@ def suggestion(data):
 				for h in someNC:
 					for k in seqs:
 						nowCheckSeq = RNA[fir+length-1-h]
-						nowCheckPi = seq[length-h]
+						nowCheckPi = piRNAseq[length-h]
 						if nowCheckSeq != k and k!= complement(nowCheckPi) and not((k=='G' and nowCheckPi=='U') or (k=='U' and nowCheckPi=='G')):
 							result.insert(0,['',fir+length-h,nowCheckSeq.lower(),k.lower(),[sxGU+1,sGU,nsxGU,nsGU],0])
 				
@@ -860,20 +880,20 @@ def suggestion(data):
 		if fir < CDS1:
 			if last_state == 0 and CDSs == 1:
 				move = 0
-			firstCDSPos = (front+(first_CDS_one)-1)-move+1
+			firstCDSPos = (front+(first_CDS_leftPos)-1)-move+1
 			if CDS1 > fir + length - 7:
 				someNC = range((fir + length)-CDS1 + 1,8)
 				seqs = ['A','U','G','C']
 				for h in someNC:
 					for k in seqs:
 						nowCheckSeq = RNA[fir+length-1-h]
-						nowCheckPi = seq[length-h]
+						nowCheckPi = piRNAseq[length-h]
 						if nowCheckSeq != k and k!= complement(nowCheckPi) and not((k=='G' and nowCheckPi=='U') or (k=='U' and nowCheckPi=='G')):
 							result.append(['',fir+length-h,nowCheckSeq.lower(),k.lower(),[sxGU+1,sGU,nsxGU,nsGU],0])
 
 		else:
-			firstCDSPos = (front+(first_CDS_one)-1)-move+1
-		collect = [name,fir,length,sxGU,sGU,nsxGU,nsGU,result,seq,mis_xGU,mis_GU,new_RNA,firstCDSPos,list(reversed(CDSSS)),front]
+			firstCDSPos = (front+(first_CDS_leftPos)-1)-move+1
+		collect = [name,fir,length,sxGU,sGU,nsxGU,nsGU,result,piRNAseq,mis_xGU,mis_GU,new_RNA,firstCDSPos,list(reversed(CDSSS)),front]
 		output['inCDS'].append(collect)
 	for qq in output['inCDS']:
 		now = 0
@@ -901,10 +921,6 @@ def suggestion(data):
 				spanCount = 1
 		qq.append(spanDict)
 	return output
-	# print('CDS1:{0}, CDS2:{1}'.format(CDS1,CDS2))
-	# print("CDS:{0}".format(CDS_ori))
-	# print("CDScodonDict: {0}".format(CDScodonDict))
-	# print(RNA)
 
 
 
@@ -912,10 +928,6 @@ def myajaxview(request):
 	test = request.POST["val1"]
 	return render(request, 'CNZ.html',{'test':test})
 
-def test(request):
-	proc = subprocess.call("php ~/public_html/test.php", shell=True)
-	script_response = subprocess.check_output(["php", "~/public_html/test.php"])
-	return render(request, 'test.html',{'test':script_response})
 
 def modify(request):
 	module_dir = os.path.dirname(__file__)
@@ -1031,11 +1043,12 @@ def firstResult(request):
 
 
 def selectedPreData(request):
+	modifyCount = request.POST.get('modifyCount')
 	module_dir = os.path.dirname(__file__)
 	global Arr2,options,CDS1,CDS2,RNA
 	with open(os.path.join(module_dir,'ori_result.json'),'r') as w1:
 		ori_result = json.load(w1)
-	with open(os.path.join(module_dir,'modify.csv'),'r') as f1:
+	with open(os.path.join(module_dir,'modify'+modifyCount+'.csv'),'r') as f1:
 		options = {}
 		mod = csv.reader(f1)
 		count = 0
@@ -1081,18 +1094,23 @@ def selectedPreData(request):
 			elif count == 10:
 				changed_pos = mmm[0].split('@')
 				count+=1
+			elif count == 11:
+				selectedInfo = mmm[0].split('##')
+				selectedInfoOut = []
+				for x in selectedInfo:
+					temp = x.split('@@')
+					temp[0] = int(temp[0])
+					selectedInfoOut.append(temp)
+				selectedInfoOut = sorted(selectedInfoOut, key=operator.itemgetter(0))
+				count+=1
 	Arr2 = list(RNA)
 	with open(os.path.join(module_dir,'piRNA/{0}/info_name.csv'.format(options['nematodeType'])),'r') as f2:
 		reader2 = csv.reader(f2)
 		info_names = []
 		for x in reader2:
 			info_names.append(x[0])
-	# with open(os.path.join(module_dir,'ori_result.txt'),'r') as f3:
-	# 	for x in f3:
-	# 		originalResult = x
-	# 		break
 	predata = {
-		# 'CDS':[CDSout],
+		'modifyCount':modifyCount,
 		'advice':[],
 		'gene':RNA,
 		'name':name,
@@ -1100,9 +1118,104 @@ def selectedPreData(request):
 		'options':options,
 		'piRNA_info_name':info_names,
 		# 'suggestion':newsug,
+		'selectedInfo':selectedInfoOut,
 		'CDS1':CDS1,
 		'CDS2':CDS2,
 		'changed_pos':changed_pos,
 		'ori_result':ori_result,
 	}
 	return JsonResponse(predata)
+
+def sucData(request):
+	modifyCount = request.POST.get('modifyCount')
+	module_dir = os.path.dirname(__file__)
+	with open(os.path.join(module_dir,'modify'+modifyCount+'.csv'),'r') as f1:
+		options = {}
+		mod = csv.reader(f1)
+		count = 0
+		for mmm in mod:
+			if count == 0:
+				name = mmm[0]
+				count+=1
+			elif count == 1:
+				RNA = mmm[0]
+				count+=1
+			elif count == 2:
+				options['core_non_GU'] = mmm[0]
+				count+=1
+			elif count == 3:
+				options['core_GU'] = mmm[0]
+				count+=1
+			elif count == 4:
+				options['non_core_non_GU'] = mmm[0]
+				count+=1
+			elif count == 5:
+				options['non_core_GU'] = mmm[0]
+				count+=1
+			elif count == 6:
+				options['total'] = mmm[0]
+				count+=1
+			elif count == 7:
+				options['nematodeType'] = mmm[0]
+				count+=1
+			elif count == 8:
+				if mmm[0] == '':
+					CDS1 = -7
+					count+=1
+				else:
+					CDS1 = int(mmm[0])
+					count+=1
+			elif count == 9:
+				if mmm[0] == '':
+					CDS2 = -4
+					count+=1
+				else:
+					CDS2 = int(mmm[0])
+					count+=1
+			elif count == 10:
+				changed_pos = mmm[0].split('@')
+				count+=1
+			elif count == 11:
+				selectedInfo = mmm[0].split('##')
+				selectedInfoOut = []
+				for x in selectedInfo:
+					temp = x.split('@@')
+					temp[0] = int(temp[0])
+					selectedInfoOut.append(temp)
+				selectedInfoOut = sorted(selectedInfoOut, key=operator.itemgetter(0))
+				count+=1
+	SCdata = {
+		'modifyCount':modifyCount,
+		'gene':RNA,
+		'name':name,
+		'options':options,
+		# 'piRNA_info_name':info_names,
+		'selectedInfo':selectedInfoOut,
+		'CDS1':CDS1,
+		'CDS2':CDS2,
+		'changed_pos':changed_pos,
+	}
+	def rreplace(s, old, new, occurrence):
+		li = s.rsplit(old, occurrence)
+		return new.join(li)
+	newCDS1 = int(request.POST.get('CDS1'))
+	newCDS2 = int(request.POST.get('CDS2'))
+	with open(os.path.join(module_dir,'sucResult_'+modifyCount+'.txt'),'w') as f1:
+		newRNA = RNA.replace(RNA[0:newCDS1-1],RNA[0:newCDS1-1].lower(),1)
+		if newCDS2 != len(RNA):
+			newRNA = rreplace(newRNA,newRNA[newCDS2:len(RNA)],newRNA[newCDS2:len(RNA)].lower(),1)
+		
+		f1.write('>Modified Sequence #'+modifyCount+', lowercase (uppercase) text indicates UTR (CDS)\n\r'+newRNA)
+		# w1 = csv.writer(f1)
+		# w1.writerow(['>Modified Sequence #'+modifyCount+', lowercase (uppercase) text indicates UTR (CDS)\n\r'+newRNA])
+
+	return JsonResponse(SCdata)
+
+
+def download_course(request,count):
+	module_dir = os.path.dirname(__file__)
+	with open(os.path.join(module_dir,'sucResult_'+count+'.csv'),'rb') as f1:
+		response = HttpResponse(f1.read())
+		response['content_type'] = 'text/txt'
+		response['Content-Disposition'] = 'attachment;filename=modified_sequence.txt'
+	return response

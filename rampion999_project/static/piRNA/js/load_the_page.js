@@ -9,7 +9,7 @@ function loadDaShit(pic2src,data,modifyCount){
 		$("#nematodeType_"+modifyCount).val(data.options['nematodeType']);
 		var NCDS_1 = data.CDS1;
 		var NCDS_2 = data.CDS2;
-		if (NCDS_1 < 0 || NCDS_2 < 0){
+		if (NCDS_1 == 0 || NCDS_2 == 0){
 			NCDS_1 = '';
 			NCDS_2 = '';
 			$('#CDS_ck_'+modifyCount).prop('checked',false);
