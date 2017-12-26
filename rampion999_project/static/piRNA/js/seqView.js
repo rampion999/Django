@@ -1,4 +1,4 @@
-function seqView(divId,mRNA,data,CDS,CDS_1,CDS_2){
+function seqView(divId,mRNA,data,CDS,CDS_1,CDS_2,divWidth){
   var mRNAlen = mRNA.length;
   var exceptHeight = 3;  //預估piRNA行數
   for (key in data[0].most){
@@ -18,8 +18,8 @@ function seqView(divId,mRNA,data,CDS,CDS_1,CDS_2){
     .attr("class", "tooltip")       
     .style("opacity", 0);
 
-  console.log("exceptHeight :"+(Math.floor(mRNAlen/100)+1));
-  var width = 1700;
+  // console.log("exceptHeight :"+(Math.floor(mRNAlen/100)+1));
+  var width = divWidth;
   var height = (2.5*(Math.floor(mRNAlen/100)+1)+exceptHeight)*17.5; //坐標軸行數加上預估piRNA行數乘每單位高
   // console.log(height);
   var scaleY = d3.scale.linear()
@@ -45,14 +45,14 @@ function seqView(divId,mRNA,data,CDS,CDS_1,CDS_2){
   var y=3;
   var axisPos = [3];
   var scaleA = d3.scale.linear()
-        .range([0, 1600])
+        .range([0, (width-100)])
         .domain([0, 99]);
   
   for (var i = 0; i <= Math.floor((mRNAlen-1)/100); i++) {
     // console.log((mRNAlen/100)-1);
     if(i > Math.floor(mRNAlen/100)-1 && mRNAlen%100!=1){
       var scaleX = d3.scale.linear()
-        .range([0, (1600/99)*((mRNAlen-1)%100)])
+        .range([0, ((width-100)/99)*((mRNAlen-1)%100)])
         .domain([100*i, mRNAlen-1])
       var tick = (mRNAlen%100)-1;
       svg.append('text').attr({
@@ -66,7 +66,7 @@ function seqView(divId,mRNA,data,CDS,CDS_1,CDS_2){
     }
     else if(i > Math.floor(mRNAlen/100)-1 && mRNAlen%100==1){
       var scaleX = d3.scale.linear()
-        .range([0, (1600/99)*((mRNAlen-1)%100)])
+        .range([0, ((width-100)/99)*((mRNAlen-1)%100)])
         .domain([100*i, mRNAlen-1])
       var tick = (mRNAlen%100)-1;
       svg.append('text').attr({
@@ -85,7 +85,7 @@ function seqView(divId,mRNA,data,CDS,CDS_1,CDS_2){
     }
     else{
       var scaleX = d3.scale.linear()
-        .range([0, 1600])
+        .range([0, (width-100)])
         .domain([100*i, 100*(i+1)-1]);
       var tick = 100;
       svg.append('text').attr({

@@ -1,105 +1,4 @@
-function suggestion(sug,sugNotCDS,a,b,c,d,e){
-	// console.log(sug);
-	// console.log(a,b,c,d,e)
-	// $('#sugTable').append('<h1 style= "text-align: center;"><b>Suggestions</b></h1>');
-	var table_html = '<table id="sugTable" class="display"><thead><tr><th width= 150>piRNA</th>';
-	table_html += '<th width= 100>targeted region in input sequence</th>';
-	table_html += '<th width= 70>number of non-GU mismatches in seed region</th>';
-	table_html += '<th width= 70>number of GU mismatches in seed region</th>';
-	table_html += '<th width= 70>number of non-GU mismatches in non-seed region</th>';
-	table_html += '<th width= 70>number of GU mismatches in non-seed region</th>';
-	table_html += '<th width= 70>total number of mismatches</th>';
-	table_html += '<th colspan="9">methods<br>escape condition{ seed-xGU > '+a+' , seed-GU > '+b+' , non-seed-xGU > '+c+' , non-seed-GU > '+d+' , total mis > '+e+'}</th>';
-	table_html += '</tr></thead><tbody></tbody></table><br><br>';
-	$('#sugTable').append(table_html);
-
-	for (var x in sug){
-		var table = '';
-		var span = sug[x][7].length + 1;
-		table += '<tr><td class="mid" rowspan="'+span+'">'+sug[x][0]+'</td>';
-		table += '<td class="mid" rowspan="'+span+'">'+sug[x][1]+'~'+(sug[x][1]+(sug[x][2]-1))+'</td>';
-		table += '<td class="mid" rowspan="'+span+'">'+sug[x][3]+'</td>';
-		table += '<td class="mid" rowspan="'+span+'">'+sug[x][4]+'</td>';
-		table += '<td class="mid" rowspan="'+span+'">'+sug[x][5]+'</td>';
-		table += '<td class="mid" rowspan="'+span+'">'+sug[x][6]+'</td>';
-		table += '<td class="mid" rowspan="'+span+'">'+(sug[x][3] + sug[x][4] + sug[x][5] + sug[x][6])+'</td>';
-		table += '<td class="mid" width= 80>CDS</td>';
-		table += '<td class="mid">position</td>';
-		table += '<td class="mid" width= 130>changed seq</td>';
-		table += '<td class="mid" width= 130>seed-xGU</td>';
-		table += '<td class="mid" width= 130>seed-GU</td>';
-		table += '<td class="mid" width= 130>non-seed-xGU</td>';
-		table += '<td class="mid" width= 130>non-seed-GU</td>';
-		table += '<td class="mid" width= 130>total mis</td>';
-		table += '<td class="mid" width= 130>escape?</td>';
-		table += '</tr>';
-		var temp = '';
-		for (var i in sug[x][7]){
-			var new_sxgu = sug[x][7][i][4][0];
-			var new_sgu = sug[x][7][i][4][1];
-			var new_nsxgu = sug[x][7][i][4][2];
-			var new_nsgu = sug[x][7][i][4][3];
-			var new_total = sug[x][7][i][4][0] + sug[x][7][i][4][1] + sug[x][7][i][4][2] + sug[x][7][i][4][3];
-			temp += '<tr><td class="mid">'+sug[x][7][i][0]+'</td>';
-			temp += '<td class="mid">'+sug[x][7][i][1]+'</td>';
-			temp += '<td class="mid">'+sug[x][7][i][2]+' → '+sug[x][7][i][3]+'</td>';
-
-
-			if (new_sxgu > a){
-				temp += '<td class="mid" style = "color : red">'+new_sxgu+'</td>';
-			}
-			else{
-				temp += '<td class="mid">'+new_sxgu+'</td>';
-			}
-
-
-			if (new_sgu > b){
-				temp += '<td class="mid" style = "color : red">'+new_sgu+'</td>';
-			}
-			else{
-				temp += '<td class="mid">'+new_sgu+'</td>';
-			}   
-
-
-			if (new_nsxgu > c){
-				temp += '<td class="mid" style = "color : red">'+new_nsxgu+'</td>';
-			}
-			else{
-				temp += '<td class="mid">'+new_nsxgu+'</td>';
-			}
-
-			
-			if (new_nsgu > d){
-				temp += '<td class="mid" style = "color : red">'+new_nsgu+'</td>';
-			}
-			else{
-				temp += '<td class="mid">'+new_nsgu+'</td>';
-			}
-
-			
-			if (new_total > e){
-				temp += '<td class="mid" style = "color : red">'+new_total+'</td>';
-			}
-			else{
-				temp += '<td class="mid">'+ new_total + '</td>';
-			}
-
-			
-			if (new_sxgu > a || new_sgu > b || new_nsxgu > c || new_nsgu > d || new_total >e){
-				temp += '<td class="mid">✓</td></tr>';
-			}
-			else{
-				temp += '<td class="mid">✕</td></tr>';
-			}
-		}
-		// temp = temp.replace(/^<tr>/, "");
-		table += temp;
-		$('#sugTable').find('tbody').append(table);
-	}
-
-}
-
-function shit(divId,sug,sugNotCDS,a,b,c,d,e,name,gene,nematodeType,CDS1,CDS2,csrf,ori_data,pic2src,scanUrl,seqViewDataArr){
+function shit(divId,sug,sugNotCDS,a,b,c,d,e,name,gene,nematodeType,CDS1,CDS2,csrf,ori_data,pic2src,scanUrl,seqViewDataArr,userNum){
 	var duplicateFir = []; //有重複的checkbox第一個位置
 	var duplicateDict = {};
 	var frontCount = 0;
@@ -181,16 +80,16 @@ function shit(divId,sug,sugNotCDS,a,b,c,d,e,name,gene,nematodeType,CDS1,CDS2,csr
 		if(sugNotCDS[i][1] > CDS1){break;}
 		var table_html = '';
 		var table = '';
-		table_html += '<div class="my-4 py-4"><table id="sugPicTable_'+i+'" class="sugTable" width= 100%><thead><tr><th style="width: 200px;">piRNA</th>';
+		table_html += '<div class="my-4 py-4" id="'+divId+'-sugPicTableDiv_'+i+'"><table id="'+divId+'-sugPicTable_'+i+'" class="sugTable bw" width= 100%><thead><tr><th style="width: 200px;">piRNA</th>';
 		table_html += '<th style="width: 100px;">targeted region in input sequence</th>';
 		// table_html += '<th width= 100>original situation</th>';
-		table_html += '<td colspan="7"><svg id="overView_'+i+'"></svg></td>';
+		table_html += '<td colspan="7"><svg id="'+divId+'-overView_'+i+'"></svg></td>';
 		table_html += '</tr></thead><tbody>';
 		var span = sugNotCDS[i][7].length+1;
 		table += '<tr><td class="mid" rowspan="'+(span+2)+'">'+sugNotCDS[i][0]+'</td>';
 		table += '<td class="mid" rowspan="'+(span+2)+'">'+sugNotCDS[i][1]+'~'+(sugNotCDS[i][1]+(sugNotCDS[i][2]-1))+'</td>';
 		table += '<td colspan="4" rowspan="2"></td><td>pairing (top: input sequence, bottom: piRNA)</td><td rowspan="2"></td></tr>';
-		table += '<tr><td id="piPic'+i+'" class="mid"><svg id = "pic'+i+'"></svg></td></tr>';
+		table += '<tr><td id="'+divId+'-piPic'+i+'" class="mid"><svg id = "'+divId+'-pic'+i+'"></svg></td></tr>';
 		table += '<tr><td></td><td>amino acid</td><td>modified position</td><td>suggested change</td><td>pairing after change(top: modified sequence, bottom: piRNA)</td><td>rule(s) broken</td></tr>';
 		table_html+=table;
 		var temp = '';
@@ -203,21 +102,21 @@ function shit(divId,sug,sugNotCDS,a,b,c,d,e,name,gene,nematodeType,CDS1,CDS2,csr
 			var new_nsgu = sugNotCDS[i][7][pics][0][3][3];
 			var new_total = sugNotCDS[i][7][pics][0][3][0] + sugNotCDS[i][7][pics][0][3][1] + sugNotCDS[i][7][pics][0][3][2] + sugNotCDS[i][7][pics][0][3][3];
 					
-			temp += '<tr id="r'+i+'_'+pics+'"><td><input type="checkbox" id="ck'+i+'_'+pics+'" value="'+sugNotCDS[i][7][pics][0][0]+','+sugNotCDS[i][7][pics][0][1]+','+sugNotCDS[i][7][pics][0][2]+',"></td>';
+			temp += '<tr id="'+divId+'-r'+i+'_'+pics+'"><td><input type="checkbox" id="'+divId+'-ck'+i+'_'+pics+'" value="'+sugNotCDS[i][7][pics][0][0]+','+sugNotCDS[i][7][pics][0][1]+','+sugNotCDS[i][7][pics][0][2]+',"></td>';
 					
 			temp += '<td></td><td>'+sugNotCDS[i][7][pics][0][0]+'</td>';
 			// duplicateFir.push([sugNotCDS[i][7][pics][0][0],sugNotCDS[i][15][sugNotCDS[i][7][pics][0][0]],Number(i),Number(pics)]);
 			// duplicateDict[sugNotCDS[i][7][pics][0][0]+'_'+i] = pics;
 
 			if(sugNotCDS[i][7][pics].length == 1){
-				temp += '<td>'+sugNotCDS[i][7][pics][0][1]+' → '+sugNotCDS[i][7][pics][0][2]+'</td><td><svg id = "pic'+i+'_'+pics+'"></svg></td>';
+				temp += '<td>'+sugNotCDS[i][7][pics][0][1]+' → '+sugNotCDS[i][7][pics][0][2]+'</td><td><svg id = "'+divId+'-pic'+i+'_'+pics+'"></svg></td>';
 			}
 			else{
 				temp +=	'<td>'+sugNotCDS[i][7][pics][0][1]+' → <select class="drop">';
 				for(var z in sugNotCDS[i][7][pics]){
 					temp += '<option value="'+i+'_'+pics+'_'+z+'_'+i+'">'+sugNotCDS[i][7][pics][z][2]+'</option>';
 				}
-				temp += '</select></td><td id="chart'+i+'_'+pics+'"><svg id = "pic'+i+'_'+pics+'"></svg></td>';
+				temp += '</select></td><td id="'+divId+'-chart'+i+'_'+pics+'"><svg id = "'+divId+'-pic'+i+'_'+pics+'"></svg></td>';
 			}
 
 			if (new_sxgu > a){
@@ -241,10 +140,10 @@ function shit(divId,sug,sugNotCDS,a,b,c,d,e,name,gene,nematodeType,CDS1,CDS2,csr
 			}
 			
 			if (rule != ''){
-				temp += '<td id="rule'+i+'_'+pics+'" class="mid">'+rule+'</td>';
+				temp += '<td id="'+divId+'-rule'+i+'_'+pics+'" class="mid">'+rule+'</td>';
 			}
 			else{
-				temp += '<td id="rule'+i+'_'+pics+'" class="mid">✕</td>';
+				temp += '<td id="'+divId+'-rule'+i+'_'+pics+'" class="mid">✕</td>';
 			}
 
 			// if (new_sxgu > a || new_sgu > b || new_nsxgu > c || new_nsgu > d || new_total >e){
@@ -260,9 +159,9 @@ function shit(divId,sug,sugNotCDS,a,b,c,d,e,name,gene,nematodeType,CDS1,CDS2,csr
 		$('#'+divId+'-sugTable').append(table_html);
 		$('.drop').change(function(){
 			var val = this.value.split('_');
-			$('#pic'+val[0]+'_'+val[1]).empty();
+			$('#'+divId+'-pic'+val[0]+'_'+val[1]).empty();
 			// console.log(val);
-			plotOutCDS(val[3],val[1],val[2],sugNotCDS,val[0]);
+			plotOutCDS(val[3],val[1],val[2],sugNotCDS,val[0],divId);
 			var new_sxgu = sugNotCDS[val[3]][7][val[1]][val[2]][3][0];
 			var new_sgu = sugNotCDS[val[3]][7][val[1]][val[2]][3][1];
 			var new_nsxgu = sugNotCDS[val[3]][7][val[1]][val[2]][3][2];
@@ -290,12 +189,12 @@ function shit(divId,sug,sugNotCDS,a,b,c,d,e,name,gene,nematodeType,CDS1,CDS2,csr
 			}
 			
 			if (rule != ''){
-				$('#rule'+val[0]+'_'+val[1]).empty();
-				$('#rule'+val[0]+'_'+val[1]).html(rule);
+				$('#'+divId+'-rule'+val[0]+'_'+val[1]).empty();
+				$('#'+divId+'-rule'+val[0]+'_'+val[1]).html(rule);
 			}
 			else{
-				$('#rule'+val[0]+'_'+val[1]).empty();
-				$('#rule'+val[0]+'_'+val[1]).html('✕');
+				$('#'+divId+'-rule'+val[0]+'_'+val[1]).empty();
+				$('#'+divId+'-rule'+val[0]+'_'+val[1]).html('✕');
 			}
 
 			// if (new_sxgu > a || new_sgu > b || new_nsxgu > c || new_nsgu > d || new_total >e){
@@ -306,7 +205,7 @@ function shit(divId,sug,sugNotCDS,a,b,c,d,e,name,gene,nematodeType,CDS1,CDS2,csr
 			// 	$('#escape'+val[0]+'_'+val[1]).empty();
 			// 	$('#escape'+val[0]+'_'+val[1]).html('✕');
 			// }
-			$('#ck'+val[0]+'_'+val[1]).attr('value',sugNotCDS[val[3]][7][val[1]][val[2]][0]+','+sugNotCDS[val[3]][7][val[1]][val[2]][1]+','+sugNotCDS[val[3]][7][val[1]][val[2]][2]+', ');
+			$('#'+divId+'-ck'+val[0]+'_'+val[1]).attr('value',sugNotCDS[val[3]][7][val[1]][val[2]][0]+','+sugNotCDS[val[3]][7][val[1]][val[2]][1]+','+sugNotCDS[val[3]][7][val[1]][val[2]][2]+', ');
 		})
 		frontCount += 1;
 	}
@@ -319,16 +218,16 @@ function shit(divId,sug,sugNotCDS,a,b,c,d,e,name,gene,nematodeType,CDS1,CDS2,csr
 		var table_html = '';
 		var table = '';
 		var midX = Number(i)+frontCount;
-		table_html += '<div class="my-4 py-4"><table id="sugPicTable_'+midX+'" class="sugTable" width= 100%><thead><tr><th style="width: 200px;">piRNA</th>';
+		table_html += '<div class="my-4 py-4" id="'+divId+'-sugPicTableDiv_'+midX+'"><table id="'+divId+'-sugPicTable_'+midX+'" class="sugTable bw" width= 100%><thead><tr><th style="width: 200px;">piRNA</th>';
 		table_html += '<th style="width: 100px;">targeted region in input sequence</th>';
 		// table_html += '<th width= 100>original situation</th>';
-		table_html += '<td colspan="7"><svg id="overView_'+midX+'"></svg></td>';
+		table_html += '<td colspan="7"><svg id="'+divId+'-overView_'+midX+'"></svg></td>';
 		table_html += '</tr></thead><tbody>';
 		var span = sug[i][7].length+1;
 		table += '<tr><td class="mid" rowspan="'+(span+2)+'">'+sug[i][0]+'</td>';
 		table += '<td class="mid" rowspan="'+(span+2)+'">'+sug[i][1]+'~'+(sug[i][1]+(sug[i][2]-1))+'</td>';
 		table += '<td colspan="4" rowspan="2"></td><td>pairing (top: input sequence, bottom: piRNA)</td><td rowspan="2"></td></tr>';
-		table += '<tr><td id="piPic'+midX+'" class="mid"><svg id = "pic'+midX+'"></svg></td></tr>';
+		table += '<tr><td id="'+divId+'-piPic'+midX+'" class="mid"><svg id = "'+divId+'-pic'+midX+'"></svg></td></tr>';
 		table += '<tr><td></td><td>amino acid</td><td>modified position</td><td>suggested change</td><td>pairing after change(top: modified sequence, bottom: piRNA)</td><td>rule(s) broken</td></tr>';
 		table_html+=table;
 		var temp = '';
@@ -341,21 +240,21 @@ function shit(divId,sug,sugNotCDS,a,b,c,d,e,name,gene,nematodeType,CDS1,CDS2,csr
 			var new_nsgu = sug[i][7][pics][0][4][3];
 			var new_total = sug[i][7][pics][0][4][0] + sug[i][7][pics][0][4][1] + sug[i][7][pics][0][4][2] + sug[i][7][pics][0][4][3];
 					
-			temp += '<tr id="r'+midX+'_'+pics+'"><td><input type="checkbox" id="ck'+midX+'_'+pics+'" value="'+sug[i][7][pics][0][1]+','+sug[i][7][pics][0][2]+','+sug[i][7][pics][0][3]+','+sug[i][7][pics][0][0]+'"></td>';
+			temp += '<tr id="'+divId+'-r'+midX+'_'+pics+'"><td><input type="checkbox" id="'+divId+'-ck'+midX+'_'+pics+'" value="'+sug[i][7][pics][0][1]+','+sug[i][7][pics][0][2]+','+sug[i][7][pics][0][3]+','+sug[i][7][pics][0][0]+'"></td>';
 					
 			temp += '<td>'+sug[i][7][pics][0][0]+'</td><td>'+sug[i][7][pics][0][1]+'</td>';
 			duplicateFir.push([sug[i][7][pics][0][1],sug[i][15][sug[i][7][pics][0][1]],Number(i),Number(pics)]);
 			duplicateDict[sug[i][7][pics][0][1]+'_'+i] = pics;
 
 			if(sug[i][7][pics].length == 1){
-				temp += '<td>'+sug[i][7][pics][0][2]+' → '+sug[i][7][pics][0][3]+'</td><td><svg id = "pic'+midX+'_'+pics+'"></svg></td>';
+				temp += '<td>'+sug[i][7][pics][0][2]+' → '+sug[i][7][pics][0][3]+'</td><td><svg id = "'+divId+'-pic'+midX+'_'+pics+'"></svg></td>';
 			}
 			else{
 				temp +=	'<td>'+sug[i][7][pics][0][2]+' → <select class="dropCDS">';
 				for(var z in sug[i][7][pics]){
 					temp += '<option value="'+midX+'_'+pics+'_'+z+'_'+i+'">'+sug[i][7][pics][z][3]+'</option>';
 				}
-				temp += '</select></td><td id="chart'+midX+'_'+pics+'"><svg id = "pic'+midX+'_'+pics+'"></svg></td>';
+				temp += '</select></td><td id="'+divId+'-chart'+midX+'_'+pics+'"><svg id = "'+divId+'-pic'+midX+'_'+pics+'"></svg></td>';
 			}
 
 			if (new_sxgu > a){
@@ -379,10 +278,10 @@ function shit(divId,sug,sugNotCDS,a,b,c,d,e,name,gene,nematodeType,CDS1,CDS2,csr
 			}
 			
 			if (rule != ''){
-				temp += '<td id="rule'+midX+'_'+pics+'" class="mid">'+rule+'</td>';
+				temp += '<td id="'+divId+'-rule'+midX+'_'+pics+'" class="mid">'+rule+'</td>';
 			}
 			else{
-				temp += '<td id="rule'+midX+'_'+pics+'" class="mid">✕</td>';
+				temp += '<td id="'+divId+'-rule'+midX+'_'+pics+'" class="mid">✕</td>';
 			}
 
 			// if (new_sxgu > a || new_sgu > b || new_nsxgu > c || new_nsgu > d || new_total >e){
@@ -398,8 +297,8 @@ function shit(divId,sug,sugNotCDS,a,b,c,d,e,name,gene,nematodeType,CDS1,CDS2,csr
 		$('#'+divId+'-sugTable').append(table_html);
 		$('.dropCDS').change(function(){
 			var val = this.value.split('_');
-			$('#pic'+val[0]+'_'+val[1]).empty();
-			plot(val[3],val[1],val[2],sug,val[0]);
+			$('#'+divId+'-pic'+val[0]+'_'+val[1]).empty();
+			plot(val[3],val[1],val[2],sug,val[0],divId);
 			var new_sxgu = sug[val[3]][7][val[1]][val[2]][4][0];
 			var new_sgu = sug[val[3]][7][val[1]][val[2]][4][1];
 			var new_nsxgu = sug[val[3]][7][val[1]][val[2]][4][2];
@@ -427,12 +326,12 @@ function shit(divId,sug,sugNotCDS,a,b,c,d,e,name,gene,nematodeType,CDS1,CDS2,csr
 			}
 			
 			if (rule != ''){
-				$('#rule'+val[0]+'_'+val[1]).empty();
-				$('#rule'+val[0]+'_'+val[1]).html(rule);
+				$('#'+divId+'-rule'+val[0]+'_'+val[1]).empty();
+				$('#'+divId+'-rule'+val[0]+'_'+val[1]).html(rule);
 			}
 			else{
-				$('#rule'+val[0]+'_'+val[1]).empty();
-				$('#rule'+val[0]+'_'+val[1]).html('✕');
+				$('#'+divId+'-rule'+val[0]+'_'+val[1]).empty();
+				$('#'+divId+'-rule'+val[0]+'_'+val[1]).html('✕');
 			}
 
 			// if (new_sxgu > a || new_sgu > b || new_nsxgu > c || new_nsgu > d || new_total >e){
@@ -443,7 +342,7 @@ function shit(divId,sug,sugNotCDS,a,b,c,d,e,name,gene,nematodeType,CDS1,CDS2,csr
 			// 	$('#escape'+val[0]+'_'+val[1]).empty();
 			// 	$('#escape'+val[0]+'_'+val[1]).html('✕');
 			// }
-			$('#ck'+val[0]+'_'+val[1]).attr('value',sug[val[3]][7][val[1]][val[2]][1]+','+sug[val[3]][7][val[1]][val[2]][2]+','+sug[val[3]][7][val[1]][val[2]][3]+','+sug[val[3]][7][val[1]][val[2]][0]);
+			$('#'+divId+'-ck'+val[0]+'_'+val[1]).attr('value',sug[val[3]][7][val[1]][val[2]][1]+','+sug[val[3]][7][val[1]][val[2]][2]+','+sug[val[3]][7][val[1]][val[2]][3]+','+sug[val[3]][7][val[1]][val[2]][0]);
 		})
 		midCount += 1;	
 	}
@@ -457,16 +356,16 @@ function shit(divId,sug,sugNotCDS,a,b,c,d,e,name,gene,nematodeType,CDS1,CDS2,csr
 			var table_html = '';
 			var table = '';
 			var lastX = Number(i) + frontCount + midCount;
-			table_html += '<div class="my-4 py-4"><table id="sugPicTable_'+lastX+'" class="sugTable" width= 100%><thead><tr><th style="width: 200px;">piRNA</th>';
+			table_html += '<div class="my-4 py-4" id="'+divId+'-sugPicTableDiv_'+lastX+'"><table id="'+divId+'-sugPicTable_'+lastX+'" class="sugTable bw" width= 100%><thead><tr><th style="width: 200px;">piRNA</th>';
 			table_html += '<th style="width: 100px;">targeted region in input sequence</th>';
 			// table_html += '<th width= 100>original situation</th>';
-			table_html += '<td colspan="7"><svg id="overView_'+lastX+'"></svg></td>';
+			table_html += '<td colspan="7"><svg id="'+divId+'-overView_'+lastX+'"></svg></td>';
 			table_html += '</tr></thead><tbody>';
 			var span = sugNotCDS[i][7].length+1;
 			table += '<tr><td class="mid" rowspan="'+(span+2)+'">'+sugNotCDS[i][0]+'</td>';
 			table += '<td class="mid" rowspan="'+(span+2)+'">'+sugNotCDS[i][1]+'~'+(sugNotCDS[i][1]+(sugNotCDS[i][2]-1))+'</td>';
 			table += '<td colspan="4" rowspan="2"></td><td>pairing (top: input sequence, bottom: piRNA)</td><td rowspan="2"></td></tr>';
-			table += '<tr><td id="piPic'+lastX+'" class="mid"><svg id = "pic'+lastX+'"></svg></td></tr>';
+			table += '<tr><td id="'+divId+'-piPic'+lastX+'" class="mid"><svg id = "'+divId+'-pic'+lastX+'"></svg></td></tr>';
 			table += '<tr><td></td><td>amino acid</td><td>modified position</td><td>suggested change</td><td>pairing after change(top: modified sequence, bottom: piRNA)</td><td>rule(s) broken</td></tr>';
 			table_html+=table;
 			var temp = '';
@@ -478,7 +377,7 @@ function shit(divId,sug,sugNotCDS,a,b,c,d,e,name,gene,nematodeType,CDS1,CDS2,csr
 				var new_nsgu = sugNotCDS[i][7][pics][0][3][3];
 				var new_total = sugNotCDS[i][7][pics][0][3][0] + sugNotCDS[i][7][pics][0][3][1] + sugNotCDS[i][7][pics][0][3][2] + sugNotCDS[i][7][pics][0][3][3];
 						
-				temp += '<tr id="r'+lastX+'_'+pics+'"><td><input type="checkbox" id="ck'+lastX+'_'+pics+'" value="'+sugNotCDS[i][7][pics][0][0]+','+sugNotCDS[i][7][pics][0][1]+','+sugNotCDS[i][7][pics][0][2]+', "></td>';
+				temp += '<tr id="'+divId+'-r'+lastX+'_'+pics+'"><td><input type="checkbox" id="'+divId+'-ck'+lastX+'_'+pics+'" value="'+sugNotCDS[i][7][pics][0][0]+','+sugNotCDS[i][7][pics][0][1]+','+sugNotCDS[i][7][pics][0][2]+', "></td>';
 						
 				temp += '<td></td><td>'+sugNotCDS[i][7][pics][0][0]+'</td>';
 				// duplicateFir.push([sugNotCDS[i][7][pics][0][0],sugNotCDS[i][15][sugNotCDS[i][7][pics][0][0]],Number(i),Number(pics)]);
@@ -492,7 +391,7 @@ function shit(divId,sug,sugNotCDS,a,b,c,d,e,name,gene,nematodeType,CDS1,CDS2,csr
 					for(var z in sugNotCDS[i][7][pics]){
 						temp += '<option value="'+lastX+'_'+pics+'_'+z+'_'+i+'">'+sugNotCDS[i][7][pics][z][2]+'</option>';
 					}
-					temp += '</select></td><td id="chart'+lastX+'_'+pics+'"><svg id = "pic'+lastX+'_'+pics+'"></svg></td>';
+					temp += '</select></td><td id="'+divId+'-chart'+lastX+'_'+pics+'"><svg id = "'+divId+'-pic'+lastX+'_'+pics+'"></svg></td>';
 				}
 
 				if (new_sxgu > a){
@@ -516,10 +415,10 @@ function shit(divId,sug,sugNotCDS,a,b,c,d,e,name,gene,nematodeType,CDS1,CDS2,csr
 				}
 				
 				if (rule != ''){
-					temp += '<td id="rule'+lastX+'_'+pics+'" class="mid">'+rule+'</td>';
+					temp += '<td id="'+divId+'-rule'+lastX+'_'+pics+'" class="mid">'+rule+'</td>';
 				}
 				else{
-					temp += '<td id="rule'+lastX+'_'+pics+'" class="mid">✕</td>';
+					temp += '<td id="'+divId+'-rule'+lastX+'_'+pics+'" class="mid">✕</td>';
 				}
 
 				// if (new_sxgu > a || new_sgu > b || new_nsxgu > c || new_nsgu > d || new_total >e){
@@ -534,8 +433,8 @@ function shit(divId,sug,sugNotCDS,a,b,c,d,e,name,gene,nematodeType,CDS1,CDS2,csr
 			$('#'+divId+'-sugTable').append(table_html);
 			$('.drop').change(function(){
 				var val = this.value.split('_');
-				$('#pic'+val[0]+'_'+val[1]).empty();
-				plotOutCDS(val[3],val[1],val[2],sugNotCDS,val[0]);
+				$('#'+divId+'-pic'+val[0]+'_'+val[1]).empty();
+				plotOutCDS(val[3],val[1],val[2],sugNotCDS,val[0],divId);
 				var new_sxgu = sugNotCDS[val[3]][7][val[1]][val[2]][3][0];
 				var new_sgu = sugNotCDS[val[3]][7][val[1]][val[2]][3][1];
 				var new_nsxgu = sugNotCDS[val[3]][7][val[1]][val[2]][3][2];
@@ -563,12 +462,12 @@ function shit(divId,sug,sugNotCDS,a,b,c,d,e,name,gene,nematodeType,CDS1,CDS2,csr
 				}
 				
 				if (rule != ''){
-					$('#rule'+val[0]+'_'+val[1]).empty();
-					$('#rule'+val[0]+'_'+val[1]).html(rule);
+					$('#'+divId+'-rule'+val[0]+'_'+val[1]).empty();
+					$('#'+divId+'-rule'+val[0]+'_'+val[1]).html(rule);
 				}
 				else{
-					$('#rule'+val[0]+'_'+val[1]).empty();
-					$('#rule'+val[0]+'_'+val[1]).html('✕');
+					$('#'+divId+'-rule'+val[0]+'_'+val[1]).empty();
+					$('#'+divId+'-rule'+val[0]+'_'+val[1]).html('✕');
 				}
 
 				// if (new_sxgu > a || new_sgu > b || new_nsxgu > c || new_nsgu > d || new_total >e){
@@ -579,7 +478,7 @@ function shit(divId,sug,sugNotCDS,a,b,c,d,e,name,gene,nematodeType,CDS1,CDS2,csr
 				// 	$('#escape'+val[0]+'_'+val[1]).empty();
 				// 	$('#escape'+val[0]+'_'+val[1]).html('✕');
 				// }
-				$('#ck'+val[0]+'_'+val[1]).attr('value',sugNotCDS[val[3]][7][val[1]][val[2]][0]+','+sugNotCDS[val[3]][7][val[1]][val[2]][1]+','+sugNotCDS[val[3]][7][val[1]][val[2]][2]+', ');
+				$('#'+divId+'-ck'+val[0]+'_'+val[1]).attr('value',sugNotCDS[val[3]][7][val[1]][val[2]][0]+','+sugNotCDS[val[3]][7][val[1]][val[2]][1]+','+sugNotCDS[val[3]][7][val[1]][val[2]][2]+', ');
 			})
 		}
 		lastCount += 1;
@@ -670,26 +569,42 @@ function shit(divId,sug,sugNotCDS,a,b,c,d,e,name,gene,nematodeType,CDS1,CDS2,csr
 	}
 	var totalCount = frontCount + midCount + lastCount;
 	for (var i = 0; i < totalCount; i++) {
-		eachOverView(i,gene,seqViewDataArr,CDS1,CDS2);
+		eachOverView(i,gene,seqViewDataArr,CDS1,CDS2,divId,$('#wrap').width()*0.75);
+		$(document).ready(function(){
+            $(window).resize(function() {
+              // console.log('#'+divId+'-overView_'+i);
+              $('#'+divId+'-overView_'+i).empty();
+              eachOverView(i,gene,seqViewDataArr,CDS1,CDS2,divId,$('#wrap').width()*0.75);          
+            });
+        });
 	}
-	
+	$(document).ready(function(){
+        $(window).resize(function() {
+        	for (var i = 0; i < totalCount; i++) {
+				// console.log('#'+divId+'-overView_'+i);
+	            $('#'+divId+'-overView_'+i).empty();
+	            eachOverView(i,gene,seqViewDataArr,CDS1,CDS2,divId,$('#wrap').width()*0.75);
+			}                   
+        });
+    });
 	// $('#'+divId+'-sugTable').parent().after('<div id="update_footer" class="card-footer text-center"><button type="button" id="'+divId+'-update" class="btn btn-primary btn-lg" style="width: 25%;">Modify input sequence</button></div>');
 	$('#'+divId+'-update').on({
 		click:function(){
-			var modifyCount = $("#overallTab > li").length;
-			update(modifyCount,sug,sugNotCDS,name,gene,a,b,c,d,e,nematodeType,CDS1,CDS2,csrf,ori_data,pic2src,scanUrl);
+			var modifyCount = Number($(this).attr('value')) +1;
+			update(modifyCount,sug,sugNotCDS,name,gene,a,b,c,d,e,nematodeType,CDS1,CDS2,csrf,ori_data,pic2src,scanUrl,divId,userNum);
 		},
 	});
 
 
 	//先畫CDS內的
 	for (var x in sug){
+		console.log(sug[x]);
 		var midX = Number(x)+frontCount;
 		var transX = 22.5;
 		var transY = -17.5;
 		var width = 500;
 		var height = 140;
-		var svg = d3.select('#pic'+midX).attr({
+		var svg = d3.select('#'+divId+'-pic'+midX).attr({
 			'width': width,
 			'height': 80
 			});
@@ -734,7 +649,7 @@ function shit(divId,sug,sugNotCDS,a,b,c,d,e,name,gene,nematodeType,CDS1,CDS2,csr
 					}				
 				}
 				svg.append('rect').attr({
-					'x':scaleA(3+Number(seq)),
+					'x':scaleA(sug[x][14]+Number(seq)),
 					'y':scaleY(-1+6-1),
 					'width':'15', 
 					'height':'15',
@@ -748,7 +663,7 @@ function shit(divId,sug,sugNotCDS,a,b,c,d,e,name,gene,nematodeType,CDS1,CDS2,csr
 			.text(sug[x][8][seq])
 			.attr({
 				'class':'text',
-				'x':scaleA(3+Number(seq)),
+				'x':scaleA(sug[x][14]+Number(seq)),
 				'y':scaleY(-1+6),
 				// 'style':'text-anchor: middle, font-size:15px',
 				'transform':'translate('+transX+','+transY+')',       
@@ -763,7 +678,7 @@ function shit(divId,sug,sugNotCDS,a,b,c,d,e,name,gene,nematodeType,CDS1,CDS2,csr
 					.text("|")
 					.attr({
 						'class':'text',
-						'x':scaleA(3+Number(seq)+0.5),
+						'x':scaleA(sug[x][14]+Number(seq)+0.5),
 						'y':scaleY(-1+6),
 						'fill':'red', 
 						'style':'text-anchor: middle;font-family:Arial;',
@@ -828,7 +743,7 @@ function shit(divId,sug,sugNotCDS,a,b,c,d,e,name,gene,nematodeType,CDS1,CDS2,csr
 			var transY = -17.5;
 			var width = 500;
 			var height = 140;
-			var svg = d3.select('#pic'+midX+'_'+y).attr({
+			var svg = d3.select('#'+divId+'-pic'+midX+'_'+y).attr({
 				'width': width,
 				'height': 80
 				});
@@ -885,7 +800,7 @@ function shit(divId,sug,sugNotCDS,a,b,c,d,e,name,gene,nematodeType,CDS1,CDS2,csr
 						}			
 					}
 					svg.append('rect').attr({
-						'x':scaleA(3+Number(seq)),
+						'x':scaleA(sug[x][14]+Number(seq)),
 						'y':scaleY(-1+6-1),
 						'width':'15', 
 						'height':'15',
@@ -904,7 +819,7 @@ function shit(divId,sug,sugNotCDS,a,b,c,d,e,name,gene,nematodeType,CDS1,CDS2,csr
 						var color = 'lightblue';
 					}
 					svg.append('rect').attr({
-						'x':scaleA(3+Number(seq)),
+						'x':scaleA(sug[x][14]+Number(seq)),
 						'y':scaleY(-1+6-1),
 						'width':'15', 
 						'height':'15',
@@ -920,7 +835,7 @@ function shit(divId,sug,sugNotCDS,a,b,c,d,e,name,gene,nematodeType,CDS1,CDS2,csr
 				.text(sug[x][8][seq])
 				.attr({
 					'class':'text',
-					'x':scaleA(3+Number(seq)),
+					'x':scaleA(sug[x][14]+Number(seq)),
 					'y':scaleY(-1+6),
 					// 'style':'text-anchor: middle, font-size:15px',
 					'transform':'translate('+transX+','+transY+')',       
@@ -935,7 +850,7 @@ function shit(divId,sug,sugNotCDS,a,b,c,d,e,name,gene,nematodeType,CDS1,CDS2,csr
 						.text("|")
 						.attr({
 							'class':'text',
-							'x':scaleA(3+Number(seq)+0.5),
+							'x':scaleA(sug[x][14]+Number(seq)+0.5),
 							'y':scaleY(-1+6),
 							'fill':'red', 
 							'style':'text-anchor: middle;font-family:Arial;',
@@ -1016,7 +931,7 @@ function shit(divId,sug,sugNotCDS,a,b,c,d,e,name,gene,nematodeType,CDS1,CDS2,csr
 		var transY = -27.5;
 		var width = 500;
 		var height = 140;
-		var svg = d3.select('#pic'+outX).attr({
+		var svg = d3.select('#'+divId+'-pic'+outX).attr({
 			'width': width,
 			'height': 80
 			});
@@ -1103,7 +1018,7 @@ function shit(divId,sug,sugNotCDS,a,b,c,d,e,name,gene,nematodeType,CDS1,CDS2,csr
 			var transY = -27.5;
 			var width = 500;
 			var height = 140;
-			var svg = d3.select('#pic'+outX+'_'+y).attr({
+			var svg = d3.select('#'+divId+'-pic'+outX+'_'+y).attr({
 				'width': width,
 				'height': 80
 				});
@@ -1226,12 +1141,13 @@ function shit(divId,sug,sugNotCDS,a,b,c,d,e,name,gene,nematodeType,CDS1,CDS2,csr
 	//畫CDS外的
 }
 
-function plot(x,y,z,sug,midX){
+function plot(x,y,z,sug,midX,divId){
+	// console.log('#'+divId+'-pic'+midX+'_'+y);
 	var transX = 22.5;
 	var transY = -17.5;
 	var width = 500;
 	var height = 140;
-	var svg = d3.select('#pic'+midX+'_'+y).attr({
+	var svg = d3.select('#'+divId+'-pic'+midX+'_'+y).attr({
 		'width': width,
 		'height': 80
 		});
@@ -1391,12 +1307,12 @@ function plot(x,y,z,sug,midX){
 	}
 }
 
-function plotOutCDS(x,y,z,sugNotCDS,outX){
+function plotOutCDS(x,y,z,sugNotCDS,outX,divId){
 	var transX = 22.5;
 	var transY = -27.5;
 	var width = 500;
 	var height = 140;
-	var svg = d3.select('#pic'+outX+'_'+y).attr({
+	var svg = d3.select('#'+divId+'-pic'+outX+'_'+y).attr({
 		'width': width,
 		'height': 80
 		});
@@ -1441,6 +1357,7 @@ function plotOutCDS(x,y,z,sugNotCDS,outX){
 	for (var seq in sugNotCDS[x][8]){
 		// console.log(String(sugNotCDS[x][2]-Number(seq)));
 		// console.log(sugNotCDS[x][9])
+
 		if( (sugNotCDS[x][9].indexOf(String(sugNotCDS[x][2]-Number(seq))) != -1 || sugNotCDS[x][10].indexOf(String(sugNotCDS[x][2]-Number(seq))) != -1) && Number(seq) != sugNotCDS[x][7][y][z][0]-sugNotCDS[x][1]){				
 			if (sugNotCDS[x][9].indexOf(String(sugNotCDS[x][2]-Number(seq))) != -1){
 				if (String(sugNotCDS[x][2]-Number(seq)) == '1'){var color = 'lightgreen';}
@@ -1509,4 +1426,105 @@ function plotOutCDS(x,y,z,sugNotCDS,outX){
 		}
 		cc+=1;
 	}
+}
+
+function suggestion(sug,sugNotCDS,a,b,c,d,e){
+	// console.log(sug);
+	// console.log(a,b,c,d,e)
+	// $('#sugTable').append('<h1 style= "text-align: center;"><b>Suggestions</b></h1>');
+	var table_html = '<table id="sugTable" class="display"><thead><tr><th width= 150>piRNA</th>';
+	table_html += '<th width= 100>targeted region in input sequence</th>';
+	table_html += '<th width= 70>number of non-GU mismatches in seed region</th>';
+	table_html += '<th width= 70>number of GU mismatches in seed region</th>';
+	table_html += '<th width= 70>number of non-GU mismatches in non-seed region</th>';
+	table_html += '<th width= 70>number of GU mismatches in non-seed region</th>';
+	table_html += '<th width= 70>total number of mismatches</th>';
+	table_html += '<th colspan="9">methods<br>escape condition{ seed-xGU > '+a+' , seed-GU > '+b+' , non-seed-xGU > '+c+' , non-seed-GU > '+d+' , total mis > '+e+'}</th>';
+	table_html += '</tr></thead><tbody></tbody></table><br><br>';
+	$('#sugTable').append(table_html);
+
+	for (var x in sug){
+		var table = '';
+		var span = sug[x][7].length + 1;
+		table += '<tr><td class="mid" rowspan="'+span+'">'+sug[x][0]+'</td>';
+		table += '<td class="mid" rowspan="'+span+'">'+sug[x][1]+'~'+(sug[x][1]+(sug[x][2]-1))+'</td>';
+		table += '<td class="mid" rowspan="'+span+'">'+sug[x][3]+'</td>';
+		table += '<td class="mid" rowspan="'+span+'">'+sug[x][4]+'</td>';
+		table += '<td class="mid" rowspan="'+span+'">'+sug[x][5]+'</td>';
+		table += '<td class="mid" rowspan="'+span+'">'+sug[x][6]+'</td>';
+		table += '<td class="mid" rowspan="'+span+'">'+(sug[x][3] + sug[x][4] + sug[x][5] + sug[x][6])+'</td>';
+		table += '<td class="mid" width= 80>CDS</td>';
+		table += '<td class="mid">position</td>';
+		table += '<td class="mid" width= 130>changed seq</td>';
+		table += '<td class="mid" width= 130>seed-xGU</td>';
+		table += '<td class="mid" width= 130>seed-GU</td>';
+		table += '<td class="mid" width= 130>non-seed-xGU</td>';
+		table += '<td class="mid" width= 130>non-seed-GU</td>';
+		table += '<td class="mid" width= 130>total mis</td>';
+		table += '<td class="mid" width= 130>escape?</td>';
+		table += '</tr>';
+		var temp = '';
+		for (var i in sug[x][7]){
+			var new_sxgu = sug[x][7][i][4][0];
+			var new_sgu = sug[x][7][i][4][1];
+			var new_nsxgu = sug[x][7][i][4][2];
+			var new_nsgu = sug[x][7][i][4][3];
+			var new_total = sug[x][7][i][4][0] + sug[x][7][i][4][1] + sug[x][7][i][4][2] + sug[x][7][i][4][3];
+			temp += '<tr><td class="mid">'+sug[x][7][i][0]+'</td>';
+			temp += '<td class="mid">'+sug[x][7][i][1]+'</td>';
+			temp += '<td class="mid">'+sug[x][7][i][2]+' → '+sug[x][7][i][3]+'</td>';
+
+
+			if (new_sxgu > a){
+				temp += '<td class="mid" style = "color : red">'+new_sxgu+'</td>';
+			}
+			else{
+				temp += '<td class="mid">'+new_sxgu+'</td>';
+			}
+
+
+			if (new_sgu > b){
+				temp += '<td class="mid" style = "color : red">'+new_sgu+'</td>';
+			}
+			else{
+				temp += '<td class="mid">'+new_sgu+'</td>';
+			}   
+
+
+			if (new_nsxgu > c){
+				temp += '<td class="mid" style = "color : red">'+new_nsxgu+'</td>';
+			}
+			else{
+				temp += '<td class="mid">'+new_nsxgu+'</td>';
+			}
+
+			
+			if (new_nsgu > d){
+				temp += '<td class="mid" style = "color : red">'+new_nsgu+'</td>';
+			}
+			else{
+				temp += '<td class="mid">'+new_nsgu+'</td>';
+			}
+
+			
+			if (new_total > e){
+				temp += '<td class="mid" style = "color : red">'+new_total+'</td>';
+			}
+			else{
+				temp += '<td class="mid">'+ new_total + '</td>';
+			}
+
+			
+			if (new_sxgu > a || new_sgu > b || new_nsxgu > c || new_nsgu > d || new_total >e){
+				temp += '<td class="mid">✓</td></tr>';
+			}
+			else{
+				temp += '<td class="mid">✕</td></tr>';
+			}
+		}
+		// temp = temp.replace(/^<tr>/, "");
+		table += temp;
+		$('#sugTable').find('tbody').append(table);
+	}
+
 }

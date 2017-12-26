@@ -67,13 +67,38 @@
             }
         }
     });
-    dataLoad();
 
-    function dataLoad(){
+    $.ajax({
+      url: "readUserNum/",
+      data:{ 
+        userNum:window.sessionStorage["userNum"],          
+      },
+      type: "POST", 
+      dataType:'json',
+      error: function(no){
+        console.log(no);
+        swal(
+          'Scan cancelled',
+          'System memory overload',
+          'error'
+        )
+      },
+      success: function(data){
+        if (data.out == 'nonono'){
+          window.location = document.URL.replace('/update/',''),'_blank';
+        }
+        else{
+          dataLoad(data.out);
+        }        
+      }
+    })
+    
+        
+    function dataLoad(userNum){
       $.ajax({
         url: "firstResult/", 
         data:{ 
-          QQ:'QQ',
+          userNum:userNum,          
         },
         type: "POST", 
         dataType:'json',
@@ -86,48 +111,107 @@
           )
           },
         success: function(data){
+          window.onbeforeunload = function(){
+            // var qq = $('#overallTab > li').length;
+            // var lastqq = $('#modify_'+(qq-1)+'-tab-list > span').length;
+            $.ajax({
+              url: "deleteUserNum/",
+              async:false, 
+              data:{
+                userNum:data.userNum,
+                qq:$('#overallTab > li').length,
+                lastqq:$('#modify_'+($('#overallTab > li').length-1)+'-tab-list > a > span').length,
+              },
+              type: "POST", 
+              dataType:'json',
+              error: function(no){
+                console.log(no);
+                swal(
+                  'Scan cancelled',
+                  'System memory overload',
+                  'error'
+                )
+              },
+              success: function(data){
+                console.log('no');
+              }
+            });                       
+          }
           console.log(data);
-          resultCreate('originalResult');
-          var pic2src = "{% static 'piRNA/img/QQ.jpg' %}";
-          var scanUrl = "{% static 'piRNA/img/Magnify.gif' %}"
-          var seqViewDataArr = noBulgeData('originalResult',data);
-          var newSug = arrangeSug(data.suggestion);
-          if(data.newout.length != 0){
-            shit(
-              'originalResult',
-              newSug.inCDS,
-              newSug.notInCDS,
-              data.options.core_non_GU,
-              data.options.core_GU,
-              data.options.non_core_non_GU,
-              data.options.non_core_GU,
-              data.options.total,
-              data.name,
-              data.gene,
-              data.options.nematodeType,
-              data.CDS1,
-              data.CDS2,
-              data.csrf,
-              data,
-              pic2src,
-              scanUrl,
-              seqViewDataArr,
-            );
-          } 
-          var geneArr = data.gene.split("");
-          console.log(geneArr);
-          overView('originalResult',geneArr,seqViewDataArr,data.CDS1,data.CDS2);
-          seqView('originalResult',geneArr,seqViewDataArr,data.CDS[0].split(''),data.CDS1,data.CDS2);
-          // $('#original-tab').click(function(e){
-          //   console.log(e.relatedTarget);
-          //   $(document).ready(function(e){              
-          //     $('#originalResult-charts-tab').tab('show');
-          //   });            
-          // });
-          // $('a[data-toggle="tab"]').on('shown.bs.tab', function (e) {
-          //   console.log(e.target); // newly activated tab
-          //   console.log(e.relatedTarget); // previous active tab
-          // });
+          if(data.newout.length == 0){
+            $('#original > div.text-center').remove();
+            $('#originalResult').append('\
+              <div class="alert alert-success" role="alert">\
+                <h2 class="alert-heading">Success!</h2>\
+                <p>No piRNA target site is found in the modified sequence.</p>\
+              </div>\
+            ');
+            var strVar = '';
+            strVar += '\
+              <div class="card mb-4 h-100 darkC">\
+                <h3 class="card-header darkCH">Your sequence</h3>\
+                <div class="card-body text-dark text-center">\
+                  <svg id="preSeqView-0"></svg>\
+                </div>\
+              </div>\
+            ';
+
+            $('#originalResult').append(strVar);
+            preSeqView('preSeqView-0',data);
+          }
+          else{
+            resultCreate('originalResult');
+            var pic2src = "{% static 'piRNA/img/QQ.jpg' %}";
+            var scanUrl = "{% static 'piRNA/img/Magnify.gif' %}"
+            var seqViewDataArr = noBulgeData('originalResult',data);
+            var newSug = arrangeSug(data.suggestion);
+            if(data.newout.length != 0){
+              shit(
+                'originalResult',
+                newSug.inCDS,
+                newSug.notInCDS,
+                data.options.core_non_GU,
+                data.options.core_GU,
+                data.options.non_core_non_GU,
+                data.options.non_core_GU,
+                data.options.total,
+                data.name,
+                data.gene,
+                data.options.nematodeType,
+                data.CDS1,
+                data.CDS2,
+                data.csrf,
+                data,
+                pic2src,
+                scanUrl,
+                seqViewDataArr,
+                data.userNum,
+              );
+              // 預勾
+              if(data.EX == 'ex1'){
+                $('#originalResult-ck0_0').prop('checked',true);
+                $('#originalResult-ck1_0').prop('checked',true);
+              }
+              else if(data.EX == 'ex2'){
+                var pickList = ['0_0','0_1','1_0','1_1','2_0','3_0','4_0','5_1','6_0','7_2','8_0','9_0','10_0','11_0'];
+                for (var i in pickList){
+                  $('#originalResult-ck'+pickList[i]).prop('checked',true);
+                }
+              }
+            } 
+            var geneArr = data.gene.split("");
+            console.log(geneArr);
+            overView('originalResult',geneArr,seqViewDataArr,data.CDS1,data.CDS2,$('#wrap').width()*0.85);
+            seqView('originalResult',geneArr,seqViewDataArr,data.CDS[0].split(''),data.CDS1,data.CDS2,$('#wrap').width()*0.85);
+            $(document).ready(function(){
+                $(window).resize(function() {
+                  $('#originalResult-overView').empty();
+                  overView('originalResult',geneArr,seqViewDataArr,data.CDS1,data.CDS2,$('#wrap').width()*0.85);
+                  $('#originalResult-seqView').empty();
+                  seqView('originalResult',geneArr,seqViewDataArr,data.CDS[0].split(''),data.CDS1,data.CDS2,$('#wrap').width()*0.85);
+                });
+            });
+          }
         },
       });
     };
@@ -163,6 +247,13 @@
       }
       return data
     };
+    // $(document).ready(function(){
+    //   $('#Modify').on('click',function(){
+    //     // window.location = document.URL.replace(/\?fref=gc&dti=[0-9]+/,'')+"update/",'_blank';
+    //     window.open('http://cosbi5.ee.ncku.edu.tw/piScan/Scan/modify/','_blank',
+    //       "toolbar=yes,scrollbars=yes,resizable=yes,top=50,left=5,width=1900,height=900");
+    //   });
+    // });
   </script>
 
 
@@ -172,23 +263,23 @@
     <!-- Navigation -->
     <nav class="navbar fixed-top navbar-expand-lg navbar-dark bg-dark fixed-top">
       <div class="container-fluid">
-        <a class="navbar-brand" href="http://140.116.215.236/rampion999/piRNA">piScan</a>
+        <a class="navbar-brand" href="http://cosbi5.ee.ncku.edu.tw/piScan">piScan</a>
         <button class="navbar-toggler navbar-toggler-right" type="button" data-toggle="collapse" data-target="#navbarResponsive" aria-controls="navbarResponsive" aria-expanded="false" aria-label="Toggle navigation">
           <span class="navbar-toggler-icon"></span>
         </button>
         <div class="collapse navbar-collapse" id="navbarResponsive">
           <ul class="navbar-nav ml-auto">
+            <!-- <li class="nav-item">
+              <a class="nav-link" href="http://cosbi5.ee.ncku.edu.tw/piScan">Home</a>
+            </li> -->
             <li class="nav-item">
-              <a class="nav-link" href="http://140.116.215.236/rampion999/piRNA">Home</a>
+              <a class="nav-link" href="http://cosbi5.ee.ncku.edu.tw/piScan">Scan</a>
             </li>
             <li class="nav-item">
-              <a class="nav-link" href="http://140.116.215.236/rampion999/piRNA/Scan">Scan</a>
+              <a class="nav-link" href="http://cosbi5.ee.ncku.edu.tw/piScan/Tutorial">Tutorial</a>
             </li>
             <li class="nav-item">
-              <a class="nav-link" href="http://140.116.215.236/rampion999/piRNA/Help">Help</a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link" href="http://140.116.215.236/rampion999/piRNA/Contact">Contact</a>
+              <a class="nav-link" href="http://cosbi5.ee.ncku.edu.tw/piScan/Contact">Contact</a>
             </li>
           </ul>
         </div>
@@ -205,13 +296,17 @@
         <div class="card-header">
           <ul class="nav nav-tabs card-header-tabs" id="overallTab" role="tablist">
             <li class="nav-item">
-              <a class="nav-link active" id="original-tab" data-toggle="tab" href="#original" role="tab" aria-controls="original" aria-selected="true">Original Sequence</a>
+              <a class="nav-link active" id="original-tab" data-toggle="tab" href="#original" role="tab" aria-controls="original" aria-selected="true">Input Sequence</a>
             </li>
           </ul>
         </div>
         <div class="card-body tab-content" id="overallTabContent">
           <div class="tab-pane fade show active" id="original" role="tabpanel" aria-labelledby="original-tab">
             <div id="originalResult"></div>
+            <div class="text-center">
+              <!-- Button trigger modal -->
+              <button type="button" id="Modify" class="btn btn-primary btn-lg mb-2" data-toggle="modal" data-target="#originalResult-suggetions-out">Modifiy input sequence</button>             
+            </div>
           </div>
         </div>
       </div>
@@ -225,7 +320,28 @@
     </div>
     <!-- /.container -->
   </footer>
-  
+  <!-- Modal -->
+  <div class="modal fade" id="originalResult-suggetions-out" tabindex="-1" role="dialog" aria-labelledby="original-exampleModalLongTitle" aria-hidden="true">
+    <div class="modal-dialog modal-soBig" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h3 class="modal-title" id="original-exampleModalLongTitle">Introduce silent mutations <samll>(without changing the coded amino acid sequence)</samll> to escape the piRNA targeting</h3>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div class="modal-body">
+          <div id="originalResult-sugTable"></div>
+        </div>
+        <div class="modal-footer">
+          <div class="container text-center">          
+            <button type="button" id="originalResult-update" class="btn btn-primary" value="0">Modify input sequence</button>
+            <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
 </body>
 
 </html>

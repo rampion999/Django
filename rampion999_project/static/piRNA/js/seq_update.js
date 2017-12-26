@@ -1,4 +1,4 @@
-function update(modifyCount,sug,sugNotCDS,name,gene,a,b,c,d,e,f,g,h,csrf,ori_data,pic2src,scanUrl){
+function update(modifyCount,sug,sugNotCDS,name,gene,a,b,c,d,e,f,g,h,csrf,ori_data,pic2src,scanUrl,divId,userNum){
 	var new_gene = gene.split('');
 	var selected = {};
 	var count = 0;
@@ -9,6 +9,9 @@ function update(modifyCount,sug,sugNotCDS,name,gene,a,b,c,d,e,f,g,h,csrf,ori_dat
 	var check_dict = {}; //檢查有沒有重複用的dictionary
 	var selectInfo =[];
 	var repeated = [];
+	var notSelectPos = [];
+	var posToDivNum = [];
+	var picked = [];
 	console.log(g);
 	console.log(h);
 
@@ -16,20 +19,24 @@ function update(modifyCount,sug,sugNotCDS,name,gene,a,b,c,d,e,f,g,h,csrf,ori_dat
 	for (var i in sugNotCDS){
 		var selectArr = [];
 		if(sugNotCDS[i][1] < g){
+			var testIn = 0;
 			for (var j in sugNotCDS[i][7]){
-				if ( $('#ck'+i+'_'+j).prop('checked') ) {
-					var nnname = $('#ck'+i+'_'+j).val();
+				if ( $('#'+divId+'-ck'+i+'_'+j).prop('checked') ) {
+					testIn = 1;
+					var nnname = $('#'+divId+'-ck'+i+'_'+j).val();
 					nnname = nnname.split(',');
 					var pos = Number(nnname[0]);
 					var from = nnname[1];
 					var to = nnname[2];
 					var CDS = '';
+					posToDivNum.push(pos+','+i);
+					picked.push(i+'_'+j);
 					// 檢查重複
 					if (Object.keys(check_dict).indexOf(String(pos)) == -1){
 						check_dict[String(pos)] = to;
 						new_gene[pos-1] = to;
 						// selectArr.push($('#fr'+i+'_'+j).html().replace('<td><input type="checkbox" id="Preck'+i+'_'+j+'" value="'+pos+','+to+'"></td>','').replace('id="NCpic'+i+'_'+j,'id="new_NCpic'+i+'_'+j));
-						selectArr.push(CDS+'##'+ pos +'##'+$('#fr'+i+'_'+j+' td:nth-last-of-type(4)').html()+'##'+$('#fr'+i+'_'+j+' td:nth-last-of-type(3)').html()+'##'+$('#fr'+i+'_'+j+' td:nth-last-of-type(2)').html()+'##'+$('#fr'+i+'_'+j+' td:nth-last-of-type(1)').html());
+						selectArr.push(CDS+'##'+ pos +'##'+$('#'+divId+'-fr'+i+'_'+j+' td:nth-last-of-type(4)').html()+'##'+$('#'+divId+'-fr'+i+'_'+j+' td:nth-last-of-type(3)').html()+'##'+$('#'+divId+'-fr'+i+'_'+j+' td:nth-last-of-type(2)').html()+'##'+$('#'+divId+'-fr'+i+'_'+j+' td:nth-last-of-type(1)').html());
 						posss.push(String(pos));
 						selectInfo.push(pos+'@@'+from+'@@'+to+'@@'+CDS);
 					}
@@ -39,13 +46,16 @@ function update(modifyCount,sug,sugNotCDS,name,gene,a,b,c,d,e,f,g,h,csrf,ori_dat
 						}
 					}
 					/////////////////////////
+				}
+				if (Number(j) == sugNotCDS[i][7].length-1 && testIn == 0){
+					notSelectPos.push(sugNotCDS[i][1]+'-'+(sugNotCDS[i][1]+sugNotCDS[i][2]-1));
 				}			
 			}
 			preCount += 1;
 		}
 		if(selectArr.length != 0){
 			// console.log('#piPic'+j);
-			ori_piRNA[count] = sugNotCDS[i][0]+'@@@'+sugNotCDS[i][1]+'@@@'+$('#piPic'+i).html().replace('id="pic'+i,'id="new_pic'+i);
+			ori_piRNA[count] = sugNotCDS[i][0]+'@@@'+sugNotCDS[i][1]+'@@@'+$('#'+divId+'-piPic'+i).html().replace('id="'+divId+'-pic'+i,'id="'+divId+'-new_pic'+i);
 			selected[count] = selectArr.join('@@@');
 			count+=1;
 		}
@@ -54,58 +64,25 @@ function update(modifyCount,sug,sugNotCDS,name,gene,a,b,c,d,e,f,g,h,csrf,ori_dat
 
 
 	for (var x in sug){
-    var i = Number(x) + preCount;
-		var selectArr = [];
-		for (var j in sug[x][7]){
-			if ( $('#ck'+i+'_'+j).prop('checked') ) {
-				var nnname = $('#ck'+i+'_'+j).val();
-				nnname = nnname.split(',');
-				var pos = Number(nnname[0]);
-				var from = nnname[1];
-				var to = nnname[2];
-				var CDS = nnname[3];
-				if (Object.keys(check_dict).indexOf(String(pos)) == -1){
-					check_dict[String(pos)] = to;
-					new_gene[pos-1] = to;
-					// selectArr.push($('#r'+i+'_'+j).html().replace('<td><input type="checkbox" id="ck'+i+'_'+j+'" value="'+pos+','+to+'"></td>','').replace('id="pic'+i+'_'+j,'id="new_pic'+i+'_'+j));
-					selectArr.push(CDS+'##'+ pos +'##'+$('#r'+i+'_'+j+' td:nth-last-of-type(4)').html()+'##'+$('#r'+i+'_'+j+' td:nth-last-of-type(3)').html()+'##'+$('#r'+i+'_'+j+' td:nth-last-of-type(2)').html()+'##'+$('#r'+i+'_'+j+' td:nth-last-of-type(1)').html());
-					posss.push(String(pos));
-					selectInfo.push(pos+'@@'+from+'@@'+to+'@@'+CDS);
-				}
-				else{
-					if(check_dict[String(pos)] != to){
-						repeated.push(pos);
-					}
-				}
-			}
-		}
-		if(selectArr.length != 0){
-			// console.log('#piPic'+j);
-			ori_piRNA[count] = sug[x][0]+'@@@'+sug[x][1]+'@@@'+$('#piPic'+i).html().replace('id="pic'+i,'id="new_pic'+i);
-			selected[count] = selectArr.join('@@@');
-			count+=1;
-		}
-    midCount +=1;
-	}
-	
-
-	for (var x in sugNotCDS){
-    var i = Number(x) + preCount + midCount;
-		var selectArr = [];
-		if(Number(x) >= preCount){
-			for (var j in sugNotCDS[x][7]){
-				if ( $('#ck'+i+'_'+j).prop('checked') ) {
-					var nnname = $('#ck'+i+'_'+j).val();
+	    var i = Number(x) + preCount;
+			var selectArr = [];
+			var testIn = 0;
+			for (var j in sug[x][7]){
+				if ( $('#'+divId+'-ck'+i+'_'+j).prop('checked') ) {
+					testIn = 1;
+					var nnname = $('#'+divId+'-ck'+i+'_'+j).val();
 					nnname = nnname.split(',');
 					var pos = Number(nnname[0]);
 					var from = nnname[1];
 					var to = nnname[2];
-					var CDS = '';
+					var CDS = nnname[3];
+					posToDivNum.push(pos+','+i);
+					picked.push(i+'_'+j);
 					if (Object.keys(check_dict).indexOf(String(pos)) == -1){
 						check_dict[String(pos)] = to;
 						new_gene[pos-1] = to;
-						// selectArr.push($('#lr'+i+'_'+j).html().replace('<td><input type="checkbox" id="Lastck'+i+'_'+j+'" value="'+pos+','+to+'"></td>','').replace('id="NCpic'+i+'_'+j,'id="new_NCpic'+i+'_'+j));
-						selectArr.push(CDS+'##'+ pos +'##'+$('#lr'+i+'_'+j+' td:nth-last-of-type(4)').html()+'##'+$('#lr'+i+'_'+j+' td:nth-last-of-type(3)').html()+'##'+$('#lr'+i+'_'+j+' td:nth-last-of-type(2)').html()+'##'+$('#lr'+i+'_'+j+' td:nth-last-of-type(1)').html());
+						// selectArr.push($('#r'+i+'_'+j).html().replace('<td><input type="checkbox" id="ck'+i+'_'+j+'" value="'+pos+','+to+'"></td>','').replace('id="pic'+i+'_'+j,'id="new_pic'+i+'_'+j));
+						selectArr.push(CDS+'##'+ pos +'##'+$('#'+divId+'-r'+i+'_'+j+' td:nth-last-of-type(4)').html()+'##'+$('#'+divId+'-r'+i+'_'+j+' td:nth-last-of-type(3)').html()+'##'+$('#'+divId+'-r'+i+'_'+j+' td:nth-last-of-type(2)').html()+'##'+$('#'+divId+'-r'+i+'_'+j+' td:nth-last-of-type(1)').html());
 						posss.push(String(pos));
 						selectInfo.push(pos+'@@'+from+'@@'+to+'@@'+CDS);
 					}
@@ -114,30 +91,104 @@ function update(modifyCount,sug,sugNotCDS,name,gene,a,b,c,d,e,f,g,h,csrf,ori_dat
 							repeated.push(pos);
 						}
 					}
-				}		
+				}
+				if (Number(j) == sug[x][7].length-1 && testIn == 0){
+					notSelectPos.push(sug[x][1]+'-'+(sug[x][1]+sug[x][2]-1));
+				}
 			}
-		}
-		if(selectArr.length != 0){
-			// console.log('#piPic'+j);
-			ori_piRNA[count] = sugNotCDS[x][0]+'@@@'+sugNotCDS[x][1]+'@@@'+$('#piPic'+i).html().replace('id="pic'+i,'id="new_pic'+i);
-			selected[count] = selectArr.join('@@@');
-			count+=1;
-		}
+			if(selectArr.length != 0){
+				// console.log('#piPic'+j);
+				ori_piRNA[count] = sug[x][0]+'@@@'+sug[x][1]+'@@@'+$('#'+divId+'-piPic'+i).html().replace('id="'+divId+'-pic'+i,'id="'+divId+'-new_pic'+i);
+				selected[count] = selectArr.join('@@@');
+				count+=1;
+			}
+	    midCount +=1;
+	}
+	
+
+	for (var x in sugNotCDS){
+	    var i = Number(x) + preCount + midCount;
+			var selectArr = [];
+			if(Number(x) >= preCount){
+				var testIn = 0;
+				for (var j in sugNotCDS[x][7]){
+					if ( $('#'+divId+'-ck'+i+'_'+j).prop('checked') ) {
+						testIn = 1;
+						var nnname = $('#'+divId+'-ck'+i+'_'+j).val();
+						nnname = nnname.split(',');
+						var pos = Number(nnname[0]);
+						var from = nnname[1];
+						var to = nnname[2];
+						var CDS = '';
+						posToDivNum.push(pos+','+i);
+						picked.push(i+'_'+j);
+						if (Object.keys(check_dict).indexOf(String(pos)) == -1){
+							check_dict[String(pos)] = to;
+							new_gene[pos-1] = to;
+							// selectArr.push($('#lr'+i+'_'+j).html().replace('<td><input type="checkbox" id="Lastck'+i+'_'+j+'" value="'+pos+','+to+'"></td>','').replace('id="NCpic'+i+'_'+j,'id="new_NCpic'+i+'_'+j));
+							selectArr.push(CDS+'##'+ pos +'##'+$('#'+divId+'-lr'+i+'_'+j+' td:nth-last-of-type(4)').html()+'##'+$('#'+divId+'-lr'+i+'_'+j+' td:nth-last-of-type(3)').html()+'##'+$('#'+divId+'-lr'+i+'_'+j+' td:nth-last-of-type(2)').html()+'##'+$('#'+divId+'-lr'+i+'_'+j+' td:nth-last-of-type(1)').html());
+							posss.push(String(pos));
+							selectInfo.push(pos+'@@'+from+'@@'+to+'@@'+CDS);
+						}
+						else{
+							if(check_dict[String(pos)] != to){
+								repeated.push(pos);
+							}
+						}
+					}
+					if (Number(j) == sugNotCDS[x][7].length-1 && testIn == 0){
+						notSelectPos.push(sugNotCDS[x][1]+'-'+(sugNotCDS[x][1]+sugNotCDS[x][2]-1));
+					}		
+				}
+			}
+			if(selectArr.length != 0){
+				// console.log('#piPic'+j);
+				ori_piRNA[count] = sugNotCDS[x][0]+'@@@'+sugNotCDS[x][1]+'@@@'+$('#'+divId+'-piPic'+i).html().replace('id="'+divId+'-pic'+i,'id="'+divId+'-new_pic'+i);
+				selected[count] = selectArr.join('@@@');
+				count+=1;
+			}
 	}
 
+	var posToDivNumStr = posToDivNum.join('@-@');
+	var pickedStr = picked.join('@-@');
 	console.log(check_dict);
 	console.log(repeated);
 	if (posss.length==0){
-		alert('you selected nothing');
+		swal(
+            'You selected nothing',
+            'please pick the suggeted methods',
+            'error'
+            )
+		// alert('you selected nothing');
 	}
 	else if(repeated.length != 0){
-		alert(repeated.toString() + ' selected different sequence');
+		swal(
+            'Error',
+            repeated.toString() + ' selected different sequence',
+            'error'
+            )
+		// alert(repeated.toString() + ' selected different sequence');
+	}
+	else if(notSelectPos.length != 0){
+		swal(
+            'Error',
+            notSelectPos.toString() + ' not design',
+            'error'
+            )
+		// alert(repeated.toString() + ' selected different sequence');
 	}
 	else{
-
+		$('.modal').modal('hide')
 		var posString = posss.join('@');
 		var selectInfoStr = selectInfo.join('##');
 
+		for (var i = $("#overallTab > li").length-1; i >= modifyCount; i--) {
+			// console.log(i);
+			// console.log(modifyCount);
+			$('#modify_'+i).remove();
+			$('#modify_'+i+'-tab-list').remove();
+			$('#modify_'+i+'-suggetions-out').remove();
+		}
 		new_gene = new_gene.join('');
 		$.ajax({
 			url: "create_data/",
@@ -158,14 +209,16 @@ function update(modifyCount,sug,sugNotCDS,name,gene,a,b,c,d,e,f,g,h,csrf,ori_dat
 				selectInfoStr:selectInfoStr,
 				posString:posString,
 				ori_piRNA:ori_piRNA,
-				// ori_result:ori_data,
+				posToDivNumStr:posToDivNumStr,
+				pickedStr:pickedStr,
+				userNum:userNum,
 				// csrfmiddlewaretoken: '{{ csrf_token }}',
 			},
 			type: "POST", 
 			dataType:'json',
 			success: function(data){
 				$('#overallTab').append(
-					'<li class="nav-item">\
+					'<li class="nav-item" id="modify_'+modifyCount+'-tab-list">\
 		            	<a class="nav-link" id="modify_'+modifyCount+'-tab" data-toggle="tab" href="#modify_'+modifyCount+'" role="tab" aria-controls="modify_'+modifyCount+'" aria-selected="false">Modified Sequence #'+modifyCount+'</a>\
 		            </li>'
 		        );
@@ -176,7 +229,7 @@ function update(modifyCount,sug,sugNotCDS,name,gene,a,b,c,d,e,f,g,h,csrf,ori_dat
 		        );
 		        $('html, body').animate({scrollTop: '0px'}, 300);
 		        	var strVar = '<div class="card my-4 h-100 darkC">\
-			                  <h4 class="card-header darkCH">Change</h4>\
+			                  <h4 id="selectedTitle" class="card-header darkCH">Selected Changes in the Input Sequence</h4>\
 			                  <div id="selectedChange_'+modifyCount+'" class="card-body">';               
             		strVar += '</div>;'            		
             		strVar +='</div>';
@@ -196,9 +249,7 @@ function update(modifyCount,sug,sugNotCDS,name,gene,a,b,c,d,e,f,g,h,csrf,ori_dat
     				strVar += "                  <div class=\"card-body\">";
     				strVar += "                    <div class=\"row\">";
     				strVar += "                      <div class=\"col-lg-6 align-self-center text-center\">";
-    				strVar += "                        <a href=\"#\" class=\"d-block\">";
     				strVar += "                          <img class=\"img-fluid rounded\" src=\""+pic2src+"\" alt=\"\">";
-    				strVar += "                        <\/a>";
     				strVar += "                      <\/div>";
     				// strVar += "                      <div class=\"col-lg-1\">";
     				// strVar += "                      <\/div>";
@@ -345,7 +396,8 @@ function update(modifyCount,sug,sugNotCDS,name,gene,a,b,c,d,e,f,g,h,csrf,ori_dat
 		        $.ajax({
 			        url: "selectedPreData/", 
 			        data:{
-			          modifyCount:modifyCount, 
+			          modifyCount:modifyCount,
+			          userNum:userNum,
 			          QQ:'QQ',
 			        },
 			        type: "POST", 
@@ -361,11 +413,22 @@ function update(modifyCount,sug,sugNotCDS,name,gene,a,b,c,d,e,f,g,h,csrf,ori_dat
 			        success: function(data){
 						console.log(data);			        	
 						loadDaShit(pic2src,data,modifyCount);
-						preSeqView('preSeqView-'+modifyCount,data);	
-						selectedTable('selectedChange_'+modifyCount,data,modifyCount); 
+						preSeqView('preSeqView-'+modifyCount,data,$('#wrap').width()*0.85);	
+						selectedTable('selectedChange_'+modifyCount,data,modifyCount);
+						$('#selectedTitle').html(data.selectedInfo.length+' selected changes in the input sequence');
 						$('#TransformBTN_'+modifyCount).on('click',function(){
-							newScan(data,pic2src,modifyCount,scanUrl);
+							newScan(data,pic2src,modifyCount,scanUrl,userNum);
 						});
+						$(document).ready(function(){
+		                    $(window).resize(function() {
+		                    	$('#preSeqView-'+modifyCount).empty();
+		                    	preSeqView('preSeqView-'+modifyCount,data,$('#wrap').width()*0.85);	
+		                      // $('#modify_'+modifyCount+'-overView').empty();
+		                      // overView('modify_'+modifyCount,geneArr,seqViewDataArr,data.CDS1,data.CDS2,$('#wrap').width()*0.85);
+		                      // $('#modify_'+modifyCount+'-seqView').empty();                      
+		                      // seqView('modify_'+modifyCount,geneArr,seqViewDataArr,data.CDS[0].split(''),data.CDS1,data.CDS2,$('#wrap').width()*0.85);                                          
+		                    });
+		                });
 			        },
 			    });
 			    $('#originalResult-resultTab a').removeClass('active');
@@ -405,7 +468,7 @@ function selectedTable(divId,data,modifyCount){
     $('#changeTable_'+modifyCount).DataTable({
     	"bLengthChange": false,
     	"bInfo" : false,
-			"iDisplayLength": 5,
+			"iDisplayLength": 10,
 			"searching": false,
     });
 	});

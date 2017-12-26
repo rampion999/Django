@@ -1,5 +1,6 @@
-function overView(divId,mRNA,data,CDS_1,CDS_2){
+function overView(divId,mRNA,data,CDS_1,CDS_2,divWidth){
   var mRNAlen = mRNA.length;
+  var tickkk = 50*(Math.floor(mRNAlen/2000)+1);
   var big = 0;
   for (key in data[0].most){
     if(data[0].most[key] > big){big = data[0].most[key];}
@@ -9,7 +10,7 @@ function overView(divId,mRNA,data,CDS_1,CDS_2){
   //             .attr("class", "tooltip")       
   //             .style("opacity", 0);
 
-  var width = 1700;
+  var width = divWidth;
   var height = (5+big)*17.5;
   // console.log('#'+divId+'-overView');
   var svg = d3.select('#'+divId+'-overView').attr({
@@ -22,12 +23,12 @@ function overView(divId,mRNA,data,CDS_1,CDS_2){
   var last = 0;
   
   var scaleX = d3.scale.linear()
-        .range([0, 1500])
+        .range([0, width-150])
         .domain([1, mRNAlen])
         .clamp(false);
-  var last_check= scaleX(mRNAlen)-scaleX(mRNAlen-(mRNAlen%50));
+  var last_check= scaleX(mRNAlen)-scaleX(mRNAlen-(mRNAlen%tickkk));
   if( last_check < 30){last=0.7;}
-  if(mRNAlen%50!=0){
+  if(mRNAlen%tickkk!=0){
     svg.append('text').attr({
         'x':scaleX(mRNAlen+1),
         'y':scaleY(2-last)-9,
@@ -53,7 +54,7 @@ function overView(divId,mRNA,data,CDS_1,CDS_2){
         .scale(scaleX)
         .orient('top')
         .tickFormat(function(d){return d;})
-        .ticks(mRNAlen/50);
+        .ticks(mRNAlen/tickkk);
     svg.append('g')
        .call(axisX)
        .attr({
@@ -198,19 +199,20 @@ function overView(divId,mRNA,data,CDS_1,CDS_2){
 };
 
 
-function eachOverView(Num,mRNA,data,CDS_1,CDS_2){
+function eachOverView(Num,mRNA,data,CDS_1,CDS_2,divId,divWidth){
   // console.log(data);
   var mRNAlen = mRNA.length;
   var big = 0;
+  var tickkk = 50*(Math.floor(mRNAlen/2000)+1);
 
   for (key in data[0].most){
     if(data[0].most[key] > big){big = data[0].most[key];}
   }
 
-  var width = 1420;
+  var width = divWidth;
   var height = (5+big) * 17.5 - 30;
   // console.log('#overView_'+Num);
-  var svg = d3.select('#overView_'+Num).attr({
+  var svg = d3.select('#'+divId+'-overView_'+Num).attr({
       'width': width,
       'height': height
     });  
@@ -220,12 +222,12 @@ function eachOverView(Num,mRNA,data,CDS_1,CDS_2){
   var last = 0;
   
   var scaleX = d3.scale.linear()
-        .range([0, 1300])
+        .range([0, width-120])
         .domain([1, mRNAlen])
         .clamp(false);
-  var last_check= scaleX(mRNAlen)-scaleX(mRNAlen-(mRNAlen%50));
+  var last_check= scaleX(mRNAlen)-scaleX(mRNAlen-(mRNAlen%tickkk));
   if( last_check < 30){last=0.7;}
-  if(mRNAlen%50!=0){
+  if(mRNAlen%tickkk!=0){
     svg.append('text').attr({
         'x':scaleX(mRNAlen+1),
         'y':scaleY(2-last)-9,
@@ -251,7 +253,7 @@ function eachOverView(Num,mRNA,data,CDS_1,CDS_2){
         .scale(scaleX)
         .orient('top')
         .tickFormat(function(d){return d;})
-        .ticks(mRNAlen/50);
+        .ticks(mRNAlen/tickkk);
     svg.append('g')
        .call(axisX)
        .attr({

@@ -1,107 +1,3 @@
-function suggestion(sug,sugNotCDS,a,b,c,d,e){
-	// console.log(sug);
-	// console.log(a,b,c,d,e)
-	$('#div_name2').append('<h1 style= "text-align: center;"><b>Suggestions</b></h1>');
-	var table_html = '<table id="sugTable" class="display"><thead><tr><th width= 150>piRNA</th>';
-	table_html += '<th width= 100>targeted region in the input sequences</th>';
-	table_html += '<th width= 70>number of non-GU mismatches in seed region</th>';
-	table_html += '<th width= 70>number of GU mismatches in seed region</th>';
-	table_html += '<th width= 70>number of non-GU mismatches in non-seed region</th>';
-	table_html += '<th width= 70>number of GU mismatches in non-seed region</th>';
-	table_html += '<th width= 70>total number of mismatches</th>';
-	table_html += '<th colspan="9">methods<br>escape condition{ seed-xGU > '+a+' , seed-GU > '+b+' , non-seed-xGU > '+c+' , non-seed-GU > '+d+' , total mis > '+e+'}</th>';
-	table_html += '</tr></thead><tbody></tbody></table><br><br>';
-	$('#div_name2').append(table_html);
-
-	for (var x in sug){
-		var table = '';
-		var span = sug[x][7].length + 1;
-		table += '<tr><td class="mid" rowspan="'+span+'">'+sug[x][0]+'</td>';
-		table += '<td class="mid" rowspan="'+span+'">'+sug[x][1]+'~'+(sug[x][1]+(sug[x][2]-1))+'</td>';
-		table += '<td class="mid" rowspan="'+span+'">'+sug[x][3]+'</td>';
-		table += '<td class="mid" rowspan="'+span+'">'+sug[x][4]+'</td>';
-		table += '<td class="mid" rowspan="'+span+'">'+sug[x][5]+'</td>';
-		table += '<td class="mid" rowspan="'+span+'">'+sug[x][6]+'</td>';
-		table += '<td class="mid" rowspan="'+span+'">'+(sug[x][3] + sug[x][4] + sug[x][5] + sug[x][6])+'</td>';
-		table += '<td class="mid" width= 80>CDS</td>';
-		table += '<td class="mid">position</td>';
-		table += '<td class="mid" width= 130>changed seq</td>';
-		table += '<td class="mid" width= 130>seed-xGU</td>';
-		table += '<td class="mid" width= 130>seed-GU</td>';
-		table += '<td class="mid" width= 130>non-seed-xGU</td>';
-		table += '<td class="mid" width= 130>non-seed-GU</td>';
-		table += '<td class="mid" width= 130>total mis</td>';
-		table += '<td class="mid" width= 130>escape?</td>';
-		table += '</tr>';
-		var temp = '';
-		for (var i in sug[x][7]){
-			var new_sxgu = sug[x][7][i][4][0];
-			var new_sgu = sug[x][7][i][4][1];
-			var new_nsxgu = sug[x][7][i][4][2];
-			var new_nsgu = sug[x][7][i][4][3];
-			var new_total = sug[x][7][i][4][0] + sug[x][7][i][4][1] + sug[x][7][i][4][2] + sug[x][7][i][4][3];
-			temp += '<tr><td class="mid">'+sug[x][7][i][0]+'</td>';
-			temp += '<td class="mid">'+sug[x][7][i][1]+'</td>';
-			temp += '<td class="mid">'+sug[x][7][i][2]+' → '+sug[x][7][i][3]+'</td>';
-
-
-			if (new_sxgu > a){
-				temp += '<td class="mid" style = "color : red">'+new_sxgu+'</td>';
-			}
-			else{
-				temp += '<td class="mid">'+new_sxgu+'</td>';
-			}
-
-
-			if (new_sgu > b){
-				temp += '<td class="mid" style = "color : red">'+new_sgu+'</td>';
-			}
-			else{
-				temp += '<td class="mid">'+new_sgu+'</td>';
-			}   
-
-
-			if (new_nsxgu > c){
-				temp += '<td class="mid" style = "color : red">'+new_nsxgu+'</td>';
-			}
-			else{
-				temp += '<td class="mid">'+new_nsxgu+'</td>';
-			}
-
-			
-			if (new_nsgu > d){
-				temp += '<td class="mid" style = "color : red">'+new_nsgu+'</td>';
-			}
-			else{
-				temp += '<td class="mid">'+new_nsgu+'</td>';
-			}
-
-			
-			if (new_total > e){
-				temp += '<td class="mid" style = "color : red">'+new_total+'</td>';
-			}
-			else{
-				temp += '<td class="mid">'+ new_total + '</td>';
-			}
-
-			
-			if (new_sxgu > a || new_sgu > b || new_nsxgu > c || new_nsgu > d || new_total >e){
-				temp += '<td class="mid">✓</td></tr>';
-			}
-			else{
-				temp += '<td class="mid">✕</td></tr>';
-			}
-		}
-		// temp = temp.replace(/^<tr>/, "");
-		table += temp;
-		$('#div_name2').find('tbody').append(table);
-	}
-
-
-
-
-}
-
 function shit(sug,sugNotCDS,a,b,c,d,e,name,gene,nematodeType,CDS1,CDS2,csrf){
 	var table_html = '<table id="sugPicTable" class="display" width= 100%><thead><tr><th>piRNA</th>';
 	table_html += '<th width= 100>targeted region in the input sequences</th>';
@@ -183,7 +79,7 @@ function shit(sug,sugNotCDS,a,b,c,d,e,name,gene,nematodeType,CDS1,CDS2,csrf){
 			// temp += '</damn><g></g>'
 		}
 		table+=temp;
-		console.log(duplicateFir);	
+		// console.log(duplicateFir);	
 	}
 	table_html+=table;
 	table_html+='</tbody></table>';
@@ -199,7 +95,7 @@ function shit(sug,sugNotCDS,a,b,c,d,e,name,gene,nematodeType,CDS1,CDS2,csrf){
 		// duplicateFir  0:修改位置 1:相同位置幾種改法 2:最外層count 3:內層count (通通都是int)
 		// console.log(range(duplicateFir[dupEffect][2]));
 		for (var aa in range(duplicateFir[dupEffect][1])){
-			console.log('#ck'+duplicateFir[dupEffect][2]+'_'+(duplicateFir[dupEffect][3]+Number(aa)));
+			// console.log('#ck'+duplicateFir[dupEffect][2]+'_'+(duplicateFir[dupEffect][3]+Number(aa)));
 			$('#ck'+duplicateFir[dupEffect][2]+'_'+(duplicateFir[dupEffect][3]+Number(aa))).click(function(){
 				var getID = $(this).attr('id');
 				var newList = getID.replace('ck','');
@@ -363,7 +259,7 @@ function shit(sug,sugNotCDS,a,b,c,d,e,name,gene,nematodeType,CDS1,CDS2,csrf){
 
 
 	$('#sugPicTable').find('tbody').prepend(frontText);
-	console.log(frontDuplicateFir);
+	// console.log(frontDuplicateFir);
 	for(var dupEffect in frontDuplicateFir){
 		// duplicateFir  0:修改位置 1:相同位置幾種改法 2:最外層count 3:內層count (通通都是int)
 		// console.log(range(duplicateFir[dupEffect][2]));
@@ -987,4 +883,112 @@ function shit(sug,sugNotCDS,a,b,c,d,e,name,gene,nematodeType,CDS1,CDS2,csrf){
 
 	
 	// $('#div_name2').append('</tbody></table><br><br>');  
+}
+
+
+
+
+
+function suggestion(sug,sugNotCDS,a,b,c,d,e){
+	// console.log(sug);
+	// console.log(a,b,c,d,e)
+	$('#div_name2').append('<h1 style= "text-align: center;"><b>Suggestions</b></h1>');
+	var table_html = '<table id="sugTable" class="display"><thead><tr><th width= 150>piRNA</th>';
+	table_html += '<th width= 100>targeted region in the input sequences</th>';
+	table_html += '<th width= 70>number of non-GU mismatches in seed region</th>';
+	table_html += '<th width= 70>number of GU mismatches in seed region</th>';
+	table_html += '<th width= 70>number of non-GU mismatches in non-seed region</th>';
+	table_html += '<th width= 70>number of GU mismatches in non-seed region</th>';
+	table_html += '<th width= 70>total number of mismatches</th>';
+	table_html += '<th colspan="9">methods<br>escape condition{ seed-xGU > '+a+' , seed-GU > '+b+' , non-seed-xGU > '+c+' , non-seed-GU > '+d+' , total mis > '+e+'}</th>';
+	table_html += '</tr></thead><tbody></tbody></table><br><br>';
+	$('#div_name2').append(table_html);
+
+	for (var x in sug){
+		var table = '';
+		var span = sug[x][7].length + 1;
+		table += '<tr><td class="mid" rowspan="'+span+'">'+sug[x][0]+'</td>';
+		table += '<td class="mid" rowspan="'+span+'">'+sug[x][1]+'~'+(sug[x][1]+(sug[x][2]-1))+'</td>';
+		table += '<td class="mid" rowspan="'+span+'">'+sug[x][3]+'</td>';
+		table += '<td class="mid" rowspan="'+span+'">'+sug[x][4]+'</td>';
+		table += '<td class="mid" rowspan="'+span+'">'+sug[x][5]+'</td>';
+		table += '<td class="mid" rowspan="'+span+'">'+sug[x][6]+'</td>';
+		table += '<td class="mid" rowspan="'+span+'">'+(sug[x][3] + sug[x][4] + sug[x][5] + sug[x][6])+'</td>';
+		table += '<td class="mid" width= 80>CDS</td>';
+		table += '<td class="mid">position</td>';
+		table += '<td class="mid" width= 130>changed seq</td>';
+		table += '<td class="mid" width= 130>seed-xGU</td>';
+		table += '<td class="mid" width= 130>seed-GU</td>';
+		table += '<td class="mid" width= 130>non-seed-xGU</td>';
+		table += '<td class="mid" width= 130>non-seed-GU</td>';
+		table += '<td class="mid" width= 130>total mis</td>';
+		table += '<td class="mid" width= 130>escape?</td>';
+		table += '</tr>';
+		var temp = '';
+		for (var i in sug[x][7]){
+			var new_sxgu = sug[x][7][i][4][0];
+			var new_sgu = sug[x][7][i][4][1];
+			var new_nsxgu = sug[x][7][i][4][2];
+			var new_nsgu = sug[x][7][i][4][3];
+			var new_total = sug[x][7][i][4][0] + sug[x][7][i][4][1] + sug[x][7][i][4][2] + sug[x][7][i][4][3];
+			temp += '<tr><td class="mid">'+sug[x][7][i][0]+'</td>';
+			temp += '<td class="mid">'+sug[x][7][i][1]+'</td>';
+			temp += '<td class="mid">'+sug[x][7][i][2]+' → '+sug[x][7][i][3]+'</td>';
+
+
+			if (new_sxgu > a){
+				temp += '<td class="mid" style = "color : red">'+new_sxgu+'</td>';
+			}
+			else{
+				temp += '<td class="mid">'+new_sxgu+'</td>';
+			}
+
+
+			if (new_sgu > b){
+				temp += '<td class="mid" style = "color : red">'+new_sgu+'</td>';
+			}
+			else{
+				temp += '<td class="mid">'+new_sgu+'</td>';
+			}   
+
+
+			if (new_nsxgu > c){
+				temp += '<td class="mid" style = "color : red">'+new_nsxgu+'</td>';
+			}
+			else{
+				temp += '<td class="mid">'+new_nsxgu+'</td>';
+			}
+
+			
+			if (new_nsgu > d){
+				temp += '<td class="mid" style = "color : red">'+new_nsgu+'</td>';
+			}
+			else{
+				temp += '<td class="mid">'+new_nsgu+'</td>';
+			}
+
+			
+			if (new_total > e){
+				temp += '<td class="mid" style = "color : red">'+new_total+'</td>';
+			}
+			else{
+				temp += '<td class="mid">'+ new_total + '</td>';
+			}
+
+			
+			if (new_sxgu > a || new_sgu > b || new_nsxgu > c || new_nsgu > d || new_total >e){
+				temp += '<td class="mid">✓</td></tr>';
+			}
+			else{
+				temp += '<td class="mid">✕</td></tr>';
+			}
+		}
+		// temp = temp.replace(/^<tr>/, "");
+		table += temp;
+		$('#div_name2').find('tbody').append(table);
+	}
+
+
+
+
 }

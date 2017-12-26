@@ -16,6 +16,59 @@ from django.views.decorators.csrf import ensure_csrf_cookie
 @ensure_csrf_cookie
 
 # Create your views here.
+
+def readUserNum(request):
+	module_dir = os.path.dirname(__file__)
+	userNum = int(request.POST.get('userNum'))
+	if os.path.isfile(os.path.join(module_dir,'temp/userNum{0}.csv'.format(userNum))):
+		out = userNum
+	else:
+		out = 'nonono'
+	return JsonResponse({'out':out})
+
+def deleteUserNum(request):
+	module_dir = os.path.dirname(__file__)
+	userNum = request.POST.get('userNum')
+	liCount = int(request.POST.get('qq')) - 1
+	lastqq = int(request.POST.get('lastqq'))
+	print('!!!!!!!!!!!!!!!!!!!!!!!!!!!')
+	print(userNum)
+	print(liCount)
+	print(lastqq)
+	os.remove(os.path.join(module_dir,'temp/userNum{0}.csv'.format(userNum)))
+	os.remove(os.path.join(module_dir,'temp/ori_result{0}.json'.format(userNum)))
+	os.remove(os.path.join(module_dir,'temp/ori_base_result{0}.json'.format(userNum)))
+	TTT = 1
+	while liCount:
+		if TTT < liCount:	
+			os.remove(os.path.join(module_dir,'temp/modify{0}_{1}.csv'.format(TTT,userNum)))
+			os.remove(os.path.join(module_dir,'temp/picked_{0}_{1}.json'.format(TTT,userNum)))
+			os.remove(os.path.join(module_dir,'temp/posToDiv_{0}_{1}.json'.format(TTT,userNum)))
+			os.remove(os.path.join(module_dir,'temp/sucResult_{0}_{1}.txt'.format(TTT,userNum)))
+			TTT += 1		
+		elif TTT == liCount and lastqq == 1:
+			os.remove(os.path.join(module_dir,'temp/modify{0}_{1}.csv'.format(TTT,userNum)))
+			os.remove(os.path.join(module_dir,'temp/picked_{0}_{1}.json'.format(TTT,userNum)))
+			os.remove(os.path.join(module_dir,'temp/posToDiv_{0}_{1}.json'.format(TTT,userNum)))
+			os.remove(os.path.join(module_dir,'temp/sucResult_{0}_{1}.txt'.format(TTT,userNum)))
+			break
+		elif TTT == liCount and lastqq == 0:
+			os.remove(os.path.join(module_dir,'temp/modify{0}_{1}.csv'.format(TTT,userNum)))
+			os.remove(os.path.join(module_dir,'temp/picked_{0}_{1}.json'.format(TTT,userNum)))
+			os.remove(os.path.join(module_dir,'temp/posToDiv_{0}_{1}.json'.format(TTT,userNum)))
+			break
+	# with open(os.path.join(module_dir,'userNum.csv'),'w') as f1:
+	# 	w1 = csv.writer(f1)
+	# 	w1.writerow([userNum])
+	# 	w1.writerow(['reset'])
+	return JsonResponse({'OK':'OK'})
+
+# def deleteUserNum(request):
+# 	module_dir = os.path.dirname(__file__)
+# 	userNum = request.POST.get('userNum')
+# 	os.delete(os.path.join(module_dir,'userNum.csv'))
+# 	return JsonResponse({'OK':'OK'})
+
 def piRNA(request):
 	return render(request, 'piRNA/home.html')
 
@@ -25,8 +78,8 @@ def update(request):
 def goScan(request):
 	return render(request, 'piRNA/scan.html')
 
-def goHelp(request):
-	return render(request, 'piRNA/help.html')
+def goTutorial(request):
+	return render(request, 'piRNA/tutorial.html')
 
 def goContact(request):
 	return render(request, 'piRNA/contact.html')
@@ -34,11 +87,12 @@ def goContact(request):
 def goResult(request):
 	return render(request, 'piRNA/result.html')
 
+
 def create_data(request):
-	global ori_result
 	module_dir = os.path.dirname(__file__)
+	userNum = request.POST.get('userNum')
 	modifyCount = request.POST.get('modifyCount')
-	with open(os.path.join(module_dir,'modify'+modifyCount+'.csv'),'w',encoding='utf8') as f1:
+	with open(os.path.join(module_dir,'temp/modify'+modifyCount+'_'+userNum+'.csv'),'w',encoding='utf8') as f1:
 		mod = csv.writer(f1)
 		s1 = request.POST.get('name').strip()
 		s2 = request.POST.get('data1').strip()
@@ -54,6 +108,8 @@ def create_data(request):
 		mod.writerow([request.POST.get('CDS_2')])
 		mod.writerow([request.POST.get('posString')])
 		mod.writerow([request.POST.get('selectInfoStr')])
+		mod.writerow([request.POST.get('posToDivNumStr')])
+		mod.writerow([request.POST.get('pickedStr')])
 	with open(os.path.join(module_dir,'selected.csv'),'w',encoding='utf8') as f1:
 		ww = csv.writer(f1)
 		for j in range(int(request.POST.get('select_num'))):
@@ -81,7 +137,7 @@ def rreplace(s, old, new, occurrence):
 	li = s.rsplit(old, occurrence)
 	return new.join(li)
 
-def CDS():
+def CDS(RNA,CDS1,CDS2):
 	module_dir = os.path.dirname(__file__)
 	with open(os.path.join(module_dir,'piRNA/CDS/CDS2.csv'),'r',encoding='utf8') as f1:
 		reader1 = csv.reader(f1)
@@ -121,19 +177,23 @@ def CDS():
 
 def scan_main(request):
 	module_dir = os.path.dirname(__file__)
+	userNum = int(request.POST.get('userNum'))			
 	# x = request.POST.get('sth')
 	if request.POST.get('data1') == '':
 		data = {'state':'nothing'}
-	elif re.search("^>[A-Za-z0-9|_,+.\s]+\s[A-Za-z\s]+$",request.POST.get('data1')) == None:
+	elif re.search("^\s?>[A-Za-z0-9|_,+#)(.\s]+\s[A-Za-z\s]+$",request.POST.get('data1')) == None:
 		data = {'state':'notfasta'}
 	elif request.POST.get('nematodeType') == 'C.remanei' or request.POST.get('nematodeType') == 'C.brenneri':
 		data = {'state':'nematode'}
 	else:
-		global Arr2,options,CDS1,CDS2,RNA,ori_result
+		with open(os.path.join(module_dir,'temp/userNum{0}.csv'.format(userNum)),'w') as f1:
+			w1 = csv.writer(f1)
+			w1.writerow([userNum])
 		Gene_OK = request.POST.get('data1').replace('>','').strip().split('\n')
-		RNA = strtr(Gene_OK[1].upper(),{'T':'U'}) #將輸入基因T轉成U
+		name = Gene_OK.pop(0)
+		Gene_OK_Str = ''.join(Gene_OK)
+		RNA = strtr(Gene_OK_Str.upper(),{'T':'U'}) #將輸入基因T轉成U
 		Arr2 = list(RNA)
-		name = Gene_OK[0]
 		options = {'core_non_GU':request.POST.get('opt1'),'core_GU':request.POST.get('opt2'),'non_core_non_GU':request.POST.get('opt3'),'non_core_GU':request.POST.get('opt4'),'total':request.POST.get('opt5'),'nematodeType':request.POST.get('nematodeType')}
 		with open(os.path.join(module_dir,'piRNA/{0}/info_name.csv'.format(options['nematodeType'])),'r') as f2:
 			reader2 = csv.reader(f2)
@@ -148,9 +208,7 @@ def scan_main(request):
 			CDS2 = int(request.POST.get('CDS_2'))
 		else: 
 			CDS2 = 0
-		# print(CDS1)
-		# print(CDS2)
-		# print('Arr2:'+len(Arr2))
+
 		if (CDS1==0 and CDS2!=0) or (CDS2==0 and CDS1!=0) or ((CDS1!= 0 and CDS2!= 0) and (CDS1 >= CDS2 or (CDS2-CDS1-2)%3 !=0 or CDS2 > len(Arr2) or CDS1 < 1)):
 			data = {'state':'CDSX'}
 		else:
@@ -159,7 +217,7 @@ def scan_main(request):
 			start_time = time.time()
 			q = JoinableQueue()
 			for num in range(mission_count[options['nematodeType']]):
-				Process(target=scan, args=(q, num)).start()
+				Process(target=scan, args=(q, num ,Arr2 ,options)).start()
 			for t in range(mission_count[options['nematodeType']]):
 				a = q.get()
 				if a != 'N/A':
@@ -168,14 +226,24 @@ def scan_main(request):
 				q.task_done()
 			q.join()
 			outForAdvice = result
-			CDSout = CDS()
-			sug = suggestion(result)
+			CDSout = CDS(RNA,CDS1,CDS2)
+			sug = suggestion(result,CDS1,CDS2,RNA,options)
 			sug['inCDS'] = sorted(sug['inCDS'], key=operator.itemgetter(1))
 			sug['notInCDS'] = sorted(sug['notInCDS'], key=operator.itemgetter(1))
 			for i in sug['inCDS']:				
-				i[7] = sorted(i[7], key=operator.itemgetter(1),reverse=True)
+				i[7] = sorted(i[7], key=operator.itemgetter(1),reverse=False)
+				i[7] = sorted(i[7], key=operator.itemgetter(6),reverse=True)
 			for i in sug['notInCDS']:				
-				i[7] = sorted(i[7], key=operator.itemgetter(0),reverse=True)
+				i[7] = sorted(i[7], key=operator.itemgetter(0),reverse=False)
+				i[7] = sorted(i[7], key=operator.itemgetter(5),reverse=True)
+			example1 = 'atgagtaaaggagaagaacttttcactggagttgtcccaattcttgttgaattagatggtgatgttaatgggcacaaattttctgtcagtggagagggtgaaggtgatgcaacatacggaaaacttacccttaaatttatttgcactactggaaaactacctgttccatggccaacacttgtcactactctcacttatggtgttcaatgcttctcgagatacccagatcatatgaaacagcatgactttttcaagagtgccatgcccgaaggttatgtacaggaaagaactatatttttcaaagatgacgggaactacaagacacgtgctgaagtcaagtttgaaggtgatacccttgttaatagaatcgagttaaaaggtattgattttaaagaagatggaaacattcttggacacaaattggaatacaactataactcacacaatgtatacatcatggcagacaaacaaaagaatggaatcaaagttaacttcaaaattagacacaacattgaagatggaagcgttcaactagcagaccattatcaacaaaatactccaattggcgatggccctgtccttttaccagacaaccattacctgtccacacaatctgccctttcgaaagatcccaacgaaaagagagaccacatggtccttcttgagtttgtaacagctgctgggattacacatggcatggatgaactatacaaatag'.upper().replace("T","U")
+			example2 = 'acgcaaaaATGAACGAAAAAGAAGAAGAAGTATCGCTGAATCAGATCAAGCTCAAGCCACGTATTTCACTTTTCAATGGCTGCACAATCATTATCGGAGTTATTATTGGATCAGGAATCTTTGTGTCACCAAAAGGAGTCCTCCTTGAAGCCGGCAGTGCTGGAATGTCTCTGCTCATTTGGCTCCTCAGTGGAGTATTTGCCATGATTGGAGCTGTATGTTATTCAGAGCTCGGGACACTAATCCCCAAGTCTGGAGGAGATTACGCGTATATTTATGAGGCGTTTGGTCCTCTTCCGTCATTTCTTTTTCTTTGGGTAGCTCTTGTCATTATCAATCCAACATCTTTGGCGATTATTGCCATAACATGTGCAACTTACGCTCTTCAACCATTCTACTCATGTCCTGTACCGGACGTTGTTGTCAATCTTTTCGCCGGATGCATAATTGCTGTTCTCACATTCATCAACTGTTGGGATGTTCGAATGGCAACAAGAACTAACGATTTCTTCACAATCACCAAATTAATTGCTCTCACTCTCATTATTACTTGTGGAGGATATTGGCTCTCATTGGGGCATATTGATAATCTTGTGATGCCCGATGTAGCAGAAGGAAGTCAAACAAAATTATCAGCTATTGCAATGGCGTTCTATTCTGGAGTTTTCTCATTTTCGGGGTTCTCTTATCTGAATTTTGTTACCGAAGAACTAAAAAACCCGTTCAGGAACCTTCCACGCGCAATCTACATTTCCATTCCTATTGTTACAATTGTCTATATGCTCGTCAATATTGCATATTTTTCAGTATTAACCGTTGATGAGATTCTCGATTCCGATGCAGTGGCCATCACATTTGCCGACAAAATTCTCGGAACCTTCGGAAGCAAGATACTCATGCCATTGTTTGTTTCCTTTTCCTGCGTAGGTTCCCTTAATGGAATTCTCATCACATGCTCCAGAATGTTCTTTTCTGGAGCTCGAAACAGTCAACTACCTGAACTGTTTGCAATGATCTCAATCAGACAACTTACTCCGATTCCATCATTAATTTTCCTTGGTGGAACTTCAATCGTCATGCTCTTCATTGGTAACGTGTTCCAGCTTATTAACTATCTGTCATTTGCTGAATCACTCGTTGTTTTCTCTTCTGTCGCTGGGCTTTTGAAATTGAGATTCACAATGCCTGAAAATGTGCTAAACGCCCGTCCAATCAAAATCAGTCTCCTGTGGCCAATACTGTTTTTCCTTATGTGCCTCTTTCTTTTGATCCTTCCATTCTTCCACAGTGATCCATGGGAACTCATTTACGGAGTTTTCTTGGTACTTTCAGGAATTCCCATCTACGTTCTCTTCGTCTACAATAAATACCGTCCAGGATTCATTCAATCTGTGTGGATAGGCTTCACACATTTCATTCAAAAATTGTTCTATTGTGTCCCAGAACTCTCCAGTTCCTGAaaattctgttttattgtcatatccaaacccgtgactctttccgttgttcttttttatttccacagtgtgcattttttgtttttttgtttggttttttttgctcccagatctttctgcgcttccgttatcaagcggacatatctcaaattgacacagcatttttttgctattttatccgctccatatctaaaatatatctttatgtcatcattgaaagttttggtttttagcacctaataacttattttctcgaatagaaataaaacgttctcaatttt'.upper().replace("T","U")
+			if RNA == example1 :
+				EX = 'ex1'
+			elif RNA == example2 :
+				EX = 'ex2'
+			else:
+				EX = 'noEx'
 			data = {
 				'CDS':[CDSout],
 				'advice':[],
@@ -187,22 +255,25 @@ def scan_main(request):
 				'suggestion':sug,
 				'CDS1':CDS1,
 				'CDS2':CDS2,
+				'EX':EX,
 				'csrf':request.POST.get('csrfmiddlewaretoken'),
+				'userNum':userNum,
 			}
 			ori_result = data
-			with open(os.path.join(module_dir,'ori_result.json'),'w') as w1:
+			with open(os.path.join(module_dir,'temp/ori_result{0}.json'.format(userNum)),'w') as w1:
 				json.dump(data,w1,indent=4)
 	return JsonResponse(data)
 
 def keepOld(request):
 	module_dir = os.path.dirname(__file__)
-	with open(os.path.join(module_dir,'ori_result.json'),'r') as w1:
+	userNum = request.POST.get('userNum')
+	with open(os.path.join(module_dir,'temp/ori_result'+userNum+'.json'),'r') as w1:
 		data = json.load(w1)
-	with open(os.path.join(module_dir,'ori_base_result.json'),'w') as w1:
+	with open(os.path.join(module_dir,'temp/ori_base_result'+userNum+'.json'),'w') as w1:
 		json.dump(data,w1,indent=4)
 	return JsonResponse(data)	
 
-def scan(q,num):
+def scan(q,num,Arr2,options):
 	global piRNA_Length
 	module_dir = os.path.dirname(__file__)
 	with open(os.path.join(module_dir,'piRNA/{0}/piRNA{1}.txt'.format(options['nematodeType'],num+1)),'r') as f1:
@@ -232,7 +303,7 @@ def scan(q,num):
 				$d計算core_non_GU $e計算non_core_non_GU $m計算core_GU 
 				$n計算non_core_GU $o計算第一位"""
 			# if key[0]=='21ur-9758':   
-			#   print(Arr4)
+
 
 			b = a +len(Arr1)-2
 			c = len(Arr1)-2
@@ -352,7 +423,6 @@ def scan(q,num):
 						Arr4 = 'N/A'
 					if ArryxGU == [] :
 						ArryxGU = 'N/A'
-					# print(Arr4)
 				
 				
 					outArr.append([key[0],str(a+1)+'-'+str(a+21),o+d+e+m+n,','.join(Arr4),','.join(ArryxGU),d,m,e,n,"5' "+''.join(Arr3)+" 3'","3' "+''.join(Arr5)+" 5'",key[2],key[1][::-1]])
@@ -363,7 +433,7 @@ def scan(q,num):
 		outArr = 'N/A'
 	q.put(outArr)
 
-def suggestion(data):
+def suggestion(data,CDS1,CDS2,RNA,options):
 	# data: 0:名字，1:mismatch位置(x-x+長度)，2:#mismatch，3:mismatch position(含tag)
 	# 		4:xGU position，5:seed region non-GU#，6:seed region GU#，7:non-seed non-GU#
 	# 		8:non-seed GU#，9:input gene detail，10:piRNA detail，11:[piRNA資訊陣列]，12:piRNA序列
@@ -396,6 +466,20 @@ def suggestion(data):
 						result.append([fir+length-h,nowCheckSeq.lower(),k.lower(),[sxGU+1,sGU,nsxGU,nsGU],0])
 			over = 3
 			new_RNA = RNA[fir-1:fir-1+length]
+			# 照Rule評分
+			for Rule in result:
+				score = 0
+				if Rule[3][0] > int(options['core_non_GU']):
+					score += 3
+				if Rule[3][1] > int(options['core_GU']):
+					score += 1
+				if Rule[3][2] > int(options['non_core_non_GU']):
+					score += 1
+				if Rule[3][3] > int(options['non_core_GU']):
+					score += 1
+				if Rule[3][0]+Rule[3][1]+Rule[3][2]+Rule[3][3] > int(options['total']):
+					score += 1
+				Rule.append(score)
 			collect = [name,fir,length,sxGU,sGU,nsxGU,nsGU,result,piRNAseq,mis_xGU,mis_GU,new_RNA.lower()]
 			output['notInCDS'].append(collect)
 			continue
@@ -408,9 +492,13 @@ def suggestion(data):
 		stop_num = 0
 		if fir < CDS1 :
 			CDSs = math.ceil((length + 1 - mission - (CDS1 - fir)) / 3)
-		elif CDS2-length < fir :
+		elif CDS2-length < fir :			
 			CDSs = math.ceil((length + 1 - mission) / 3)
 			stop_num = math.ceil((length + 1 - mission) / 3) - math.ceil((CDS2 - fir +1) / 3)
+			print('!!!!!!!!!!!!!')
+			print(CDSs)
+			print(stop_num)
+			print(mission)
 		else:
 			CDSs = math.ceil((length + 1 - mission) / 3)
 		can_method = 0
@@ -505,7 +593,7 @@ def suggestion(data):
 							result.append([CDS_codon,fir+first_CDS_leftPos+2,RNA[fir+first_CDS_leftPos+2-1],third,[sxGU+1,sGU-b,nsxGU,nsGU],0])
 
 
-
+		move = None
 		#掃他媽的中段
 		for x in range(CDSs-2):
 			if x < stop_num-1:
@@ -638,12 +726,27 @@ def suggestion(data):
 		else:
 			last_state = (length - 2 - mission)%3
 
-		try:
-			move
-		except NameError:
-			move = 3
+		if move == None:
+			if stop_num != 0:
+				move = stop_num*3
+			else:
+				move = 3
 		else:
 			move += 3
+		# try:
+		# 	move
+		# except NameError:
+		# 	try:
+		# 		stop_num
+		# 	except NameError:
+		# 		move = 3
+		# 	else:
+		# 		print(name)
+		# 		move = 0
+		# else:
+		# 	move += 3
+		# 	print(name)
+		# 	print(move)
 		
 		if (last_state == 1 or last_state == 2) and CDSs >= 2:
 			CDS_seq_of_mRNA = RNA[(fir+(first_CDS_leftPos)-1)-move:(fir+(first_CDS_leftPos)-1)-move+3]
@@ -854,7 +957,7 @@ def suggestion(data):
 		if fir > len(RNA) - length+1 -2:
 			over = 0
 		front = 3
-		if fir < 3:
+		if fir <= 3:
 			front = 0
 		new_RNA = RNA[fir-1-front:fir-1+21+over]
 		if fir < CDS1:
@@ -867,7 +970,6 @@ def suggestion(data):
 				else:
 					outCDS = (fir + length - 2)- CDS2 + 1
 				someNC = range(outCDS,1,-1)
-				# print(someNC)
 				seqs = ['A','U','G','C']
 				for h in someNC:
 					for k in seqs:
@@ -893,6 +995,20 @@ def suggestion(data):
 
 		else:
 			firstCDSPos = (front+(first_CDS_leftPos)-1)-move+1
+		# 照Rule給分  rule1直接給3分就會排在最前面
+		for Rule in result:
+			score = 0
+			if Rule[4][0] > int(options['core_non_GU']):
+				score += 3
+			if Rule[4][1] > int(options['core_GU']):
+				score += 1
+			if Rule[4][2] > int(options['non_core_non_GU']):
+				score += 1
+			if Rule[4][3] > int(options['non_core_GU']):
+				score += 1
+			if Rule[4][0]+Rule[4][1]+Rule[4][2]+Rule[4][3] > int(options['total']):
+				score += 1
+			Rule.append(score)
 		collect = [name,fir,length,sxGU,sGU,nsxGU,nsGU,result,piRNAseq,mis_xGU,mis_GU,new_RNA,firstCDSPos,list(reversed(CDSSS)),front]
 		output['inCDS'].append(collect)
 	for qq in output['inCDS']:
@@ -929,99 +1045,6 @@ def myajaxview(request):
 	return render(request, 'CNZ.html',{'test':test})
 
 
-def modify(request):
-	module_dir = os.path.dirname(__file__)
-	global Arr2,options,CDS1,CDS2,RNA
-	with open(os.path.join(module_dir,'modify.csv'),'r') as f1:
-		options = {}
-		mod = csv.reader(f1)
-		count = 0
-		for mmm in mod:
-			if count == 0:
-				name = mmm[0]
-				count+=1
-			elif count == 1:
-				RNA = mmm[0]
-				count+=1
-			elif count == 2:
-				options['core_non_GU'] = mmm[0]
-				count+=1
-			elif count == 3:
-				options['core_GU'] = mmm[0]
-				count+=1
-			elif count == 4:
-				options['non_core_non_GU'] = mmm[0]
-				count+=1
-			elif count == 5:
-				options['non_core_GU'] = mmm[0]
-				count+=1
-			elif count == 6:
-				options['total'] = mmm[0]
-				count+=1
-			elif count == 7:
-				options['nematodeType'] = mmm[0]
-				count+=1
-			elif count == 8:
-				CDS1 = int(mmm[0])
-				count+=1
-			elif count == 9:
-				CDS2 = int(mmm[0])
-				count+=1
-	# Gene_OK = request.POST.get('data1').replace('>','').strip().split('\n')
-	# RNA = strtr(Gene_OK[1].upper(),{'T':'U'}) #將輸入基因T轉成U
-	Arr2 = list(RNA)
-	# name = Gene_OK[0]
-	# options = {'core_non_GU':request.POST.get('opt1'),'core_GU':request.POST.get('opt2'),'non_core_non_GU':request.POST.get('opt3'),'non_core_GU':request.POST.get('opt4'),'total':request.POST.get('opt5'),'nematodeType':request.POST.get('nematodeType')}
-	with open(os.path.join(module_dir,'piRNA/{0}/info_name.csv'.format(options['nematodeType'])),'r') as f2:
-		reader2 = csv.reader(f2)
-		info_names = []
-		for x in reader2:
-			info_names.append(x[0])
-	# if request.POST.get('CDS_1')!='' : 
-	# 	CDS1 = int(request.POST.get('CDS_1'))
-	# else: 
-	# 	CDS1 = 0
-	# if request.POST.get('CDS_2')!='' :
-	# 	CDS2 = int(request.POST.get('CDS_2'))
-	# else: 
-	# 	CDS2 = 0
-	# print(CDS1)
-	# print(CDS2)
-	# print('Arr2:'+len(Arr2))
-	if (CDS1==0 and CDS2!=0) or (CDS2==0 and CDS1!=0) or ((CDS1!= 0 and CDS2!= 0) and (CDS1 >= CDS2 or (CDS2-CDS1-2)%3 !=0 or CDS2 > len(Arr2) or CDS1 < 1)):
-		data = {'state':'CDSX'}
-	else:
-		mission_count = {'C.elegans':357,'C.briggsae':290}
-		result=[]
-		start_time = time.time()
-		q = JoinableQueue()
-		for num in range(mission_count[options['nematodeType']]):
-			Process(target=scan, args=(q, num)).start()
-		for t in range(mission_count[options['nematodeType']]):
-			a = q.get()
-			if a != 'N/A':
-				for x in a:
-					result.append(x)
-			q.task_done()
-		q.join()
-		outForAdvice = result
-		CDSout = CDS()
-		sug = suggestion(result)
-		newsug = sorted(sug, key=operator.itemgetter(1))
-		data = {
-			'CDS':[CDSout],
-			'advice':[],
-			'gene':RNA,
-			'name':name,
-			'newout':result,
-			'options':options,
-			'piRNA_info_name':info_names,
-			'suggestion':newsug,
-			'CDS1':CDS1,
-			'CDS2':CDS2,
-		}
-	return JsonResponse(data)
-
 def showDaTable(request):
 	module_dir = os.path.dirname(__file__)
 	out = []
@@ -1035,20 +1058,25 @@ def showDaTable(request):
 			out.append([i[1].split('@@@'),bigList])
 	return JsonResponse({'out':out})
 
-def firstResult(request):
+def firstResult(request):	
 	module_dir = os.path.dirname(__file__)
-	with open(os.path.join(module_dir,'ori_base_result.json'),'r') as w1:
-		data = json.load(w1)
+	userNum = request.POST.get('userNum')
+	# with open(os.path.join(module_dir,'userNum.csv'),'r') as f1:
+	# 	r1 = csv.reader()
+	# 	for x in r1:
+	# 		userNum = x[0]
+	with open(os.path.join(module_dir,'temp/ori_base_result'+userNum+'.json'),'r') as r1:
+		data = json.load(r1)
 	return JsonResponse(data)
 
 
 def selectedPreData(request):
 	modifyCount = request.POST.get('modifyCount')
+	userNum = request.POST.get('userNum')
 	module_dir = os.path.dirname(__file__)
-	global Arr2,options,CDS1,CDS2,RNA
-	with open(os.path.join(module_dir,'ori_result.json'),'r') as w1:
-		ori_result = json.load(w1)
-	with open(os.path.join(module_dir,'modify'+modifyCount+'.csv'),'r') as f1:
+	with open(os.path.join(module_dir,'temp/ori_result'+userNum+'.json'),'r') as r1:
+		ori_result = json.load(r1)
+	with open(os.path.join(module_dir,'temp/modify'+modifyCount+'_'+userNum+'.csv'),'r') as f1:
 		options = {}
 		mod = csv.reader(f1)
 		count = 0
@@ -1103,6 +1131,35 @@ def selectedPreData(request):
 					selectedInfoOut.append(temp)
 				selectedInfoOut = sorted(selectedInfoOut, key=operator.itemgetter(0))
 				count+=1
+			elif count == 12:
+				posToDiv = mmm[0].split('@-@')
+				posToDivDict = {}
+				for x in posToDiv:
+					tempPosList = x.split(',')
+					tempPosList[0] = int(tempPosList[0])
+					tempPosList[1] = int(tempPosList[1])
+					if tempPosList[0] in posToDivDict.keys():
+						posToDivDict[tempPosList[0]].append(tempPosList[1])
+					else:
+						posToDivDict[tempPosList[0]] = [tempPosList[1]]
+				with open(os.path.join(module_dir,'temp/posToDiv_'+modifyCount+'_'+userNum+'.json'),'w') as w1:
+					json.dump(posToDivDict,w1,indent=4)
+				count+=1
+			elif count == 13:
+				picked = mmm[0].split('@-@')
+				
+				# for x in picked:
+				# 	temppicked = x.split('_')
+				# 	temppicked[0] = int(temppicked[0])
+				# 	temppicked[1] = int(temppicked[1])
+					# if temppicked[0] in pickedDict.keys():
+					# 	pickedDict[temppicked[0]].append(temppicked[1])
+					# else:
+					# 	pickedDict[temppicked[0]] = [temppicked[1]]
+				pickedDict = {'picked':picked}
+				with open(os.path.join(module_dir,'temp/picked_'+modifyCount+'_'+userNum+'.json'),'w') as w1:
+					json.dump(pickedDict,w1,indent=4)
+				count+=1
 	Arr2 = list(RNA)
 	with open(os.path.join(module_dir,'piRNA/{0}/info_name.csv'.format(options['nematodeType'])),'r') as f2:
 		reader2 = csv.reader(f2)
@@ -1123,13 +1180,17 @@ def selectedPreData(request):
 		'CDS2':CDS2,
 		'changed_pos':changed_pos,
 		'ori_result':ori_result,
+		'posToDiv':posToDivDict,
+		'picked':picked,
 	}
 	return JsonResponse(predata)
 
+# re-scan成功之後要跑的資料
 def sucData(request):
 	modifyCount = request.POST.get('modifyCount')
 	module_dir = os.path.dirname(__file__)
-	with open(os.path.join(module_dir,'modify'+modifyCount+'.csv'),'r') as f1:
+	userNum = request.POST.get('userNum')
+	with open(os.path.join(module_dir,'temp/modify'+modifyCount+'_'+userNum+'.csv'),'r') as f1:
 		options = {}
 		mod = csv.reader(f1)
 		count = 0
@@ -1200,7 +1261,101 @@ def sucData(request):
 		return new.join(li)
 	newCDS1 = int(request.POST.get('CDS1'))
 	newCDS2 = int(request.POST.get('CDS2'))
-	with open(os.path.join(module_dir,'sucResult_'+modifyCount+'.txt'),'w') as f1:
+	with open(os.path.join(module_dir,'temp/sucResult_'+modifyCount+'_'+userNum+'.txt'),'w') as f1:
+		newRNA = RNA.replace(RNA[0:newCDS1-1],RNA[0:newCDS1-1].lower(),1)
+		if newCDS2 != len(RNA):
+			newRNA = rreplace(newRNA,newRNA[newCDS2:len(RNA)],newRNA[newCDS2:len(RNA)].lower(),1)		
+		f1.write('>Modified Sequence #'+modifyCount+', lowercase (uppercase) text indicates UTR (CDS)\n\r'+newRNA)
+		# w1 = csv.writer(f1)
+		# w1.writerow(['>Modified Sequence #'+modifyCount+', lowercase (uppercase) text indicates UTR (CDS)\n\r'+newRNA])
+
+	return JsonResponse(SCdata)
+
+# re-scan失敗之後要跑的資料
+def failData(request):
+	modifyCount = request.POST.get('modifyCount')
+	userNum = request.POST.get('userNum')
+	module_dir = os.path.dirname(__file__)
+	with open(os.path.join(module_dir,'temp/modify'+modifyCount+'_'+userNum+'.csv'),'r') as f1:
+		options = {}
+		mod = csv.reader(f1)
+		count = 0
+		for mmm in mod:
+			if count == 0:
+				name = mmm[0]
+				count+=1
+			elif count == 1:
+				RNA = mmm[0]
+				count+=1
+			elif count == 2:
+				options['core_non_GU'] = mmm[0]
+				count+=1
+			elif count == 3:
+				options['core_GU'] = mmm[0]
+				count+=1
+			elif count == 4:
+				options['non_core_non_GU'] = mmm[0]
+				count+=1
+			elif count == 5:
+				options['non_core_GU'] = mmm[0]
+				count+=1
+			elif count == 6:
+				options['total'] = mmm[0]
+				count+=1
+			elif count == 7:
+				options['nematodeType'] = mmm[0]
+				count+=1
+			elif count == 8:
+				if mmm[0] == '':
+					CDS1 = -7
+					count+=1
+				else:
+					CDS1 = int(mmm[0])
+					count+=1
+			elif count == 9:
+				if mmm[0] == '':
+					CDS2 = -4
+					count+=1
+				else:
+					CDS2 = int(mmm[0])
+					count+=1
+			elif count == 10:
+				changed_pos = mmm[0].split('@')
+				count+=1
+			elif count == 11:
+				selectedInfo = mmm[0].split('##')
+				selectedInfoOut = []
+				for x in selectedInfo:
+					temp = x.split('@@')
+					temp[0] = int(temp[0])
+					selectedInfoOut.append(temp)
+				selectedInfoOut = sorted(selectedInfoOut, key=operator.itemgetter(0))
+				count+=1
+	with open(os.path.join(module_dir,'temp/ori_base_result'+userNum+'.json'),'r') as w1:
+		oldResult = json.load(w1)
+	with open(os.path.join(module_dir,'temp/posToDiv_'+modifyCount+'_'+userNum+'.json'),'r') as w1:
+		posToDiv = json.load(w1)
+	with open(os.path.join(module_dir,'temp/picked_'+modifyCount+'_'+userNum+'.json'),'r') as w1:
+		picked = json.load(w1)
+	SCdata = {
+		'modifyCount':modifyCount,
+		'gene':RNA,
+		'name':name,
+		'options':options,
+		'oldResult':oldResult,
+		'selectedInfo':selectedInfoOut,
+		'CDS1':CDS1,
+		'CDS2':CDS2,
+		'changed_pos':changed_pos,
+		'posToDiv':posToDiv,
+		'picked':picked['picked'],
+	}
+	def rreplace(s, old, new, occurrence):
+		li = s.rsplit(old, occurrence)
+		return new.join(li)
+	newCDS1 = int(request.POST.get('CDS1'))
+	newCDS2 = int(request.POST.get('CDS2'))
+	with open(os.path.join(module_dir,'temp/sucResult_'+modifyCount+'_'+userNum+'.txt'),'w') as f1:
 		newRNA = RNA.replace(RNA[0:newCDS1-1],RNA[0:newCDS1-1].lower(),1)
 		if newCDS2 != len(RNA):
 			newRNA = rreplace(newRNA,newRNA[newCDS2:len(RNA)],newRNA[newCDS2:len(RNA)].lower(),1)
@@ -1212,10 +1367,11 @@ def sucData(request):
 	return JsonResponse(SCdata)
 
 
-def download_course(request,count):
+def download_course(request,count,userNum):
 	module_dir = os.path.dirname(__file__)
-	with open(os.path.join(module_dir,'sucResult_'+count+'.csv'),'rb') as f1:
+	with open(os.path.join(module_dir,'temp/sucResult_'+count+'_{0}.txt'.format(userNum)),'rb') as f1:
 		response = HttpResponse(f1.read())
 		response['content_type'] = 'text/txt'
 		response['Content-Disposition'] = 'attachment;filename=modified_sequence.txt'
 	return response
+

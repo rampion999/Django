@@ -1,0 +1,165 @@
+{% load staticfiles %}
+<!DOCTYPE html>
+<html lang="en">
+
+  <head>
+
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="description" content="">
+    <meta name="author" content="">
+
+    <title>Modified Sequence Design</title>
+
+    
+
+    <!-- Bootstrap core CSS -->
+    <link href="{% static 'vendor/bootstrap/css/bootstrap.min.css' %}" rel="stylesheet">
+
+    <!-- Custom styles for this template -->
+    <link href="{% static 'bo_css/modern-business.css' %}" rel="stylesheet">
+    <link rel="stylesheet" type="text/css" href='{% static "piRNA/css/sweetalert2.min.css" %}'>
+    <link rel="stylesheet" type="text/css" href='{% static "piRNA/css/suggestion.css" %}'>
+    <link rel="stylesheet" type="text/css" href='{% static "piRNA/css/jquery.dataTables.min.css" %}'>
+    <link rel="stylesheet" type="text/css" href='{% static "piRNA/css/ex.css" %}'>
+    <!-- <link rel="stylesheet" type="text/css" href='{% static "piRNA/css/dataTables.bootstrap4.min.css" %}'> -->
+    
+    <!-- Bootstrap core JavaScript -->
+    <script src="{% static 'vendor/jquery/jquery.min.js' %}"></script>
+    <script src="{% static 'vendor/popper/popper.min.js' %}"></script>
+    <script src="{% static 'vendor/bootstrap/js/bootstrap.min.js' %}"></script>
+
+    <!-- old JS -->
+    <script type="text/javascript" src="{% static 'piRNA/js/effect.js' %}"></script>
+    <script type="text/javascript" src="{% static 'piRNA/js/cookie.js' %}"></script>
+    <script type="text/javascript" src="{% static 'piRNA/js/d3.min.js' %}"></script>
+    <script type="text/javascript" src="{% static 'piRNA/js/sweetalert2.min.js' %}"></script>
+    <script type="text/javascript" src="{% static 'piRNA/js/jquery.dataTables.min.js' %}"></script>
+    <script type="text/javascript" src="{% static 'piRNA/js/overView.js' %}"></script>
+    <script type="text/javascript" src="{% static 'piRNA/js/seqView.js' %}"></script>
+    <script type="text/javascript" src="{% static 'piRNA/js/range.js' %}"></script>
+    <script type="text/javascript" src="{% static 'piRNA/js/tableEffect.js' %}"></script>
+    <script type="text/javascript" src="{% static 'piRNA/js/piRNA_info.js' %}"></script>
+    <script type="text/javascript" src="{% static 'piRNA/js/suggestion.js' %}"></script>
+    <script type="text/javascript" src="{% static 'piRNA/js/dataTables.fixedColumns.min.js' %}"></script>
+    <script type="text/javascript" src="{% static 'piRNA/js/seq_update.js' %}"></script>
+    <script type="text/javascript" src="{% static 'piRNA/js/noBulgeData.js' %}"></script>
+    <script type="text/javascript" src="{% static 'piRNA/js/resultCreate.js' %}"></script>
+    <script type="text/javascript" src="{% static 'piRNA/js/load_the_page.js' %}"></script>
+    <script type="text/javascript" src="{% static 'piRNA/js/showDaTable.js' %}"></script>
+    <script type="text/javascript" src="{% static 'piRNA/js/preSeqView.js' %}"></script>
+    <script type="text/javascript" src="{% static 'piRNA/js/newScan.js' %}"></script>
+    <!-- <script type="text/javascript" src="{% static 'piRNA/js/dataTables.bootstrap4.min.js' %}"></script> -->
+  </head>
+	
+	<script>
+		var csrftoken = Cookies.get('csrftoken');
+    function csrfSafeMethod(method) {
+        // these HTTP methods do not require CSRF protection
+        return (/^(GET|HEAD|OPTIONS|TRACE)$/.test(method));
+    }
+    $.ajaxSetup({
+        beforeSend: function(xhr, settings) {
+            if (!csrfSafeMethod(settings.type) && !this.crossDomain) {
+                xhr.setRequestHeader("X-CSRFToken", csrftoken);
+            }
+        }
+    });
+		$(document).ready(function(){
+			$.ajax({
+        url: "firstResult/", 
+        data:{ 
+          QQ:'QQ',
+        },
+        type: "POST", 
+        dataType:'json',
+        error: function(no){
+          console.log(no);
+          swal(
+            'Scan cancelled',
+            'System memory overload',
+            'error'
+          )
+          },
+        success: function(data){
+          console.log(data);
+          // resultCreate('originalResult');
+          var pic2src = "{% static 'piRNA/img/QQ.jpg' %}";
+          var scanUrl = "{% static 'piRNA/img/Magnify.gif' %}"
+          var seqViewDataArr = noBulgeData('originalResult',data);
+          var newSug = arrangeSug(data.suggestion);
+          if(data.newout.length != 0){
+            shit(
+              'originalResult',
+              newSug.inCDS,
+              newSug.notInCDS,
+              data.options.core_non_GU,
+              data.options.core_GU,
+              data.options.non_core_non_GU,
+              data.options.non_core_GU,
+              data.options.total,
+              data.name,
+              data.gene,
+              data.options.nematodeType,
+              data.CDS1,
+              data.CDS2,
+              data.csrf,
+              data,
+              pic2src,
+              scanUrl,
+              seqViewDataArr,
+            );
+            $('body > div.container-fluid > fieldset > div > div').append('<div class"text-center><button id="originalResult-update" class="btn btn-primary">Modify input sequence</button></div>');
+          }
+        },
+      });
+		});
+
+		function arrangeSug(data){
+      var output = data;
+      for (var x in data.inCDS){
+        var newArr = [];
+        var tempPos = 0;
+        for (var y in data.inCDS[x][7]){
+          if(data.inCDS[x][7][y][1] != tempPos){
+            tempPos = data.inCDS[x][7][y][1];
+            newArr.push([data.inCDS[x][7][y]]);
+          }
+          else{
+            newArr[newArr.length-1].push(data.inCDS[x][7][y]);
+          }   
+        }
+        output.inCDS[x][7] = newArr;
+      }
+      for (var x in data.notInCDS){
+        var newArr = [];
+        var tempPos = 0;
+        for (var y in data.notInCDS[x][7]){
+          if(data.notInCDS[x][7][y][0] != tempPos){
+            tempPos = data.notInCDS[x][7][y][0];
+            newArr.push([data.notInCDS[x][7][y]]);
+          }
+          else{
+            newArr[newArr.length-1].push(data.notInCDS[x][7][y]);
+          }   
+        }
+        output.notInCDS[x][7] = newArr;
+      }
+      return data
+    };
+	</script>
+
+	<body>
+		<div class="container-fluid">
+			<fieldset>
+				<legend>Modify your DNA/RNA sequence<samll>(without changing the coded amino acid sequence)</samll> to escape the piRNA targeting</legend>
+				<div class="card darkC">
+					<div class="card-body text-dark text-center">
+						<div id="originalResult-sugTable"></div>
+					</div>
+				</div>
+			</fieldset>
+		</div>
+	</body>
+
+</html>

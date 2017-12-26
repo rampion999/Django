@@ -101,3 +101,11 @@ color: #000;
 background-color: #f8f9fa;
 border-color: #f8f9fa;
 }
+
+.modal-soBig {
+  max-width: 95%;
+}
+
+.bw{
+  background-color: white;
+}

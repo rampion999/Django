@@ -1,13 +1,13 @@
-function preSeqView(divId,data){
+function preSeqView(divId,data,divWidth){
 	var CDS_1 = data.CDS1;
 	var CDS_2 = data.CDS2;
 	var mRNA = data.gene.split('');
 	// $('#preGene').append('<h1 style="text-align: center;"><b>New input gene</b></h1><svg id="preSeqView"></svg>');
 	var mRNAlen = data.gene.length;
 	var unit = 100;
-	var width = 1700;
+	var width = divWidth;
 	var height = (2*(Math.floor(mRNAlen/unit)+1))*17.5 + 70;
-	var contentWidth = 1600;
+	var contentWidth = width-100;
 
 	var scaleY = d3.scale.linear()
 		.range([0, height])
@@ -125,7 +125,7 @@ function preSeqView(divId,data){
 		y+=2;axisPos[i+1] = y;
 	}
 	for (var z in data.changed_pos){
-		console.log(data.changed_pos[z]);
+		// console.log(data.changed_pos[z]);
 		var nPos = Number(data.changed_pos[z])%unit;
 		if (nPos == 0){nPos = unit};
 		svg.select('g:nth-of-type('+String(Math.floor(Number(data.changed_pos[z])/unit)+1)+') g:nth-of-type('+String(nPos)+') text')

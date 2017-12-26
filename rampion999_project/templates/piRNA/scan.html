@@ -49,6 +49,9 @@
 
 
   <script>
+    var userNum = Math.floor((Math.random() * 10000000) + 1);
+    console.log(userNum);
+    window.sessionStorage["userNum"] = userNum;
     var csrftoken = Cookies.get('csrftoken');
     function csrfSafeMethod(method) {
         // these HTTP methods do not require CSRF protection
@@ -66,7 +69,7 @@
       var end = 0;
       start = new Date().getTime();
       swal.queue([{
-      title : 'Scanning...\nPlease allow up to 20 seconds',
+      title : 'Scanning...\nPlease allow up to 30 seconds',
       text: "Running time : 0 sec",
       imageUrl: "{% static 'piRNA/img/Magnify.gif' %}",
       disableButtons: true,
@@ -80,7 +83,7 @@
         clockTime++;
       }, 1050);
         $.ajax({
-          url: "scanOperation/", 
+          url: "piScan/piRNA/Scan/scanOperation/", 
             data:{ 
             data1:$('#gene').val(),
             opt1:$('#opt1').val(),
@@ -91,15 +94,17 @@
             nematodeType:$('#nematodeType').val(),
             CDS_1:$('#CDS_1').val(),
             CDS_2:$('#CDS_2').val(),
+            userNum:userNum,
             // csrfmiddlewaretoken: '{{ csrf_token }}',
           },
           type: "POST", 
           dataType:'json',
           error: function(no){
+            clearInterval(clock);
             console.log(no);
             swal(
               'Scan cancelled',
-              'System memory overload',
+              'There have some problem. Please contact the developer.',
               'error'
             )
             },
@@ -108,7 +113,7 @@
             if(data.state=='nothing'){
               swal(
               'Scan cancelled',
-              'The input aera is empty, please enter some sequence :)',
+              'The input aera is empty.',
               'error'
               )
             }
@@ -146,9 +151,9 @@
             }
             else{
               $.ajax({
-                url: "keepOld/", 
+                url: "piScan/piRNA/Scan/keepOld/", 
                 data:{ 
-                  QQ:'QQ',
+                  userNum:data.userNum,
                 },
                 type: "POST", 
                 dataType:'json',
@@ -164,7 +169,7 @@
                   console.log('OK');
                 },
               })
-              window.location = document.URL.replace(/\?fref=gc&dti=[0-9]+/,'')+"update/",'_blank';
+              window.location = document.URL.replace(/\?fref=gc&dti=[0-9]+/,'')+"/update/",'_blank';
             }
           },
         })
@@ -203,23 +208,23 @@
     <!-- Navigation -->
     <nav class="navbar fixed-top navbar-expand-lg navbar-dark bg-dark fixed-top">
       <div class="container-fluid">
-        <a class="navbar-brand" href="http://140.116.215.236/rampion999/piRNA">piScan</a>
+        <a class="navbar-brand" href="http://cosbi5.ee.ncku.edu.tw/piScan">piScan</a>
         <button class="navbar-toggler navbar-toggler-right" type="button" data-toggle="collapse" data-target="#navbarResponsive" aria-controls="navbarResponsive" aria-expanded="false" aria-label="Toggle navigation">
           <span class="navbar-toggler-icon"></span>
         </button>
         <div class="collapse navbar-collapse" id="navbarResponsive">
           <ul class="navbar-nav ml-auto">
+            <!-- <li class="nav-item">
+              <a class="nav-link" href="http://cosbi5.ee.ncku.edu.tw/piScan">Home</a>
+            </li> -->
             <li class="nav-item">
-              <a class="nav-link" href="http://140.116.215.236/rampion999/piRNA">Home</a>
+              <a class="nav-link active" href="http://cosbi5.ee.ncku.edu.tw/piScan">Scan</a>
             </li>
             <li class="nav-item">
-              <a class="nav-link active" href="http://140.116.215.236/rampion999/piRNA/Scan">Scan</a>
+              <a class="nav-link" href="http://cosbi5.ee.ncku.edu.tw/piScan/Tutorial">Tutorial</a>
             </li>
             <li class="nav-item">
-              <a class="nav-link" href="http://140.116.215.236/rampion999/piRNA/Help">Help</a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link" href="http://140.116.215.236/rampion999/piRNA/Contact">Contact</a>
+              <a class="nav-link" href="http://cosbi5.ee.ncku.edu.tw/piScan/Contact">Contact</a>
             </li>
           </ul>
         </div>
@@ -233,8 +238,8 @@
         <select class="custom-select" style="font-size: medium;" id="nematodeType">
           <option class = "clean" selected value="C.elegans">C. elegans</option>
           <option class = "clean" value="C.briggsae">C. briggsae</option>
-          <option class = "clean" value="C.remanei">C. remanei</option>
-          <option class = "clean" value="C.brenneri">C. brenneri</option>
+          <!-- <option class = "clean" value="C.remanei">C. remanei</option>
+          <option class = "clean" value="C.brenneri">C. brenneri</option> -->
         </select>
         <small>piRNA target sites in your sequence</small>
       </h1>
@@ -244,15 +249,18 @@
           <div class="card mb-2 h-100">
             <h4 class="card-header">Input</h4>
             <div class="card-body">
-              <label for="gene" class="d-block"><b>Input your DNA (without introns) or spliced RNA sequence (in <a href="https://blast.ncbi.nlm.nih.gov/Blast.cgi?CMD=Web&PAGE_TYPE=BlastDocs&DOC_TYPE=BlastHelp" target="_blank">FASTA format</a>)</b><button type="button" class="btn btn-secondary btn-sm float-right mb-2" id="clean">Clear</button></label>
+              <label for="gene" class="d-block"><b>Input your DNA (without introns) or spliced RNA sequence (in <a href="https://blast.ncbi.nlm.nih.gov/Blast.cgi?CMD=Web&PAGE_TYPE=BlastDocs&DOC_TYPE=BlastHelp" target="_blank">FASTA format</a>)</b></label>
               <textarea class="form-control " name="gene" id="gene" value="QQ" rows="9" style="width:100%; box-sizing: border-box; resize: none;"></textarea>
               <div class="mt-3">
-                <input type="checkbox" id='CDS_ck'><b>Coding sequence (CDS) region: &nbsp;&nbsp;&nbsp;</b>
-                <input type="number" style="width: 60px" id='CDS_1' class='CDS' disabled>&nbsp;-&nbsp;
-                <input type="number" style="width: 60px" id='CDS_2' class='CDS' disabled>
-                <div class="=mt-1 float-right" role="group" aria-label="Basic example">
+                <div>
+                  <input type="checkbox" id='CDS_ck'><b>Coding sequence (CDS) region: &nbsp;&nbsp;&nbsp;</b>
+                  <input type="number" style="width: 60px" id='CDS_1' class='CDS' disabled>&nbsp;-&nbsp;
+                  <input type="number" style="width: 60px" id='CDS_2' class='CDS' disabled>
+                </div>
+                <div class="mt-3" role="group" aria-label="Basic example">
                   <button type="button" class="btn btn-secondary btn-sm" id="example">Example 1</button>
                   <button type="button" class="btn btn-secondary btn-sm" id="example2">Example 2</button>
+                  <span class="float-right"><button type="button" class="btn btn-secondary btn-sm float-right mb-2" id="clean">Clear</button></span>
                 </div>
               </div>
             </div>
@@ -275,16 +283,16 @@
               </div> -->
               <div class="row">
                 <div class="col-lg-5 align-self-center">
-                  <a href="#">
+                  
                     <img class="img-fluid rounded" src="{% static 'piRNA/img/QQ.jpg' %}" alt="">
-                  </a>                  
+                                    
                 </div>
                 <!-- <div class="col-lg-1">
                 </div> -->
                 <div class="col-lg-7">
                   <ul class="list-unstyled">             
                     
-                    <li class="card-text float-right">
+                    <li class="card-text mb-2">
                       <button type="button" class="btn btn-secondary" id="reset_to_default">Default Setting</button>
                     </li>
                     
