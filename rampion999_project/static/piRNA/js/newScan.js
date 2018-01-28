@@ -1,6 +1,6 @@
-function newScan(input,pic2src,modifyCount,scanUrl,userNum){
+function newScan(input,pic2src,modifyCount,scanUrl,userNum,oldSeqViewDataArr){
   swal.queue([{
-  title : 'Scanning...\nPlease allow up to 30 seconds',
+  title : 'Scanning...\nPlease allow up to 10 seconds',
   text: "Running time : 0 sec",
   imageUrl: scanUrl,
   disableButtons: true,
@@ -23,8 +23,9 @@ function newScan(input,pic2src,modifyCount,scanUrl,userNum){
           opt4:$('#opt4_'+modifyCount).val(),
           opt5:$('#opt5_'+modifyCount).val(),
           nematodeType:input.options['nematodeType'],
-          CDS_1:$('#CDS_1_'+modifyCount).val(),
-          CDS_2:$('#CDS_2_'+modifyCount).val(),
+          CDS_1:input.CDS1,
+          CDS_2:input.CDS2,
+          operationTimes:modifyCount,
           userNum:userNum,
         },
         type: "POST", 
@@ -34,7 +35,7 @@ function newScan(input,pic2src,modifyCount,scanUrl,userNum){
           console.log(no);
           swal(
             'Scan cancelled',
-            'System memory overload',
+            'There have some problem. Please contact the developer',
             'error'
           )
           },
@@ -43,7 +44,7 @@ function newScan(input,pic2src,modifyCount,scanUrl,userNum){
           if(data.state=='nothing'){
             swal(
             'Scan cancelled',
-            'There have some problem. Please contact the developer',
+            'The input area is empty. Please type something.',
             'error'
             )
           }
@@ -106,7 +107,7 @@ function newScan(input,pic2src,modifyCount,scanUrl,userNum){
                   $('#modify_'+modifyCount+'-Result').append('\
                     <div class="alert alert-success" role="alert">\
                       <h2 class="alert-heading">Success!</h2>\
-                      <p>No piRNA target site is found in the modified sequence.&nbsp;&nbsp;&nbsp;<a href="http://cosbi5.ee.ncku.edu.tw/piScan/Download/'+modifyCount+'/'+userNum+'" target="_blank"><button type="button" class="btn btn-light" style="border-color: black; padding-top: 4px; padding-bottom: 4px;"><img src="https://png.icons8.com/download/androidL/20/000000">  Download sequence</button></a></p>\
+                      <p>No piRNA target site is found in the modified sequence.&nbsp;&nbsp;&nbsp;<a href="/piScan/Download/'+modifyCount+'/'+userNum+'" target="_blank"><button type="button" class="btn btn-info" style="border-color: black; padding-top: 4px; padding-bottom: 4px;"><img src="https://png.icons8.com/download/androidL/20/000000">  Download sequence</button></a></p>\
                     </div>\
                   ');
                   var strVar = '<div class="card my-4 h-100 darkC">\
@@ -115,15 +116,18 @@ function newScan(input,pic2src,modifyCount,scanUrl,userNum){
                       strVar +='</div>';
                       strVar += '\
                         <div class="card mb-4 h-100 darkC">\
-                          <h3 class="card-header darkCH">Modified sequence</h3>\
+                          <h3 class="card-header darkCH">Modified sequence <button type="button" id="downloadModSeq'+modifyCount+'" class="btn btn-info" style="border-color: black; padding-top: 4px; padding-bottom: 4px;"><img src="https://png.icons8.com/download/androidL/20/000000">  Download modified seqView</button></h3>\
                           <div class="card-body text-dark text-center">\
                             <svg id="preSeqView-'+modifyCount+'"></svg>\
                           </div>\
                         </div>\
                       ';                   
-                      strVar += '<div class="text-center"><a href="http://cosbi5.ee.ncku.edu.tw/piScan/Download/'+modifyCount+'/'+userNum+'" target="_blank"><button type="button" class="btn btn-light btn-lg" style="border-color: black; padding-top: 4px; padding-bottom: 4px;"><img src="https://png.icons8.com/download/androidL/20/000000">  Download sequence</button></a></div>';
+                      strVar += '<div class="text-center"><a href="/piScan/Download/'+modifyCount+'/'+userNum+'" target="_blank"><button type="button" class="btn btn-info btn-lg" style="border-color: black; padding-top: 4px; padding-bottom: 4px;"><img src="https://png.icons8.com/download/androidL/20/000000">  Download sequence</button></a></div>';
 
                   $('#modify_'+modifyCount+'-Result').append(strVar);
+                  $('#downloadModSeq'+modifyCount).on('click',function(){
+                    saveSvgAsPng(document.getElementById("preSeqView-"+modifyCount), "pre_modifySeqView_"+modifyCount+".png", {scale: 2, backgroundColor: "#FFFFFF"});
+                  });
 
 
                   selectedTable('selectedChange_'+modifyCount,SCdata,modifyCount);
@@ -168,7 +172,7 @@ function newScan(input,pic2src,modifyCount,scanUrl,userNum){
                   $('#modify_'+modifyCount+'-Result').append('\
                     <div class="alert alert-danger" style="margin: 0px 15px;" role="alert">\
                       <h3 class="alert-heading">Fail!</h4>\
-                      <p id="fail-alert-para-'+modifyCount+'">At least one piRNA target site is still found in the modified sequence. &nbsp;&nbsp;&nbsp;<a href="http://cosbi5.ee.ncku.edu.tw/piScan/Download/'+modifyCount+'/'+userNum+'" target="_blank"><button type="button" class="btn btn-light" style="border-color: black; padding-top: 4px; padding-bottom: 4px;"><img src="https://png.icons8.com/download/androidL/20/000000">  Download sequence</button></a></p>\
+                      <p id="fail-alert-para-'+modifyCount+'">At least one piRNA target site is still found in the modified sequence. &nbsp;&nbsp;&nbsp;<a href="/piScan/Download/'+modifyCount+'/'+userNum+'" target="_blank"><button type="button" class="btn btn-info" style="border-color: black; padding-top: 4px; padding-bottom: 4px;"><img src="https://png.icons8.com/download/androidL/20/000000">  Download sequence</button></a></p>\
                     </div>\
                   ');
                   var strVar = '<div class="card my-4 h-100 darkC" style="margin: 0px 15px;">\
@@ -177,21 +181,21 @@ function newScan(input,pic2src,modifyCount,scanUrl,userNum){
                       strVar +='</div></div>';               
                   $('#modify_'+modifyCount+'-Result').append(strVar);
                   var failPos = failSelectedTable('selectedChange_'+modifyCount,SCdata,modifyCount,data.newout,userNum);
-                  modifyResultCreate('modify_'+modifyCount,modifyCount);
-                  var seqViewDataArr = noBulgeData('modify_'+modifyCount,data,pic2src);
+                  modifyResultCreate('modify_'+modifyCount,modifyCount,userNum);
+                  noBulgeData('modify_'+modifyCount,data,pic2src);
                   var geneArr = data.gene.split("");
-                  overView('modify_'+modifyCount,geneArr,seqViewDataArr,data.CDS1,data.CDS2,$('#wrap').width()*0.85);
-                  seqView('modify_'+modifyCount,geneArr,seqViewDataArr,data.CDS[0].split(''),data.CDS1,data.CDS2,$('#wrap').width()*0.85);
+                  var seqViewDataArr = seqView('modify_'+modifyCount,geneArr,data,data.CDS[0].split(''),data.CDS1,data.CDS2,$('#wrap').width()*0.775);                 
+                  overView('modify_'+modifyCount,geneArr,seqViewDataArr,data.CDS1,data.CDS2,$('#wrap').width()*0.82,data.newout);                
                   $(document).ready(function(){
                     $(window).resize(function() {
                       $('#modify_'+modifyCount+'-overView').empty();
-                      overView('modify_'+modifyCount,geneArr,seqViewDataArr,data.CDS1,data.CDS2,$('#wrap').width()*0.85);
+                      overView('modify_'+modifyCount,geneArr,seqViewDataArr,data.CDS1,data.CDS2,$('#wrap').width()*0.82,data.newout);
                       $('#modify_'+modifyCount+'-seqView').empty();                      
-                      seqView('modify_'+modifyCount,geneArr,seqViewDataArr,data.CDS[0].split(''),data.CDS1,data.CDS2,$('#wrap').width()*0.85);                                          
+                      seqView('modify_'+modifyCount,geneArr,data,data.CDS[0].split(''),data.CDS1,data.CDS2,$('#wrap').width()*0.775);                                          
                     });
                   });
                   var newSug = arrangeSug(SCdata.oldResult.suggestion);
-                  var oldSeqViewDataArr = noBulgeData('old',SCdata.oldResult,pic2src);
+                  noBulgeData('old',SCdata.oldResult,pic2src);
                   console.log(failPos);
                   shit(
                     'modify_'+modifyCount,
@@ -213,6 +217,7 @@ function newScan(input,pic2src,modifyCount,scanUrl,userNum){
                     scanUrl,
                     oldSeqViewDataArr,
                     userNum,
+                    oldSeqViewDataArr,
                   );
 
                   //創successful跟unsuccessful窗格
@@ -292,10 +297,10 @@ function failSelectedTable(divId,data,modifyCount,newOut,userNum){
   }
   var failPosStr = failPos.join();
   if(failPos.length == 1){
-    $('#fail-alert-para-'+modifyCount).html('The design on position '+failPosStr+' is not successful. &nbsp;&nbsp;&nbsp;<a href="http://cosbi5.ee.ncku.edu.tw/piScan/Download/'+modifyCount+'/'+userNum+'" target="_blank"><button type="button" class="btn btn-light" style="border-color: black; padding-top: 4px; padding-bottom: 4px;"><img src="https://png.icons8.com/download/androidL/20/000000">  Download sequence</button></a>');
+    $('#fail-alert-para-'+modifyCount).html('The design on position '+failPosStr+' is not successful. &nbsp;&nbsp;&nbsp;<a href="/piScan/Download/'+modifyCount+'/'+userNum+'" target="_blank"><button type="button" class="btn btn-info" style="border-color: black; padding-top: 4px; padding-bottom: 4px;"><img src="https://png.icons8.com/download/androidL/20/000000">  Download sequence</button></a>');
   }
   else{
-    $('#fail-alert-para-'+modifyCount).html('The design on positions '+failPosStr+' are not successful. &nbsp;&nbsp;&nbsp;<a href="http://cosbi5.ee.ncku.edu.tw/piScan/Download/'+modifyCount+'/'+userNum+'" target="_blank"><button type="button" class="btn btn-light" style="border-color: black; padding-top: 4px; padding-bottom: 4px;"><img src="https://png.icons8.com/download/androidL/20/000000">  Download sequence</button></a>');
+    $('#fail-alert-para-'+modifyCount).html('The design on positions '+failPosStr+' are not successful. &nbsp;&nbsp;&nbsp;<a href="/piScan/Download/'+modifyCount+'/'+userNum+'" target="_blank"><button type="button" class="btn btn-info" style="border-color: black; padding-top: 4px; padding-bottom: 4px;"><img src="https://png.icons8.com/download/androidL/20/000000">  Download sequence</button></a>');
   }
   $('#changeTable_'+modifyCount).find('tbody').append(tableTemp);
   $(document).ready(function() {

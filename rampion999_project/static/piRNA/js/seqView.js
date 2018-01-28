@@ -1,4 +1,87 @@
-function seqView(divId,mRNA,data,CDS,CDS_1,CDS_2,divWidth){
+function seqView(divId,mRNA,scanData,CDS,CDS_1,CDS_2,divWidth){
+  var trans_x = 60
+  var fts=[];
+  var seqViewDataArr = [];
+  var firstlast = 0;
+  var stackbig = [-200];
+  var scaleXWidth = d3.scale.linear()
+        .range([0, (divWidth-150)])
+        .domain([0, 99]); 
+
+  if (scaleXWidth(2)-scaleXWidth(1) <= 9){
+    var lineUnit = 50;
+  }
+  else{
+    var lineUnit = 100;
+  }
+  var y = lineUnit-1;
+  var layer = 0;
+  var most = [0];
+  for(var key in scanData.newout){
+    var first = 0;
+    first = parseInt(scanData.newout[key][1].split('-')[0]);
+    fts.push([first,parseInt(scanData.newout[key][1].split('-')[1]),scanData.newout[key][0]]);
+
+    // var x = '#'+divId+'-test' + key;
+    // item = item.replace(/<(.|\n)*?>/g, '');
+    var QQQQ = scanData.newout[key][10].replace(/<(.|\n)*?>/g, '');
+    // console.log(QQQQ);
+    QQQQ = QQQQ.replace(/[\d '|]/g,'');
+    var stack = 0;
+    //目前的第一個位置比最上方的大21的話表示可以放回第一排，不然就要往下疊
+    if (first-stackbig[0] > 21) {stack = 0;stackbig[0] = first;}
+    else{ 
+      stack++;
+      //一層一層比如果有重疊就在往下                 
+      while(true){
+        if(first-stackbig[stack] > 21 || (stackbig[stack]==undefined)){
+          stackbig[stack] = first;break;
+        }
+        else{stack++;}
+      }
+    }
+
+    //陣列是從位置小的開始，會先計算出要算第幾排位置
+    if (layer < Math.floor((first-1)/lineUnit)) {
+      var x = layer;
+      for (var i = 0; i < Math.floor((first-1)/lineUnit) - x; i++) {
+        //y初始是99
+        y+=lineUnit;
+        layer++;
+        //沒有被定義的部份給0
+        if(most[layer]==undefined){most[layer]=0;}                   
+      }
+    }
+
+    if(first-1<=y){
+      if(most[layer]<stack+1){
+        most[layer]=stack+1;                    
+        if((first-1)%lineUnit > lineUnit-21){
+          most[layer+1]=stack+1;
+        }
+      }
+      else{
+        if((first-1)%lineUnit > lineUnit-21){
+          most[layer+1]=stack+1;
+        }
+      }
+    }
+    seqViewDataArr.push({
+      piRNA : scanData.newout[key][0],
+      firstPos : first,
+      detail : QQQQ,
+      posOfMis : scanData.newout[key][3].replace(/<(?:.|\n)*?>/gm, ''),
+      posOfMisxGU : scanData.newout[key][4],
+      stack : stack                 
+    });
+    firstlast = first;
+  }
+  seqViewDataArr.unshift({most:most});
+
+  var data = seqViewDataArr;
+
+
+
   var mRNAlen = mRNA.length;
   var exceptHeight = 3;  //預估piRNA行數
   for (key in data[0].most){
@@ -7,20 +90,18 @@ function seqView(divId,mRNA,data,CDS,CDS_1,CDS_2,divWidth){
     if(data[0].most[key]!=0){
       exceptHeight+=data[0].most[key]+3;
       /*****************CDS@預估高度*******************/
-      if(100*Number(key) >= Math.floor((CDS_1-1)/100) && 100*Number(key) <= Math.floor((CDS_2-1)/100)){
+      if(lineUnit*Number(key) >= Math.floor((CDS_1-1)/lineUnit) && lineUnit*Number(key) <= Math.floor((CDS_2-1)/lineUnit)){
         exceptHeight +=2;
       }
       /*****************CDS@預估高度*******************/
     }
   }
-  // exceptHeight += (Math.floor((CDS_2-1)/100) - Math.floor((CDS_1-1)/100))*2;
-  var div = d3.select("body").append("div") 
-    .attr("class", "tooltip")       
-    .style("opacity", 0);
+  // exceptHeight += (Math.floor((CDS_2-1)/lineUnit) - Math.floor((CDS_1-1)/lineUnit))*2;
+  var div = d3.select(".tooltip");
 
-  // console.log("exceptHeight :"+(Math.floor(mRNAlen/100)+1));
-  var width = divWidth;
-  var height = (2.5*(Math.floor(mRNAlen/100)+1)+exceptHeight)*17.5; //坐標軸行數加上預估piRNA行數乘每單位高
+  // console.log("exceptHeight :"+(Math.floor(mRNAlen/lineUnit)+1));
+  var width = divWidth+50;
+  var height = (2.5*(Math.floor(mRNAlen/lineUnit)+1)+exceptHeight)*17.5; //坐標軸行數加上預估piRNA行數乘每單位高
   // console.log(height);
   var scaleY = d3.scale.linear()
         .range([0, height])
@@ -45,30 +126,30 @@ function seqView(divId,mRNA,data,CDS,CDS_1,CDS_2,divWidth){
   var y=3;
   var axisPos = [3];
   var scaleA = d3.scale.linear()
-        .range([0, (width-100)])
-        .domain([0, 99]);
+        .range([0, (width-150)])
+        .domain([0, lineUnit-1]);
   
-  for (var i = 0; i <= Math.floor((mRNAlen-1)/100); i++) {
-    // console.log((mRNAlen/100)-1);
-    if(i > Math.floor(mRNAlen/100)-1 && mRNAlen%100!=1){
+  for (var i = 0; i <= Math.floor((mRNAlen-1)/lineUnit); i++) {
+    // console.log((mRNAlen/lineUnit)-1);
+    if(i > Math.floor(mRNAlen/lineUnit)-1 && mRNAlen%lineUnit!=1){
       var scaleX = d3.scale.linear()
-        .range([0, ((width-100)/99)*((mRNAlen-1)%100)])
-        .domain([100*i, mRNAlen-1])
-      var tick = (mRNAlen%100)-1;
+        .range([0, ((width-150)/(lineUnit-1))*((mRNAlen-1)%lineUnit)])
+        .domain([lineUnit*i, mRNAlen-1])
+      var tick = (mRNAlen%lineUnit)-1;
       svg.append('text').attr({
         'x':scaleA(tick+1.5),
         'y':scaleY(axisPos[i]),
         // 'fill':'red',
         'style':'text-anchor: middle',
-        'transform':'translate(40,0)',       
+        'transform':'translate(75,0)',       
         }).text(mRNAlen);
-      // console.log(tick);
+      console.log(tick);
     }
-    else if(i > Math.floor(mRNAlen/100)-1 && mRNAlen%100==1){
+    else if(i > Math.floor(mRNAlen/lineUnit)-1 && mRNAlen%lineUnit==1){
       var scaleX = d3.scale.linear()
-        .range([0, ((width-100)/99)*((mRNAlen-1)%100)])
-        .domain([100*i, mRNAlen-1])
-      var tick = (mRNAlen%100)-1;
+        .range([0, ((width-150)/(lineUnit-1))*((mRNAlen-1)%lineUnit)])
+        .domain([lineUnit*i, mRNAlen-1])
+      var tick = (mRNAlen%lineUnit)-1;
       svg.append('text').attr({
         'x':scaleA(0),
         'y':scaleY(axisPos[i]-0.5),
@@ -85,24 +166,24 @@ function seqView(divId,mRNA,data,CDS,CDS_1,CDS_2,divWidth){
     }
     else{
       var scaleX = d3.scale.linear()
-        .range([0, (width-100)])
-        .domain([100*i, 100*(i+1)-1]);
-      var tick = 100;
+        .range([0, (width-150)])
+        .domain([lineUnit*i, lineUnit*(i+1)-1]);
+      var tick = lineUnit;
       svg.append('text').attr({
-        'x':scaleA(100.5),
+        'x':scaleA(lineUnit+0.5),
         'y':scaleY(axisPos[i]),
         // 'fill':'red',
         'style':'text-anchor: middle',
-        'transform':'translate(40,0)',       
-        }).text(100*(i+1));
+        'transform':'translate(75,0)',       
+        }).text(lineUnit*(i+1));
     }
     svg.append('text').attr({
-        'x':scaleA(-1.5),
+        'x':scaleA(0),
         'y':scaleY(axisPos[i]),
         // 'fill':'red',
         'style':'text-anchor: middle',
-        'transform':'translate(40,0)',       
-        }).text(100*i+1);
+        'transform':'translate(20,0)',       
+        }).text(lineUnit*i+1);
     
     var axisX = d3.svg.axis()
         .scale(scaleX)
@@ -121,7 +202,7 @@ function seqView(divId,mRNA,data,CDS,CDS_1,CDS_2,divWidth){
        .attr({
         'fill':'none',
         'stroke':'#000',
-        'transform':'translate(40,'+scaleY(y)+')' 
+        'transform':'translate('+trans_x+','+scaleY(y)+')' 
        })
        .selectAll('text')
        .attr({
@@ -136,7 +217,7 @@ function seqView(divId,mRNA,data,CDS,CDS_1,CDS_2,divWidth){
 
 
        /*****************坐標軸預始位置(CDS@部分)*******************/
-    if(i>=(Math.floor((CDS_1-1)/100))-1 && (i<Math.floor((CDS_2-1)/100)) && (data[0].most[i+1]!=0 && data[0].most[i+1]!=undefined)){
+    if(i>=(Math.floor((CDS_1-1)/lineUnit))-1 && (i<Math.floor((CDS_2-1)/lineUnit)) && (data[0].most[i+1]!=0 && data[0].most[i+1]!=undefined)){
           y+=2;
           // console.log(i);
         }
@@ -175,6 +256,11 @@ function seqView(divId,mRNA,data,CDS,CDS_1,CDS_2,divWidth){
           var CDS_che = range(0,21)
         } 
 
+        else if((data[mis].firstPos-CDS_1)%3==1 && data[mis].firstPos>=CDS_1 && CDS_2-data[mis].firstPos>=20){
+          var front = 1;   
+          var CDS_che = range(0,21)
+        }
+
         //掃到的piRNA首位比CDS_1前面，前置須在CDS1開始之後所以是負數，CDS畫出CDS_1之後到piRNA結束補滿3位數
         else if(data[mis].firstPos<CDS_1){
           var front = (data[mis].firstPos-CDS_1);          
@@ -193,21 +279,21 @@ function seqView(divId,mRNA,data,CDS,CDS_1,CDS_2,divWidth){
         for (var CDS_seq in CDS_che){
           if ((Number(CDS_seq)+1)%3 == 1){
             svg.append('line').attr({
-            x1: scaleA((data[mis].firstPos-front-1+Number(CDS_seq))%100),
-            y1: scaleY(axisPos[Math.floor((data[mis].firstPos-front-1+Number(CDS_seq))/100)]-1.2),
-            x2: scaleA((data[mis].firstPos-front-1+Number(CDS_seq))%100),
-            y2: scaleY(axisPos[Math.floor((data[mis].firstPos-front-1+Number(CDS_seq))/100)]-1.8),
-            'transform':'translate(40,0)',
+            x1: scaleA((data[mis].firstPos-front-1+Number(CDS_seq))%lineUnit),
+            y1: scaleY(axisPos[Math.floor((data[mis].firstPos-front-1+Number(CDS_seq))/lineUnit)]-1.2),
+            x2: scaleA((data[mis].firstPos-front-1+Number(CDS_seq))%lineUnit),
+            y2: scaleY(axisPos[Math.floor((data[mis].firstPos-front-1+Number(CDS_seq))/lineUnit)]-1.8),
+            'transform':'translate('+trans_x+',0)',
            }).style({
              stroke: 'green',
             'stroke-width': 2
             });
             svg.append('line').attr({
-            x1: scaleA((data[mis].firstPos-front-1+Number(CDS_seq))%100),
-            y1: scaleY(axisPos[Math.floor((data[mis].firstPos-front-1+Number(CDS_seq))/100)]-1.8),
-            x2: scaleA((data[mis].firstPos-front-1+Number(CDS_seq))%100+0.5),
-            y2: scaleY(axisPos[Math.floor((data[mis].firstPos-front-1+Number(CDS_seq))/100)]-1.8),
-            'transform':'translate(40,0)',
+            x1: scaleA((data[mis].firstPos-front-1+Number(CDS_seq))%lineUnit),
+            y1: scaleY(axisPos[Math.floor((data[mis].firstPos-front-1+Number(CDS_seq))/lineUnit)]-1.8),
+            x2: scaleA((data[mis].firstPos-front-1+Number(CDS_seq))%lineUnit+0.5),
+            y2: scaleY(axisPos[Math.floor((data[mis].firstPos-front-1+Number(CDS_seq))/lineUnit)]-1.8),
+            'transform':'translate('+trans_x+',0)',
            }).style({
              stroke: 'green',
             'stroke-width': 2
@@ -215,40 +301,40 @@ function seqView(divId,mRNA,data,CDS,CDS_1,CDS_2,divWidth){
           }
           else if((Number(CDS_seq)+1)%3 == 2){
             svg.append('line').attr({
-            x1: scaleA((data[mis].firstPos-front-1+Number(CDS_seq))%100-0.5),
-            y1: scaleY(axisPos[Math.floor((data[mis].firstPos-front-1+Number(CDS_seq))/100)]-1.8),
-            x2: scaleA((data[mis].firstPos-front-1+Number(CDS_seq))%100+0.5),
-            y2: scaleY(axisPos[Math.floor((data[mis].firstPos-front-1+Number(CDS_seq))/100)]-1.8),
-            'transform':'translate(40,0)',
+            x1: scaleA((data[mis].firstPos-front-1+Number(CDS_seq))%lineUnit-0.5),
+            y1: scaleY(axisPos[Math.floor((data[mis].firstPos-front-1+Number(CDS_seq))/lineUnit)]-1.8),
+            x2: scaleA((data[mis].firstPos-front-1+Number(CDS_seq))%lineUnit+0.5),
+            y2: scaleY(axisPos[Math.floor((data[mis].firstPos-front-1+Number(CDS_seq))/lineUnit)]-1.8),
+            'transform':'translate('+trans_x+',0)',
            }).style({
              stroke: 'green',
             'stroke-width': 2
             });
             svg.append('text').attr({
-              'x':scaleA((data[mis].firstPos-front-1+Number(CDS_seq))%100),
-              'y':scaleY(axisPos[Math.floor((data[mis].firstPos-front-1+Number(CDS_seq))/100)]-2),
+              'x':scaleA((data[mis].firstPos-front-1+Number(CDS_seq))%lineUnit),
+              'y':scaleY(axisPos[Math.floor((data[mis].firstPos-front-1+Number(CDS_seq))/lineUnit)]-2),
               // 'fill':'red',
               'style':'text-anchor: middle; font-size: 15px',
-              'transform':'translate(40,0)',       
+              'transform':'translate('+trans_x+',0)',       
               }).text(CDS[data[mis].firstPos-front-CDS_1+Number(CDS_seq)-1]);
           }
           else {
            svg.append('line').attr({
-            x1: scaleA((data[mis].firstPos-front-1+Number(CDS_seq))%100-0.5),
-            y1: scaleY(axisPos[Math.floor((data[mis].firstPos-front-1+Number(CDS_seq))/100)]-1.8),
-            x2: scaleA((data[mis].firstPos-front-1+Number(CDS_seq))%100),
-            y2: scaleY(axisPos[Math.floor((data[mis].firstPos-front-1+Number(CDS_seq))/100)]-1.8),
-            'transform':'translate(40,0)',
+            x1: scaleA((data[mis].firstPos-front-1+Number(CDS_seq))%lineUnit-0.5),
+            y1: scaleY(axisPos[Math.floor((data[mis].firstPos-front-1+Number(CDS_seq))/lineUnit)]-1.8),
+            x2: scaleA((data[mis].firstPos-front-1+Number(CDS_seq))%lineUnit),
+            y2: scaleY(axisPos[Math.floor((data[mis].firstPos-front-1+Number(CDS_seq))/lineUnit)]-1.8),
+            'transform':'translate('+trans_x+',0)',
            }).style({
              stroke: 'green',
             'stroke-width': 2
             });
             svg.append('line').attr({
-            x1: scaleA((data[mis].firstPos-front-1+Number(CDS_seq))%100),
-            y1: scaleY(axisPos[Math.floor((data[mis].firstPos-front-1+Number(CDS_seq))/100)]-1.8),
-            x2: scaleA((data[mis].firstPos-front-1+Number(CDS_seq))%100),
-            y2: scaleY(axisPos[Math.floor((data[mis].firstPos-front-1+Number(CDS_seq))/100)]-1.2),
-            'transform':'translate(40,0)',
+            x1: scaleA((data[mis].firstPos-front-1+Number(CDS_seq))%lineUnit),
+            y1: scaleY(axisPos[Math.floor((data[mis].firstPos-front-1+Number(CDS_seq))/lineUnit)]-1.8),
+            x2: scaleA((data[mis].firstPos-front-1+Number(CDS_seq))%lineUnit),
+            y2: scaleY(axisPos[Math.floor((data[mis].firstPos-front-1+Number(CDS_seq))/lineUnit)]-1.2),
+            'transform':'translate('+trans_x+',0)',
            }).style({
              stroke: 'green',
             'stroke-width': 2
@@ -264,40 +350,42 @@ function seqView(divId,mRNA,data,CDS,CDS_1,CDS_2,divWidth){
 
 
   // console.log(axisPos);
+  // console.log(data);
   for (var piRNA in data){
-    if(piRNA!=0){
+    if(Number(piRNA)!=0){
+      // console.log(piRNA);
       var posOfMis = data[piRNA].posOfMis.split(',').map(Number);
       var posOfMisxGU = data[piRNA].posOfMisxGU.split(',').map(Number);
       var over = 0;
       
-      if((Number(data[piRNA].firstPos)-1)%100 > 79){over = (Number(data[piRNA].firstPos)-1)%100 - 79;}
+      if((Number(data[piRNA].firstPos)-1)%lineUnit > (lineUnit-21)){over = (Number(data[piRNA].firstPos)-1)%lineUnit - (lineUnit-21);}
       else{over = 0;}
       for(var seq in data[piRNA].detail){
         var a = 0; 
         if(21-Number(seq) <= over){a = 1;}
         else{a = 0;}
-        // console.log(Number(data[piRNA].firstPos)%100+Number(seq));
+        // console.log(Number(data[piRNA].firstPos)%lineUnit+Number(seq));
         if((posOfMis.indexOf(21-Number(seq))!=-1) && (posOfMisxGU.indexOf(21-Number(seq))!=-1)){
-          // console.log((Number(data[piRNA].firstPos)%100+Number(seq)-1)%100);
+          // console.log((Number(data[piRNA].firstPos)%lineUnit+Number(seq)-1)%lineUnit);
           if(Number(seq)==20){
             svg.append('rect').attr({
             'id':data[piRNA].piRNA,
-            'x':scaleA(((Number(data[piRNA].firstPos)-1)%100+Number(seq))%100),
-            'y':scaleY(axisPos[Math.floor((Number(data[piRNA].firstPos)-1)/100)+a]+Number(data[piRNA].stack)),
-            'width':'15', 
+            'x':scaleA(((Number(data[piRNA].firstPos)-1)%lineUnit+Number(seq))%lineUnit),
+            'y':scaleY(axisPos[Math.floor((Number(data[piRNA].firstPos)-1)/lineUnit)+a]+Number(data[piRNA].stack)),
+            'width':'12.5', 
             'height':'15',
-            'transform':'translate(32.5,4)',
+            'transform':'translate('+(trans_x-6)+',4)',
             'fill':'lightgreen'
             });
           }
           else{
             svg.append('rect').attr({
             'id':data[piRNA].piRNA,
-            'x':scaleA(((Number(data[piRNA].firstPos)-1)%100+Number(seq))%100),
-            'y':scaleY(axisPos[Math.floor((Number(data[piRNA].firstPos)-1)/100)+a]+Number(data[piRNA].stack)),
-            'width':'15', 
+            'x':scaleA(((Number(data[piRNA].firstPos)-1)%lineUnit+Number(seq))%lineUnit),
+            'y':scaleY(axisPos[Math.floor((Number(data[piRNA].firstPos)-1)/lineUnit)+a]+Number(data[piRNA].stack)),
+            'width':'12.5', 
             'height':'15',
-            'transform':'translate(32.5,4)',
+            'transform':'translate('+(trans_x-6)+',4)',
             'fill':'yellow'
           });
           }
@@ -306,47 +394,48 @@ function seqView(divId,mRNA,data,CDS,CDS_1,CDS_2,divWidth){
             .data(data)
             .attr({              
               'class':'text',
-              'x':scaleA(((Number(data[piRNA].firstPos)-1)%100+Number(seq))%100),
-              'y':scaleY(axisPos[Math.floor((Number(data[piRNA].firstPos)-1)/100)+a]+Number(data[piRNA].stack)+1),
+              'x':scaleA(((Number(data[piRNA].firstPos)-1)%lineUnit+Number(seq))%lineUnit),
+              'y':scaleY(axisPos[Math.floor((Number(data[piRNA].firstPos)-1)/lineUnit)+a]+Number(data[piRNA].stack)+1),
               // 'fill':'red',
               'style':'text-anchor: middle',
-              'transform':'translate(40,0)',       
+              'transform':'translate('+trans_x+',0)',       
             });
         }
         else if((posOfMis.indexOf(21-Number(seq))!=-1) && (posOfMisxGU.indexOf(21-Number(seq))==-1)){
           if(Number(seq)==20){
             svg.append('rect').attr({
             'id':data[piRNA].piRNA,
-            'x':scaleA(((Number(data[piRNA].firstPos)-1)%100+Number(seq))%100),
-            'y':scaleY(axisPos[Math.floor((Number(data[piRNA].firstPos)-1)/100)+a]+Number(data[piRNA].stack)),
-            'width':'15', 
+            'x':scaleA(((Number(data[piRNA].firstPos)-1)%lineUnit+Number(seq))%lineUnit),
+            'y':scaleY(axisPos[Math.floor((Number(data[piRNA].firstPos)-1)/lineUnit)+a]+Number(data[piRNA].stack)),
+            'width':'12.5', 
             'height':'15',
-            'transform':'translate(32.5,4)',
+            'transform':'translate('+(trans_x-6)+',4)',
             'fill':'lightgreen'
             });
           }
           else{
             svg.append('rect').attr({
               'id':data[piRNA].piRNA,
-              'x':scaleA(((Number(data[piRNA].firstPos)-1)%100+Number(seq))%100),
-              'y':scaleY(axisPos[Math.floor((Number(data[piRNA].firstPos)-1)/100)+a]+Number(data[piRNA].stack)),
-              'width':'15', 
+              'x':scaleA(((Number(data[piRNA].firstPos)-1)%lineUnit+Number(seq))%lineUnit),
+              'y':scaleY(axisPos[Math.floor((Number(data[piRNA].firstPos)-1)/lineUnit)+a]+Number(data[piRNA].stack)),
+              'width':'12.5', 
               'height':'15',
-              'transform':'translate(32.5,4)',
+              'transform':'translate('+(trans_x-6)+',4)',
               'fill':'lightblue'
             });
           }
+
           svg.append('text')
             .text(data[piRNA].detail[seq])
             .attr({
             'class':'text',
-            'x':scaleA(((Number(data[piRNA].firstPos)-1)%100+Number(seq))%100),
-            'y':scaleY(axisPos[Math.floor((Number(data[piRNA].firstPos)-1)/100)+a]+Number(data[piRNA].stack)+1),
+            'x':scaleA(((Number(data[piRNA].firstPos)-1)%lineUnit+Number(seq))%lineUnit),
+            'y':scaleY(axisPos[Math.floor((Number(data[piRNA].firstPos)-1)/lineUnit)+a]+Number(data[piRNA].stack)+1),
             // 'fill':'green',
             // 'stroke': 'blue',
             // 'stroke-width':"10", 
             'style':'text-anchor: middle',
-            'transform':'translate(40,0)',       
+            'transform':'translate('+trans_x+',0)',       
             });
         }
         else{
@@ -355,18 +444,18 @@ function seqView(divId,mRNA,data,CDS,CDS_1,CDS_2,divWidth){
             .attr({
             'id':data[piRNA].piRNA,
             'class':'text',
-            'x':scaleA(((Number(data[piRNA].firstPos)-1)%100+Number(seq))%100),
-            'y':scaleY(axisPos[Math.floor((Number(data[piRNA].firstPos)-1)/100)+a]+Number(data[piRNA].stack)+1),
+            'x':scaleA(((Number(data[piRNA].firstPos)-1)%lineUnit+Number(seq))%lineUnit),
+            'y':scaleY(axisPos[Math.floor((Number(data[piRNA].firstPos)-1)/lineUnit)+a]+Number(data[piRNA].stack)+1),
             'style':'text-anchor: middle',
-            'transform':'translate(40,0)',       
+            'transform':'translate('+trans_x+',0)',       
             });
           svg.append('rect').attr({
             'id':data[piRNA].piRNA,
-            'x':scaleA(((Number(data[piRNA].firstPos)-1)%100+Number(seq))%100),
-            'y':scaleY(axisPos[Math.floor((Number(data[piRNA].firstPos)-1)/100)+a]+Number(data[piRNA].stack)),
-            'width':'15', 
+            'x':scaleA(((Number(data[piRNA].firstPos)-1)%lineUnit+Number(seq))%lineUnit),
+            'y':scaleY(axisPos[Math.floor((Number(data[piRNA].firstPos)-1)/lineUnit)+a]+Number(data[piRNA].stack)),
+            'width':'12.5', 
             'height':'15',
-            'transform':'translate(32.5,4)',
+            'transform':'translate('+(trans_x-6)+',4)',
             'opacity': 0,
           });
         }
@@ -375,11 +464,11 @@ function seqView(divId,mRNA,data,CDS,CDS_1,CDS_2,divWidth){
           .text("|")
           .attr({
           'class':'text',
-          'x':scaleA((((Number(data[piRNA].firstPos)-1)%100+Number(seq))%100)+0.5),
-          'y':scaleY(axisPos[Math.floor((Number(data[piRNA].firstPos)-1)/100)+a]+Number(data[piRNA].stack)+1),
+          'x':scaleA((((Number(data[piRNA].firstPos)-1)%lineUnit+Number(seq))%lineUnit)+0.5),
+          'y':scaleY(axisPos[Math.floor((Number(data[piRNA].firstPos)-1)/lineUnit)+a]+Number(data[piRNA].stack)+1),
           'fill':'red', 
           'style':'text-anchor: middle;font-family:Arial;',
-          'transform':'translate(40,-1)',       
+          'transform':'translate('+trans_x+',-1)',       
           });
         }
       }
@@ -387,11 +476,11 @@ function seqView(divId,mRNA,data,CDS,CDS_1,CDS_2,divWidth){
         svg.append('rect').attr({
           'id':data[piRNA].piRNA,
           'pos':data[piRNA].firstPos,
-          'x':scaleA(((Number(data[piRNA].firstPos)-1)%100)%100),
-          'y':scaleY(axisPos[Math.floor((Number(data[piRNA].firstPos)-1)/100)]+Number(data[piRNA].stack)),
-          'width':scaleA(100-((Number(data[piRNA].firstPos)-1)%100)), 
+          'x':scaleA(((Number(data[piRNA].firstPos)-1)%lineUnit)%lineUnit),
+          'y':scaleY(axisPos[Math.floor((Number(data[piRNA].firstPos)-1)/lineUnit)]+Number(data[piRNA].stack)),
+          'width':scaleA(lineUnit-((Number(data[piRNA].firstPos)-1)%lineUnit)), 
           'height':'15',
-          'transform':'translate(32.5,4)',
+          'transform':'translate('+(trans_x-6)+',4)',
           'fill':'red',
           'opacity': 0,
         }).on("mouseover", function(d) {
@@ -416,10 +505,10 @@ function seqView(divId,mRNA,data,CDS,CDS_1,CDS_2,divWidth){
           'id':data[piRNA].piRNA,
           'pos':data[piRNA].firstPos,
           'x':scaleA(0),
-          'y':scaleY(axisPos[Math.floor((Number(data[piRNA].firstPos)-1)/100)+1]+Number(data[piRNA].stack)),
-          'width':scaleA((Number(data[piRNA].firstPos)+20)%100), 
+          'y':scaleY(axisPos[Math.floor((Number(data[piRNA].firstPos)-1)/lineUnit)+1]+Number(data[piRNA].stack)),
+          'width':scaleA((Number(data[piRNA].firstPos)+20)%lineUnit), 
           'height':'15',
-          'transform':'translate(32.5,4)',
+          'transform':'translate('+(trans_x-6)+',4)',
           'fill':'red',
           'opacity': 0,
         }).on("mouseover", function(d) {
@@ -445,11 +534,11 @@ function seqView(divId,mRNA,data,CDS,CDS_1,CDS_2,divWidth){
         svg.append('rect').attr({
           'id':data[piRNA].piRNA,
           'pos':data[piRNA].firstPos,
-          'x':scaleA((Number(data[piRNA].firstPos)-1)%100),
-          'y':scaleY(axisPos[Math.floor((Number(data[piRNA].firstPos)-1)/100)]+Number(data[piRNA].stack)),
+          'x':scaleA((Number(data[piRNA].firstPos)-1)%lineUnit),
+          'y':scaleY(axisPos[Math.floor((Number(data[piRNA].firstPos)-1)/lineUnit)]+Number(data[piRNA].stack)),
           'width':'340', 
           'height':'15',
-          'transform':'translate(32.5,4)',
+          'transform':'translate('+(trans_x-6)+',4)',
           'fill':'red',
           'opacity': 0,
         }).on("mouseover", function(d) {
@@ -473,4 +562,5 @@ function seqView(divId,mRNA,data,CDS,CDS_1,CDS_2,divWidth){
       }
     }
   }
+  return seqViewDataArr
 };

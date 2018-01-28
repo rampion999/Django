@@ -26,8 +26,8 @@ SECRET_KEY = '*6*371ux7(p=*!v5)_js@nj!)z-x21zxq5i$fy7r!q-+0%%oaj'
 DEBUG = True
 
 ALLOWED_HOSTS = [
-    '140.116.215.236',
-    'cosbi5.ee.ncku.edu.tw',
+    '140.116.215.238',
+    'cosbi4.ee.ncku.edu.tw',
 ]
 
 

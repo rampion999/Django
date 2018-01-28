@@ -11,6 +11,7 @@ import os
 import re
 import math
 import operator
+# import pandas as pd
 from django.views.decorators.csrf import ensure_csrf_cookie
 
 @ensure_csrf_cookie
@@ -31,23 +32,22 @@ def deleteUserNum(request):
 	userNum = request.POST.get('userNum')
 	liCount = int(request.POST.get('qq')) - 1
 	lastqq = int(request.POST.get('lastqq'))
-	print('!!!!!!!!!!!!!!!!!!!!!!!!!!!')
-	print(userNum)
-	print(liCount)
-	print(lastqq)
 	os.remove(os.path.join(module_dir,'temp/userNum{0}.csv'.format(userNum)))
+	os.remove(os.path.join(module_dir,'temp/tableData0_{0}.csv'.format(userNum)))
 	os.remove(os.path.join(module_dir,'temp/ori_result{0}.json'.format(userNum)))
 	os.remove(os.path.join(module_dir,'temp/ori_base_result{0}.json'.format(userNum)))
 	TTT = 1
 	while liCount:
 		if TTT < liCount:	
 			os.remove(os.path.join(module_dir,'temp/modify{0}_{1}.csv'.format(TTT,userNum)))
+			os.remove(os.path.join(module_dir,'temp/tableData{0}_{1}.csv'.format(TTT,userNum)))
 			os.remove(os.path.join(module_dir,'temp/picked_{0}_{1}.json'.format(TTT,userNum)))
 			os.remove(os.path.join(module_dir,'temp/posToDiv_{0}_{1}.json'.format(TTT,userNum)))
 			os.remove(os.path.join(module_dir,'temp/sucResult_{0}_{1}.txt'.format(TTT,userNum)))
 			TTT += 1		
 		elif TTT == liCount and lastqq == 1:
 			os.remove(os.path.join(module_dir,'temp/modify{0}_{1}.csv'.format(TTT,userNum)))
+			os.remove(os.path.join(module_dir,'temp/tableData{0}_{1}.csv'.format(TTT,userNum)))
 			os.remove(os.path.join(module_dir,'temp/picked_{0}_{1}.json'.format(TTT,userNum)))
 			os.remove(os.path.join(module_dir,'temp/posToDiv_{0}_{1}.json'.format(TTT,userNum)))
 			os.remove(os.path.join(module_dir,'temp/sucResult_{0}_{1}.txt'.format(TTT,userNum)))
@@ -177,14 +177,15 @@ def CDS(RNA,CDS1,CDS2):
 
 def scan_main(request):
 	module_dir = os.path.dirname(__file__)
-	userNum = int(request.POST.get('userNum'))			
+	userNum = int(request.POST.get('userNum'))
+	operationTimes = int(request.POST.get('operationTimes'))		
 	# x = request.POST.get('sth')
 	if request.POST.get('data1') == '':
 		data = {'state':'nothing'}
 	elif re.search("^\s?>[A-Za-z0-9|_,+#)(.\s]+\s[A-Za-z\s]+$",request.POST.get('data1')) == None:
 		data = {'state':'notfasta'}
-	elif request.POST.get('nematodeType') == 'C.remanei' or request.POST.get('nematodeType') == 'C.brenneri':
-		data = {'state':'nematode'}
+	# elif request.POST.get('nematodeType') == 'C.remanei' or request.POST.get('nematodeType') == 'C.brenneri':
+	# 	data = {'state':'nematode'}
 	else:
 		with open(os.path.join(module_dir,'temp/userNum{0}.csv'.format(userNum)),'w') as f1:
 			w1 = csv.writer(f1)
@@ -212,7 +213,7 @@ def scan_main(request):
 		if (CDS1==0 and CDS2!=0) or (CDS2==0 and CDS1!=0) or ((CDS1!= 0 and CDS2!= 0) and (CDS1 >= CDS2 or (CDS2-CDS1-2)%3 !=0 or CDS2 > len(Arr2) or CDS1 < 1)):
 			data = {'state':'CDSX'}
 		else:
-			mission_count = {'C.elegans':357,'C.briggsae':290}
+			mission_count = {'C.elegans':357, 'C.briggsae':290, 'C.brenneri':1157, 'C.remanei':813}
 			result=[]
 			start_time = time.time()
 			q = JoinableQueue()
@@ -237,7 +238,7 @@ def scan_main(request):
 				i[7] = sorted(i[7], key=operator.itemgetter(0),reverse=False)
 				i[7] = sorted(i[7], key=operator.itemgetter(5),reverse=True)
 			example1 = 'atgagtaaaggagaagaacttttcactggagttgtcccaattcttgttgaattagatggtgatgttaatgggcacaaattttctgtcagtggagagggtgaaggtgatgcaacatacggaaaacttacccttaaatttatttgcactactggaaaactacctgttccatggccaacacttgtcactactctcacttatggtgttcaatgcttctcgagatacccagatcatatgaaacagcatgactttttcaagagtgccatgcccgaaggttatgtacaggaaagaactatatttttcaaagatgacgggaactacaagacacgtgctgaagtcaagtttgaaggtgatacccttgttaatagaatcgagttaaaaggtattgattttaaagaagatggaaacattcttggacacaaattggaatacaactataactcacacaatgtatacatcatggcagacaaacaaaagaatggaatcaaagttaacttcaaaattagacacaacattgaagatggaagcgttcaactagcagaccattatcaacaaaatactccaattggcgatggccctgtccttttaccagacaaccattacctgtccacacaatctgccctttcgaaagatcccaacgaaaagagagaccacatggtccttcttgagtttgtaacagctgctgggattacacatggcatggatgaactatacaaatag'.upper().replace("T","U")
-			example2 = 'acgcaaaaATGAACGAAAAAGAAGAAGAAGTATCGCTGAATCAGATCAAGCTCAAGCCACGTATTTCACTTTTCAATGGCTGCACAATCATTATCGGAGTTATTATTGGATCAGGAATCTTTGTGTCACCAAAAGGAGTCCTCCTTGAAGCCGGCAGTGCTGGAATGTCTCTGCTCATTTGGCTCCTCAGTGGAGTATTTGCCATGATTGGAGCTGTATGTTATTCAGAGCTCGGGACACTAATCCCCAAGTCTGGAGGAGATTACGCGTATATTTATGAGGCGTTTGGTCCTCTTCCGTCATTTCTTTTTCTTTGGGTAGCTCTTGTCATTATCAATCCAACATCTTTGGCGATTATTGCCATAACATGTGCAACTTACGCTCTTCAACCATTCTACTCATGTCCTGTACCGGACGTTGTTGTCAATCTTTTCGCCGGATGCATAATTGCTGTTCTCACATTCATCAACTGTTGGGATGTTCGAATGGCAACAAGAACTAACGATTTCTTCACAATCACCAAATTAATTGCTCTCACTCTCATTATTACTTGTGGAGGATATTGGCTCTCATTGGGGCATATTGATAATCTTGTGATGCCCGATGTAGCAGAAGGAAGTCAAACAAAATTATCAGCTATTGCAATGGCGTTCTATTCTGGAGTTTTCTCATTTTCGGGGTTCTCTTATCTGAATTTTGTTACCGAAGAACTAAAAAACCCGTTCAGGAACCTTCCACGCGCAATCTACATTTCCATTCCTATTGTTACAATTGTCTATATGCTCGTCAATATTGCATATTTTTCAGTATTAACCGTTGATGAGATTCTCGATTCCGATGCAGTGGCCATCACATTTGCCGACAAAATTCTCGGAACCTTCGGAAGCAAGATACTCATGCCATTGTTTGTTTCCTTTTCCTGCGTAGGTTCCCTTAATGGAATTCTCATCACATGCTCCAGAATGTTCTTTTCTGGAGCTCGAAACAGTCAACTACCTGAACTGTTTGCAATGATCTCAATCAGACAACTTACTCCGATTCCATCATTAATTTTCCTTGGTGGAACTTCAATCGTCATGCTCTTCATTGGTAACGTGTTCCAGCTTATTAACTATCTGTCATTTGCTGAATCACTCGTTGTTTTCTCTTCTGTCGCTGGGCTTTTGAAATTGAGATTCACAATGCCTGAAAATGTGCTAAACGCCCGTCCAATCAAAATCAGTCTCCTGTGGCCAATACTGTTTTTCCTTATGTGCCTCTTTCTTTTGATCCTTCCATTCTTCCACAGTGATCCATGGGAACTCATTTACGGAGTTTTCTTGGTACTTTCAGGAATTCCCATCTACGTTCTCTTCGTCTACAATAAATACCGTCCAGGATTCATTCAATCTGTGTGGATAGGCTTCACACATTTCATTCAAAAATTGTTCTATTGTGTCCCAGAACTCTCCAGTTCCTGAaaattctgttttattgtcatatccaaacccgtgactctttccgttgttcttttttatttccacagtgtgcattttttgtttttttgtttggttttttttgctcccagatctttctgcgcttccgttatcaagcggacatatctcaaattgacacagcatttttttgctattttatccgctccatatctaaaatatatctttatgtcatcattgaaagttttggtttttagcacctaataacttattttctcgaatagaaataaaacgttctcaatttt'.upper().replace("T","U")
+			example2 = 'agttttactttttcgcttttcgATGGCACCTCCACAAGTAAGAAGGTCCGCTAGGTTAAGCAAGAGATGCCAAGAAGAAAAGGTTAAGCTTCAGAAGAAAAATGTCGGATTTAAGGCAAAATCTAAGTCGGCTAAAAAGAGTAATAAGAAATTCAAGAAAGCTGCCGCTCAAAGACAAAGCCCAATTGACATCGTCCCACAACACGTGTGCTGTGACACAGACGTTTGCAAGGCTGATGCCTTGAACATTGACTACAAATCAGGTGACTGTTGCGATGTCCTTGTCTCCGAAGGAGGTTTCCTTGTGAATGTCAAGAGAAATTGTGGCACATTCCTTACCGCCAACCATTTACCATCATCAAAATTCGCGTTGGCTCAGTTCCATGCTCATTGGGGAAGCAACTCGAAAGAAGGATCCGAGCACTTTTTGGACGGAAAACAACTTAGCGGAGAGGTTCACTTTGTATTCTGGAACACCAGCTATGAGTCGTTTAATGTGGCACTCAGCAAGCCCGATGGATTGGCGGTTGTTGGAGTCTTCTTGAAGGAAGGAAAATACAATGACAATTACCATGGCCTGATCGACACAGTGCGCAAAGCCACCGGAAATGCCACACCAATTGCCATGCCAAAAGACTTCCACATTGAGCATCTTCTCCCATCCCCGGACAAGAGAGAATTCGTTACATACCTCGGATCCCTTACCACCCCACCATACAACGAGTGTGTTATCTGGACCTTGTTCACAGAGCCTGTGGAGGTCTCCTTCGGACAGCTCAACGTGCTCCGTAATATCATCCCCGCCAATCATCGCGCCTGCCAAGACAGATGCGACCGTGAAATCCGATCTTCCTTCAACTTTTAAatttcttatttttttcccttctcaatggttttttctatttagtttttctgtacgagaacaactcacaatcatcatgtaaaaaacaagttcacacccccgtgccgatgtaagtatgaaacgtctctttcccctcagaacatacatgtacgaagaagagcttaacactcttttctgctttctcattataaataatttagtattcaactggaataaaaagtttttcgctt'.upper().replace("T","U")
 			if RNA == example1 :
 				EX = 'ex1'
 			elif RNA == example2 :
@@ -259,6 +260,26 @@ def scan_main(request):
 				'csrf':request.POST.get('csrfmiddlewaretoken'),
 				'userNum':userNum,
 			}
+
+			if options['nematodeType'] == 'C.elegans':
+				with open(os.path.join(module_dir,'elegansNameToId.json'),'r') as w1:
+					e_NameToId = json.load(w1)
+				data['e_NameToId'] = e_NameToId
+
+			result = sorted(result, key = lambda l:int(l[1].split('-')[0]))
+
+
+			#存table資料 
+			with open(os.path.join(module_dir,'temp/tableData{0}_{1}.csv'.format(operationTimes,userNum)),'w') as w1:
+				wr1 = csv.writer(w1)
+				wr1.writerow(['piRNA','targeted region in input sequence','# mismatches','position in piRNA','# non-GU mismatches in seed region','# GU mismatches in seed region','# non-GU mismatches in non-seed region','# GU mismatches in non-seed region','5\' Input sequence 3\'','3\' piRNA 5\''])
+				for td in result:
+					detailTopStr = re.sub("<.*?>", "", td[9]).replace("5' ",'').replace(" 3'",'').replace("|",'')
+					detailBotStr = re.sub("<.*?>", "", td[10]).replace("3' ",'').replace(" 5'",'').replace("|",'')
+					detail = detailTopStr + '\n' + detailBotStr
+					wr1.writerow([td[0],td[1],td[2],re.sub("<.*?>", "", td[3]),td[5],td[6],td[7],td[8],detailTopStr,detailBotStr])
+
+
 			ori_result = data
 			with open(os.path.join(module_dir,'temp/ori_result{0}.json'.format(userNum)),'w') as w1:
 				json.dump(data,w1,indent=4)
@@ -425,7 +446,7 @@ def scan(q,num,Arr2,options):
 						ArryxGU = 'N/A'
 				
 				
-					outArr.append([key[0],str(a+1)+'-'+str(a+21),o+d+e+m+n,','.join(Arr4),','.join(ArryxGU),d,m,e,n,"5' "+''.join(Arr3)+" 3'","3' "+''.join(Arr5)+" 5'",key[2],key[1][::-1]])
+					outArr.append([key[0],str(a+1)+'-'+str(a+21),o+d+e+m+n,','.join(Arr4),','.join(ArryxGU),d,m,e,n,"<span style=\"white-space:nowrap\">5' "+''.join(Arr3)+" 3'","3' "+''.join(Arr5)+" 5'</span>",key[2],key[1][::-1]])
 					GG+=1
 					b-=1
 					c-=1
@@ -495,10 +516,6 @@ def suggestion(data,CDS1,CDS2,RNA,options):
 		elif CDS2-length < fir :			
 			CDSs = math.ceil((length + 1 - mission) / 3)
 			stop_num = math.ceil((length + 1 - mission) / 3) - math.ceil((CDS2 - fir +1) / 3)
-			print('!!!!!!!!!!!!!')
-			print(CDSs)
-			print(stop_num)
-			print(mission)
 		else:
 			CDSs = math.ceil((length + 1 - mission) / 3)
 		can_method = 0
@@ -755,6 +772,8 @@ def suggestion(data,CDS1,CDS2,RNA,options):
 			if CDS_codon == 'L' or CDS_codon == 'S' or CDS_codon == 'R' :
 				#-------------------定住前兩碼，看'第三碼'--------------
 				for third in CDScodonDict[CDS_codon]:
+					# print('!!!!!!!!!!!!!!!!!!!!!!!!!!')
+					# print(third)
 					if third[0:2] != CDS_seq_of_mRNA[0:2] or third == CDS_seq_of_mRNA or (third[2] == complement(piRNAseq[first_CDS_leftPos+2-move])):
 						continue
 					elif (third[2] == 'G' and piRNAseq[first_CDS_leftPos+2-move] =='U') or (third[2] == 'U' and piRNAseq[first_CDS_leftPos+2-move] =='G'):
@@ -876,10 +895,10 @@ def suggestion(data,CDS1,CDS2,RNA,options):
 
 				#-------------------定住前兩碼，看'第三碼'--------------
 				for third in CDScodonDict[CDS_codon]:
-					if third[0:2] != CDS_seq_of_mRNA[0:2] or third == CDS_seq_of_mRNA:
+					if third[0:2] != CDS_seq_of_mRNA[0:2] or third == CDS_seq_of_mRNA or (third[2] == complement(piRNAseq[first_CDS_leftPos+2-move])):
 						continue
-					elif third == complement(piRNAseq[first_CDS_leftPos+2-move]):
-						continue
+					# elif third == complement(piRNAseq[first_CDS_leftPos+2-move]):
+					# 	continue
 					elif (third[2] == 'G' and piRNAseq[first_CDS_leftPos+2-move] =='U') or (third[2] == 'U' and piRNAseq[first_CDS_leftPos+2-move] =='G'):
 						b = 0
 						d = 0
@@ -1373,5 +1392,13 @@ def download_course(request,count,userNum):
 		response = HttpResponse(f1.read())
 		response['content_type'] = 'text/txt'
 		response['Content-Disposition'] = 'attachment;filename=modified_sequence.txt'
+	return response
+
+def download_table(request,count,userNum):
+	module_dir = os.path.dirname(__file__)
+	with open(os.path.join(module_dir,'temp/tableData'+count+'_{0}.csv'.format(userNum)),'rb') as f1:
+		response = HttpResponse(f1.read())
+		response['content_type'] = 'text/csv'
+		response['Content-Disposition'] = 'attachment;filename=Identified_piRNA_table.csv'
 	return response
 

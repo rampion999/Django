@@ -1,4 +1,4 @@
-function update(modifyCount,sug,sugNotCDS,name,gene,a,b,c,d,e,f,g,h,csrf,ori_data,pic2src,scanUrl,divId,userNum){
+function update(modifyCount,sug,sugNotCDS,name,gene,a,b,c,d,e,f,g,h,csrf,ori_data,pic2src,scanUrl,divId,userNum,oldSeqViewDataArr){
 	var new_gene = gene.split('');
 	var selected = {};
 	var count = 0;
@@ -107,7 +107,7 @@ function update(modifyCount,sug,sugNotCDS,name,gene,a,b,c,d,e,f,g,h,csrf,ori_dat
 	
 
 	for (var x in sugNotCDS){
-	    var i = Number(x) + preCount + midCount;
+	    var i = Number(x) + midCount;
 			var selectArr = [];
 			if(Number(x) >= preCount){
 				var testIn = 0;
@@ -235,10 +235,10 @@ function update(modifyCount,sug,sugNotCDS,name,gene,a,b,c,d,e,f,g,h,csrf,ori_dat
             		strVar +='</div>';
 		        	strVar += '\
 					<div class="card mb-4 h-100 darkC">\
-		              <h4 class="card-header darkCH">Modified sequence</h4>\
+		              <h4 class="card-header darkCH">Modified sequence <button type="button" id="downloadModSeq'+modifyCount+'" class="btn btn-info" style="border-color: black; padding-top: 4px; padding-bottom: 4px;"><img src="https://png.icons8.com/download/androidL/20/000000">  Download modified seqView</button></h4>\
 		              <div class="card-body text-dark text-center">\
 		                <svg id="preSeqView-'+modifyCount+'"></svg>\
-		                <div class="row"><div class="col-1"></div><div class="col-11 text-left"><input type="checkbox" id="CDS_ck_'+modifyCount+'" class="align-self-center" checked><b class="align-self-center">Coding sequence (CDS) region: &nbsp;&nbsp;&nbsp;</b><input type="number" style="width: 60px" id="CDS_1_'+modifyCount+'" class="CDS_'+modifyCount+'">&nbsp;-&nbsp;<input type="number" style="width: 60px" id="CDS_2_'+modifyCount+'" class="CDS_'+modifyCount+'"></div></div>\
+		                <div class="row"><div class="col-1"></div><div class="col-11 text-left"><b class="align-self-center">Coding sequence (CDS) region: &nbsp;&nbsp;&nbsp;</b>'+g+'&nbsp;-&nbsp;'+h+'</div></div>\
 		              </div>\
 		            </div>\
 		        ';
@@ -253,7 +253,7 @@ function update(modifyCount,sug,sugNotCDS,name,gene,a,b,c,d,e,f,g,h,csrf,ori_dat
     				strVar += "                      <\/div>";
     				// strVar += "                      <div class=\"col-lg-1\">";
     				// strVar += "                      <\/div>";
-    				strVar += "                      <div class=\"col-lg-6\">";
+    				strVar += "                      <div class=\"col-lg-6 pt-3\">";
     				strVar += "                        <ul class=\"list-unstyled\">             ";
 
     				strVar += "                          <li class=\"card-text\">";
@@ -392,7 +392,10 @@ function update(modifyCount,sug,sugNotCDS,name,gene,a,b,c,d,e,f,g,h,csrf,ori_dat
     				// strVar += "              <\/div>";
     				// strVar += "            <\/div>";   				   				
             		strVar += "            <div id=\"update_footer_"+modifyCount+"\" class=\"text-center my-3\"><button type=\"button\" id=\"TransformBTN_"+modifyCount+"\" class=\"btn btn-primary btn-lg\" style=\"width: 15%;\">RE-SCAN<\/button><\/div>";
-		        $('#modify_'+modifyCount+'-Result').append(strVar);                   
+		        $('#modify_'+modifyCount+'-Result').append(strVar);
+		        $('#downloadModSeq'+modifyCount).on('click',function(){
+                    saveSvgAsPng(document.getElementById("preSeqView-"+modifyCount), "pre_modifySeqView_"+modifyCount+".png", {scale: 2, backgroundColor: "#FFFFFF"});
+                  });                   
 		        $.ajax({
 			        url: "selectedPreData/", 
 			        data:{
@@ -417,7 +420,7 @@ function update(modifyCount,sug,sugNotCDS,name,gene,a,b,c,d,e,f,g,h,csrf,ori_dat
 						selectedTable('selectedChange_'+modifyCount,data,modifyCount);
 						$('#selectedTitle').html(data.selectedInfo.length+' selected changes in the input sequence');
 						$('#TransformBTN_'+modifyCount).on('click',function(){
-							newScan(data,pic2src,modifyCount,scanUrl,userNum);
+							newScan(data,pic2src,modifyCount,scanUrl,userNum,oldSeqViewDataArr);
 						});
 						$(document).ready(function(){
 		                    $(window).resize(function() {
@@ -461,7 +464,7 @@ function selectedTable(divId,data,modifyCount){
 
   var tableTemp='';
   for(var x in data.selectedInfo){
-    tableTemp += '<tr><th>'+(Number(x)+1)+'</th><td class="mid">'+data.selectedInfo[x][0]+'</td><td class="mid">'+data.selectedInfo[x][1]+' → '+data.selectedInfo[x][2]+'</td></tr>';
+    tableTemp += '<tr><th>'+(Number(x)+1)+'</th><td class="mid">'+data.selectedInfo[x][0]+'</td><td class="mid">'+data.selectedInfo[x][1]+' → <span class="px-1" style="border: 1.5px solid red;">'+data.selectedInfo[x][2]+'</span></td></tr>';
   }
   $('#changeTable_'+modifyCount).find('tbody').append(tableTemp);
   $(document).ready(function() {

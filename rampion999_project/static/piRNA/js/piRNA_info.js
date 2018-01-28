@@ -29,6 +29,7 @@ function piRNA_info(divId,data,piRNA_name,nematode){
 		$('#'+divId+'-myTable2').DataTable({
 							searching:      false,
 							paging:         true,
+							// scrollX:        true,
 							aaSorting: [],
 							"aoColumnDefs": [
 								{ "bSortable": false, "aTargets": [ 0 ] }

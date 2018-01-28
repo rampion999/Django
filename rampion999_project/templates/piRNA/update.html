@@ -41,7 +41,7 @@
     <script type="text/javascript" src="{% static 'piRNA/js/tableEffect.js' %}"></script>
     <script type="text/javascript" src="{% static 'piRNA/js/piRNA_info.js' %}"></script>
     <script type="text/javascript" src="{% static 'piRNA/js/suggestion.js' %}"></script>
-    <script type="text/javascript" src="{% static 'piRNA/js/dataTables.fixedColumns.min.js' %}"></script>
+    <!-- <script type="text/javascript" src="{% static 'piRNA/js/dataTables.fixedColumns.min.js' %}"></script> -->
     <script type="text/javascript" src="{% static 'piRNA/js/seq_update.js' %}"></script>
     <script type="text/javascript" src="{% static 'piRNA/js/noBulgeData.js' %}"></script>
     <script type="text/javascript" src="{% static 'piRNA/js/resultCreate.js' %}"></script>
@@ -49,6 +49,8 @@
     <script type="text/javascript" src="{% static 'piRNA/js/showDaTable.js' %}"></script>
     <script type="text/javascript" src="{% static 'piRNA/js/preSeqView.js' %}"></script>
     <script type="text/javascript" src="{% static 'piRNA/js/newScan.js' %}"></script>
+    <script type="text/javascript" src="{% static 'piRNA/js/saveSvgAsPng.js' %}"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/core-js/2.4.1/core.js"></script>
     <!-- <script type="text/javascript" src="{% static 'piRNA/js/dataTables.bootstrap4.min.js' %}"></script> -->
   </head>
 
@@ -85,7 +87,7 @@
       },
       success: function(data){
         if (data.out == 'nonono'){
-          window.location = document.URL.replace('/update/',''),'_blank';
+          window.location = document.URL.replace('update/',''),'_blank';
         }
         else{
           dataLoad(data.out);
@@ -157,14 +159,23 @@
             ';
 
             $('#originalResult').append(strVar);
-            preSeqView('preSeqView-0',data);
+            preSeqView('preSeqView-0',data,$('#wrap').width()*0.775);
+            $(document).ready(function(){
+                $(window).resize(function() {
+                  $('#preSeqView-0').empty();
+                  preSeqView('preSeqView-0',data,$('#wrap').width()*0.775);
+                });
+            });
           }
           else{
-            resultCreate('originalResult');
-            var pic2src = "{% static 'piRNA/img/QQ.jpg' %}";
+            resultCreate('originalResult',userNum);
+            var pic2src = "{% static 'piRNA/img/QQ.png' %}";
             var scanUrl = "{% static 'piRNA/img/Magnify.gif' %}"
-            var seqViewDataArr = noBulgeData('originalResult',data);
+            noBulgeData('originalResult',data);
+            var geneArr = data.gene.split("");
+            var seqViewDataArr = seqView('originalResult',geneArr,data,data.CDS[0].split(''),data.CDS1,data.CDS2,$('#wrap').width()*0.775);
             var newSug = arrangeSug(data.suggestion);
+            var oldSeqViewDataArr = seqViewDataArr
             if(data.newout.length != 0){
               shit(
                 'originalResult',
@@ -186,29 +197,52 @@
                 scanUrl,
                 seqViewDataArr,
                 data.userNum,
+                oldSeqViewDataArr
               );
               // 預勾
-              if(data.EX == 'ex1'){
-                $('#originalResult-ck0_0').prop('checked',true);
-                $('#originalResult-ck1_0').prop('checked',true);
-              }
-              else if(data.EX == 'ex2'){
-                var pickList = ['0_0','0_1','1_0','1_1','2_0','3_0','4_0','5_1','6_0','7_2','8_0','9_0','10_0','11_0'];
-                for (var i in pickList){
-                  $('#originalResult-ck'+pickList[i]).prop('checked',true);
+              var preCount = 0;
+              for (var preCheck in newSug.inCDS){
+                if($('#originalResult-rule'+preCheck+'_0').html() == '✕'){
+                  $('#originalResult-ck'+preCheck+'_0').prop('checked',true);
+                  $('#originalResult-ck'+preCheck+'_1').prop('checked',true);
+                  preCount++;
+                }
+                else{
+                  $('#originalResult-ck'+preCheck+'_0').prop('checked',true);
+                  preCount++;
                 }
               }
+              for (var preCheck2 in newSug.notInCDS){
+                var num = preCount+Number(preCheck2);
+                if($('#originalResult-rule'+num+'_0').html() == '✕'){
+                  $('#originalResult-ck'+num+'_0').prop('checked',true);
+                  $('#originalResult-ck'+num+'_1').prop('checked',true);
+                }
+                else{
+                  $('#originalResult-ck'+num+'_0').prop('checked',true);
+                }
+              }
+              // console.log($('#originalResult-rule0_2').html());
+              // if(data.EX == 'ex1'){
+              //   $('#originalResult-ck0_0').prop('checked',true);
+              //   $('#originalResult-ck1_0').prop('checked',true);
+              // }
+              // else if(data.EX == 'ex2'){
+              //   var pickList = ['0_0','1_0','2_0','3_0'];
+              //   for (var i in pickList){
+              //     $('#originalResult-ck'+pickList[i]).prop('checked',true);
+              //   }
+              // }
             } 
-            var geneArr = data.gene.split("");
-            console.log(geneArr);
-            overView('originalResult',geneArr,seqViewDataArr,data.CDS1,data.CDS2,$('#wrap').width()*0.85);
-            seqView('originalResult',geneArr,seqViewDataArr,data.CDS[0].split(''),data.CDS1,data.CDS2,$('#wrap').width()*0.85);
+            
+            console.log(seqViewDataArr);
+            overView('originalResult',geneArr,seqViewDataArr,data.CDS1,data.CDS2,$('#wrap').width()*0.82,data.newout);            
             $(document).ready(function(){
                 $(window).resize(function() {
                   $('#originalResult-overView').empty();
-                  overView('originalResult',geneArr,seqViewDataArr,data.CDS1,data.CDS2,$('#wrap').width()*0.85);
+                  overView('originalResult',geneArr,seqViewDataArr,data.CDS1,data.CDS2,$('#wrap').width()*0.82,data.newout);
                   $('#originalResult-seqView').empty();
-                  seqView('originalResult',geneArr,seqViewDataArr,data.CDS[0].split(''),data.CDS1,data.CDS2,$('#wrap').width()*0.85);
+                  seqView('originalResult',geneArr,data,data.CDS[0].split(''),data.CDS1,data.CDS2,$('#wrap').width()*0.775);
                 });
             });
           }
@@ -250,7 +284,7 @@
     // $(document).ready(function(){
     //   $('#Modify').on('click',function(){
     //     // window.location = document.URL.replace(/\?fref=gc&dti=[0-9]+/,'')+"update/",'_blank';
-    //     window.open('http://cosbi5.ee.ncku.edu.tw/piScan/Scan/modify/','_blank',
+    //     window.open('/piScan/Scan/modify/','_blank',
     //       "toolbar=yes,scrollbars=yes,resizable=yes,top=50,left=5,width=1900,height=900");
     //   });
     // });
@@ -259,11 +293,11 @@
 
 
   <body>
-
+    <div class="tooltip p-3" style="opacity: 0;" id="tooltip"></div>
     <!-- Navigation -->
     <nav class="navbar fixed-top navbar-expand-lg navbar-dark bg-dark fixed-top">
       <div class="container-fluid">
-        <a class="navbar-brand" href="http://cosbi5.ee.ncku.edu.tw/piScan">piScan</a>
+        <a class="navbar-brand" href="/piScan/">piScan</a>
         <button class="navbar-toggler navbar-toggler-right" type="button" data-toggle="collapse" data-target="#navbarResponsive" aria-controls="navbarResponsive" aria-expanded="false" aria-label="Toggle navigation">
           <span class="navbar-toggler-icon"></span>
         </button>
@@ -273,13 +307,13 @@
               <a class="nav-link" href="http://cosbi5.ee.ncku.edu.tw/piScan">Home</a>
             </li> -->
             <li class="nav-item">
-              <a class="nav-link" href="http://cosbi5.ee.ncku.edu.tw/piScan">Scan</a>
+              <a class="nav-link" href="/piScan/">Scan</a>
             </li>
             <li class="nav-item">
-              <a class="nav-link" href="http://cosbi5.ee.ncku.edu.tw/piScan/Tutorial">Tutorial</a>
+              <a class="nav-link" href="/piScan/Tutorial">Tutorial</a>
             </li>
             <li class="nav-item">
-              <a class="nav-link" href="http://cosbi5.ee.ncku.edu.tw/piScan/Contact">Contact</a>
+              <a class="nav-link" href="/piScan/Contact">Contact</a>
             </li>
           </ul>
         </div>
@@ -314,9 +348,10 @@
     <div id="result"></div>
 
   <!-- Footer -->
-  <footer id='footer' class="py-5 bg-dark">
-    <div class="container">
+  <footer id='footer' class="footer bg-dark">
+    <div class="container-fluid">
       <p class="m-0 text-center text-white">This web tool is maintained by Dr. <a href="https://www.researchgate.net/profile/Wei-Sheng_Wu">Wei-Sheng Wu</a>'s lab at National Cheng Kung University, Taiwan.</p>
+      {# <p class="mt-0 text-center text-white">For best performance, please use <a href="https://www.google.com.tw/chrome/browser/desktop/index.html" target="_blank">Google Chrome</a>. piScan also supports other web browsers like <a href="https://www.mozilla.org/" target="_blank">Firefox</a>, <a href="http://www.opera.com/" target="_blank">Opera</a> and <a href="https://microsoft-edge.en.softonic.com/" target="_blank">Microsoft Edge</a>.</p> #}
     </div>
     <!-- /.container -->
   </footer>
@@ -335,7 +370,7 @@
         </div>
         <div class="modal-footer">
           <div class="container text-center">          
-            <button type="button" id="originalResult-update" class="btn btn-primary" value="0">Modify input sequence</button>
+            <button type="button" id="originalResult-update" class="btn btn-primary" value="0">Accept selected modifications</button>
             <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
           </div>
         </div>

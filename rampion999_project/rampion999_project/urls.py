@@ -50,6 +50,7 @@ urlpatterns = [
     url(r'^update/sucData/$', views_piRNA.sucData),
     url(r'^update/failData/$', views_piRNA.failData),
     url(r'^Download/([0-9]+)/([0-9]+)', views_piRNA.download_course),
+    url(r'^DownloadTable/([0-9]+)/([0-9]+)', views_piRNA.download_table),
     url(r'^update/$', views_piRNA.update),
     url(r'^piRNA_demo(?:/update)*/create_data/', views_piRNA_demo.create_data),
     url(r'^piRNA_demo(?:/update)+/selectedPreData/', views_piRNA_demo.selectedPreData),

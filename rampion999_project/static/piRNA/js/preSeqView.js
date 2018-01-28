@@ -1,13 +1,24 @@
 function preSeqView(divId,data,divWidth){
+	var scaleXWidth = d3.scale.linear()
+        .range([0, (divWidth-150)])
+        .domain([0, 99]); 
+
+	if (scaleXWidth(2)-scaleXWidth(1) <= 11){
+		var unit = 50;
+	 }
+	else{
+		var unit = 100;
+	}
+	var trans_X = 65;
 	var CDS_1 = data.CDS1;
 	var CDS_2 = data.CDS2;
 	var mRNA = data.gene.split('');
 	// $('#preGene').append('<h1 style="text-align: center;"><b>New input gene</b></h1><svg id="preSeqView"></svg>');
 	var mRNAlen = data.gene.length;
-	var unit = 100;
+	
 	var width = divWidth;
 	var height = (2*(Math.floor(mRNAlen/unit)+1))*17.5 + 70;
-	var contentWidth = width-100;
+	var contentWidth = width-150;
 
 	var scaleY = d3.scale.linear()
 		.range([0, height])
@@ -30,9 +41,9 @@ function preSeqView(divId,data,divWidth){
             // 'id':data[piRNA].piRNA,
             'x':scaleA((Number(data.changed_pos[bot])-1)%unit),
             'y':scaleY(2+2*(Math.floor(Number(data.changed_pos[bot])/unit)-1)),
-            'width':'15', 
+            'width':'12', 
             'height':'15',
-            'transform':'translate(32.5,13.5)',
+            'transform':'translate('+(trans_X-6)+',13.5)',
             'fill':'transparent',
             // 'opacity': 0,
             'stroke': 'red',
@@ -52,7 +63,7 @@ function preSeqView(divId,data,divWidth){
 			'y':scaleY(axisPos[i]),
 			// 'fill':'red',
 			'style':'text-anchor: middle',
-			'transform':'translate(40,0)',       
+			'transform':'translate(75,0)',       
 			}).text(mRNAlen);
 		  // console.log(tick);
 		}
@@ -66,7 +77,7 @@ function preSeqView(divId,data,divWidth){
 			'y':scaleY(axisPos[i]-0.5),
 			// 'fill':'red',
 			'style':'text-anchor: middle',
-			'transform':'translate(40,0)',       
+			'transform':'translate(75,0)',       
 			}).text(function(){
 			  if(CDS_1=='' && CDS_2==''){return mRNA[mRNAlen-1].toLowerCase();}
 			  else{
@@ -85,7 +96,7 @@ function preSeqView(divId,data,divWidth){
 			'y':scaleY(axisPos[i]),
 			// 'fill':'red',
 			'style':'text-anchor: middle',
-			'transform':'translate(40,0)',       
+			'transform':'translate(75,0)',       
 			}).text(unit*(i+1));
 		}
 		svg.append('text').attr({
@@ -93,7 +104,7 @@ function preSeqView(divId,data,divWidth){
 			'y':scaleY(axisPos[i]),
 			// 'fill':'red',
 			'style':'text-anchor: middle',
-			'transform':'translate(40,0)',       
+			'transform':'translate(55,0)',       
 			}).text(unit*i+1);
 
 		var axisX = d3.svg.axis()
@@ -113,7 +124,7 @@ function preSeqView(divId,data,divWidth){
 		   .attr({
 			'fill':'none',
 			'stroke':'#000',
-			'transform':'translate(40,'+scaleY(y)+')' 
+			'transform':'translate('+trans_X+','+scaleY(y)+')' 
 		   })
 		   .selectAll('text')
 		   .attr({

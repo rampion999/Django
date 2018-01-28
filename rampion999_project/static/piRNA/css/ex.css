@@ -55,19 +55,7 @@ g.feature.piRNAs rect.feature-block-end {
 div.blue{
   background-color: blue;
 }
-div.tooltip { 
-    visibility: hidden;
-    width: 250px;
-    background-color: #555;
-    color: #fff;
-    text-align: center;
-    border-radius: 6px;
-    padding: 5px 0;
-    position: absolute;
-    z-index: 1;
-    opacity: 0;
-    transition: opacity 1s;    
-}
+
 
 .escape{
   padding: 1.25rem;
@@ -109,3 +97,160 @@ border-color: #f8f9fa;
 .bw{
   background-color: white;
 }
+
+/*check box*/
+/* Customize the label (the container) */
+.checkbox-container {
+  display: block;
+  position: relative;
+  padding-left: 18px;
+  margin-bottom: 23px;
+  cursor: pointer;
+  font-size: 22px;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+
+/* Hide the browser's default checkbox */
+.checkbox-container input {
+  position: absolute;
+  opacity: 0;
+  cursor: pointer;
+}
+
+/* Create a custom checkbox */
+.checkmark {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 25px;
+  width: 25px;
+  background-color: #dcdcdc;
+  border: 1px solid black;
+}
+
+/* On mouse-over, add a grey background color */
+.checkbox-container:hover input ~ .checkmark {
+  background-color: #ccc;
+}
+
+/* When the checkbox is checked, add a blue background */
+.checkbox-container input:checked ~ .checkmark {
+  background-color: #2196F3;
+}
+
+/* Create the checkmark/indicator (hidden when not checked) */
+.checkmark:after {
+  content: "";
+  position: absolute;
+  display: none;
+}
+
+/* Show the checkmark when checked */
+.checkbox-container input:checked ~ .checkmark:after {
+  display: block;
+}
+
+/* Style the checkmark/indicator */
+.checkbox-container .checkmark:after {
+  left: 8px;
+  top: 3px;
+  width: 8px;
+  height: 15px;
+  border: solid white;
+  border-width: 0 3px 3px 0;
+  -webkit-transform: rotate(45deg);
+  -ms-transform: rotate(45deg);
+  transform: rotate(45deg);
+}
+
+
+
+
+
+
+
+/* Sticky footer styles
+-------------------------------------------------- */
+html {
+  position: relative;
+  min-height: 100%;
+}
+body {
+  /* Margin bottom by footer height */
+  margin-bottom: 165px;
+}
+.footer {
+  font-size: 18px;
+  position: absolute;
+  bottom: 0;
+  width: 100%;
+  /* Set the fixed height of the footer here */
+  height: 120px;
+  line-height: 120px; /* Vertically center the text there */
+  background-color: #efefef;
+}
+
+
+/* Custom page CSS
+-------------------------------------------------- */
+/* Not required for template or sticky footer method. */
+
+/*body > .container-fluid {
+  padding: 120px 15px 0;
+}*/
+
+.footer > .container-fluid {
+  padding-right: 15px;
+  padding-left: 15px;
+}
+
+code {
+  font-size: 80%;
+}
+
+
+/*tooltip CSS*/
+div.tooltip { 
+    visibility: hidden;
+    /*width: 500px;*/
+    background-color: #555;
+    color: #fff;
+    text-align: center;
+    border-radius: 6px;
+    padding: 5px 0;
+    position: absolute;
+    z-index: 1;
+    opacity: 0;
+    transition: opacity 0.1s;    
+}
+
+.row1 {
+  border-bottom: 1px solid #ddd;
+}
+
+.tooltip table{
+  font-size: 18px;
+  width: 100%;
+}
+
+.tooltip table th, .tooltip table td {
+    padding: 0px 15px;
+    text-align: center;    
+}
+
+/*#sug_selected, #sug_selected th,#sug_selected td {
+  border: 1px solid black;
+    border-collapse: collapse;
+}
+
+#sug_selected{
+  width: 100%;
+}
+
+#sug_selected th, #sug_selected td {
+    padding: 5px;
+    text-align: center;    
+}*/

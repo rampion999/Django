@@ -1,0 +1,118 @@
+{% load staticfiles %}
+<!DOCTYPE html>
+<html lang="en">
+
+  <head>
+
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="description" content="">
+    <meta name="author" content="">
+
+    <title>piScan</title>
+
+    <!-- Bootstrap core CSS -->
+    <link href="{% static 'vendor/bootstrap/css/bootstrap.min.css' %}" rel="stylesheet">
+
+
+    <!-- Custom styles for this template -->
+    <link href="{% static 'bo_css/modern-business.css' %}" rel="stylesheet">
+    
+    <!-- Bootstrap core JavaScript -->
+    <script src="{% static 'vendor/jquery/jquery.min.js' %}"></script>
+    <script src="{% static 'vendor/popper/popper.min.js' %}"></script>
+    <script src="{% static 'vendor/bootstrap/js/bootstrap.min.js' %}"></script>
+
+  </head>
+
+  <body>
+
+    <!-- Navigation -->
+    <nav class="navbar fixed-top navbar-expand-lg navbar-dark bg-dark fixed-top">
+      <div class="container-fluid">
+        <a class="navbar-brand" href="/piScan/">piScan</a>
+        <button class="navbar-toggler navbar-toggler-right" type="button" data-toggle="collapse" data-target="#navbarResponsive" aria-controls="navbarResponsive" aria-expanded="false" aria-label="Toggle navigation">
+          <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarResponsive">
+          <ul class="navbar-nav ml-auto">
+           <!--  <li class="nav-item">
+              <a class="nav-link" href="http://140.116.215.236/rampion999/piRNA">Home</a>
+            </li> -->
+            <li class="nav-item">
+              <a class="nav-link" href="/piScan/">Scan</a>
+            </li>
+            <li class="nav-item  active">
+              <a class="nav-link" href="/piScan/Tutorial">Tutorial</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="/piScan/Contact">Contact</a>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </nav>
+    <!-- Page Content -->
+    <div class="container">
+      <div class="card my-4" style="border-width: 2.5px;">
+        <div class="card-body">
+          <h2 class="card-title"><b style="color: #007bff;">Motivation of developing piScan</b></h2>
+          <p class="card-text">
+            <i>C. elegans</i> is one of the most wildly used model organism. However, the expression of transgenes in the germline of <i>C. elegans</i> is notoriously difficult due to PIWI interacting RNA (piRNA)-mediated gene silencing. While several web tools are available to predict miRNA targets, a similar tool is currently unavailable for piRNA. Using systematic piRNA reporter assays, we and others have demonstrated that piRNAs prefer perfect base pairing at a seed region but otherwise can tolerate a few mismatches. Here we develop the piScan webtool to predict the targeting sites of 15,000 piRNAs produced in C. elegnas and thereby avoid transgene silencing. To validate that piScan can predict piRNA sites successfully, we predict piRNA sites on three silencing-prone transgenes, which carry GFP, mCherry and Cas9, respectively. Remarkably, by introducing silent mutations to remove piRNA targeting sites, we observed expression of all three transgenes in the germline of <i>C. elegans</i>.
+          </p>
+        </div>
+      </div>
+      <div class="card my-4" style="border-width: 2.5px;">
+        <div class="card-body">
+          <h2 class="card-title"><b style="color: #007bff;">Usage of piScan</b></h2>
+          <p class="card-text">
+            piScan allows users to predict piRNA targeting sites at the sequence of interest; it also provides suggestions to introduce silent mutations that abolish piRNA recognition.
+            <ol>
+              <li>
+                piScan takes cDNA/mRNA sequence in FASTA format and allows the user to conduct a search of piRNA targeting sites with the options of changing the piRNA targeting stringency.
+                <img src="{% static 'piRNA/img/input.PNG' %}" class="img-fluid mt-2 mb-5 img-thumbnail" alt="Input">
+              </li>
+              <li>
+                piScan then provides a graphical presentation of piRNA targeting sites that were in the input sequence, and a table displaying the pairing between piRNAs and target sequences.
+                <img src="{% static 'piRNA/img/result.PNG' %}" class="img-fluid mt-2 mb-5" alt="Scan result">
+              </li>
+              <li>
+                Furthermore, to facilitate the process of gene recoding to avoid piRNA recognition, piScan provides choices of silent mutations (mutations that encode the same amino acid) available at each piRNA targeting sites.
+                <img src="{% static 'piRNA/img/design.PNG' %}" class="img-fluid mt-2 mb-5 img-thumbnail" alt="Modified design">
+              </li>
+              <li>
+                The optimized sequence can be re-scanned to verify that no piRNA sites are found.
+                <img src="{% static 'piRNA/img/design_result.PNG' %}" class="img-fluid mt-2 mb-5" alt="Modified result">
+              </li>
+              <li>
+                This optimized sequence can subsequently be downloaded from website.
+                <img src="{% static 'piRNA/img/success.PNG' %}" class="img-fluid mt-2 mb-1 img-thumbnail" alt="Success design">
+              </li>
+            </ol>
+          </p>
+        </div>
+      </div>
+      <div class="card my-4" style="border-width: 2.5px;">
+        <div class="card-body">
+          <h2 class="card-title"><b style="color: #007bff;">Impact of piScan</b></h2>
+          <p class="card-text">
+            piScan provides the first webserver that predicts piRNA targeting sites. We expect piScan to hugely impact the <i>C. elegans</i> research community: not only by providing researchers with a platform to examine piRNA targeting sites in a given sequence, but also by allowing researchers to circumvent the transgene silencing that has confounded the field for two decades.
+          </p>
+        </div>
+      </div>
+    </div>
+    <!-- /.container -->
+
+    <!-- Footer -->
+    <footer class="py-5 bg-dark">
+      <div class="container-fluid">
+        <p class="m-0 text-center text-white" style="font-size: 18px;">This web tool is maintained by Dr. <a href="https://www.researchgate.net/profile/Wei-Sheng_Wu" target="_blank">Wei-Sheng Wu</a>'s lab at National Cheng Kung University, Taiwan.</p>
+      </div>
+      <!-- /.container -->
+    </footer>
+
+    
+
+  </body>
+
+</html>

@@ -1,4 +1,4 @@
-function shit(divId,sug,sugNotCDS,a,b,c,d,e,name,gene,nematodeType,CDS1,CDS2,csrf,ori_data,pic2src,scanUrl,seqViewDataArr,userNum){
+function shit(divId,sug,sugNotCDS,a,b,c,d,e,name,gene,nematodeType,CDS1,CDS2,csrf,ori_data,pic2src,scanUrl,seqViewDataArr,userNum,oldSeqViewDataArr){
 	var duplicateFir = []; //有重複的checkbox第一個位置
 	var duplicateDict = {};
 	var frontCount = 0;
@@ -102,7 +102,7 @@ function shit(divId,sug,sugNotCDS,a,b,c,d,e,name,gene,nematodeType,CDS1,CDS2,csr
 			var new_nsgu = sugNotCDS[i][7][pics][0][3][3];
 			var new_total = sugNotCDS[i][7][pics][0][3][0] + sugNotCDS[i][7][pics][0][3][1] + sugNotCDS[i][7][pics][0][3][2] + sugNotCDS[i][7][pics][0][3][3];
 					
-			temp += '<tr id="'+divId+'-r'+i+'_'+pics+'"><td><input type="checkbox" id="'+divId+'-ck'+i+'_'+pics+'" value="'+sugNotCDS[i][7][pics][0][0]+','+sugNotCDS[i][7][pics][0][1]+','+sugNotCDS[i][7][pics][0][2]+',"></td>';
+			temp += '<tr id="'+divId+'-r'+i+'_'+pics+'"><td><label class="checkbox-container"><input type="checkbox" id="'+divId+'-ck'+i+'_'+pics+'" value="'+sugNotCDS[i][7][pics][0][0]+','+sugNotCDS[i][7][pics][0][1]+','+sugNotCDS[i][7][pics][0][2]+',"><span class="checkmark"></span></label></td>';
 					
 			temp += '<td></td><td>'+sugNotCDS[i][7][pics][0][0]+'</td>';
 			// duplicateFir.push([sugNotCDS[i][7][pics][0][0],sugNotCDS[i][15][sugNotCDS[i][7][pics][0][0]],Number(i),Number(pics)]);
@@ -240,7 +240,7 @@ function shit(divId,sug,sugNotCDS,a,b,c,d,e,name,gene,nematodeType,CDS1,CDS2,csr
 			var new_nsgu = sug[i][7][pics][0][4][3];
 			var new_total = sug[i][7][pics][0][4][0] + sug[i][7][pics][0][4][1] + sug[i][7][pics][0][4][2] + sug[i][7][pics][0][4][3];
 					
-			temp += '<tr id="'+divId+'-r'+midX+'_'+pics+'"><td><input type="checkbox" id="'+divId+'-ck'+midX+'_'+pics+'" value="'+sug[i][7][pics][0][1]+','+sug[i][7][pics][0][2]+','+sug[i][7][pics][0][3]+','+sug[i][7][pics][0][0]+'"></td>';
+			temp += '<tr id="'+divId+'-r'+midX+'_'+pics+'"><td><label class="checkbox-container"><input type="checkbox" id="'+divId+'-ck'+midX+'_'+pics+'" value="'+sug[i][7][pics][0][1]+','+sug[i][7][pics][0][2]+','+sug[i][7][pics][0][3]+','+sug[i][7][pics][0][0]+'"><span class="checkmark"></span></label></td>';
 					
 			temp += '<td>'+sug[i][7][pics][0][0]+'</td><td>'+sug[i][7][pics][0][1]+'</td>';
 			duplicateFir.push([sug[i][7][pics][0][1],sug[i][15][sug[i][7][pics][0][1]],Number(i),Number(pics)]);
@@ -355,7 +355,7 @@ function shit(divId,sug,sugNotCDS,a,b,c,d,e,name,gene,nematodeType,CDS1,CDS2,csr
 		if(sugNotCDS[i][1] > CDS1){
 			var table_html = '';
 			var table = '';
-			var lastX = Number(i) + frontCount + midCount;
+			var lastX = Number(i) + midCount;
 			table_html += '<div class="my-4 py-4" id="'+divId+'-sugPicTableDiv_'+lastX+'"><table id="'+divId+'-sugPicTable_'+lastX+'" class="sugTable bw" width= 100%><thead><tr><th style="width: 200px;">piRNA</th>';
 			table_html += '<th style="width: 100px;">targeted region in input sequence</th>';
 			// table_html += '<th width= 100>original situation</th>';
@@ -377,7 +377,7 @@ function shit(divId,sug,sugNotCDS,a,b,c,d,e,name,gene,nematodeType,CDS1,CDS2,csr
 				var new_nsgu = sugNotCDS[i][7][pics][0][3][3];
 				var new_total = sugNotCDS[i][7][pics][0][3][0] + sugNotCDS[i][7][pics][0][3][1] + sugNotCDS[i][7][pics][0][3][2] + sugNotCDS[i][7][pics][0][3][3];
 						
-				temp += '<tr id="'+divId+'-r'+lastX+'_'+pics+'"><td><input type="checkbox" id="'+divId+'-ck'+lastX+'_'+pics+'" value="'+sugNotCDS[i][7][pics][0][0]+','+sugNotCDS[i][7][pics][0][1]+','+sugNotCDS[i][7][pics][0][2]+', "></td>';
+				temp += '<tr id="'+divId+'-r'+lastX+'_'+pics+'"><td><label class="checkbox-container"><input type="checkbox" id="'+divId+'-ck'+lastX+'_'+pics+'" value="'+sugNotCDS[i][7][pics][0][0]+','+sugNotCDS[i][7][pics][0][1]+','+sugNotCDS[i][7][pics][0][2]+', "><span class="checkmark"></span></label></td>';
 						
 				temp += '<td></td><td>'+sugNotCDS[i][7][pics][0][0]+'</td>';
 				// duplicateFir.push([sugNotCDS[i][7][pics][0][0],sugNotCDS[i][15][sugNotCDS[i][7][pics][0][0]],Number(i),Number(pics)]);
@@ -571,34 +571,34 @@ function shit(divId,sug,sugNotCDS,a,b,c,d,e,name,gene,nematodeType,CDS1,CDS2,csr
 	for (var i = 0; i < totalCount; i++) {
 		eachOverView(i,gene,seqViewDataArr,CDS1,CDS2,divId,$('#wrap').width()*0.75);
 		$(document).ready(function(){
-            $(window).resize(function() {
-              // console.log('#'+divId+'-overView_'+i);
-              $('#'+divId+'-overView_'+i).empty();
-              eachOverView(i,gene,seqViewDataArr,CDS1,CDS2,divId,$('#wrap').width()*0.75);          
-            });
-        });
+			$(window).resize(function() {
+			  // console.log('#'+divId+'-overView_'+i);
+			  $('#'+divId+'-overView_'+i).empty();
+			  eachOverView(i,gene,seqViewDataArr,CDS1,CDS2,divId,$('#wrap').width()*0.75);          
+			});
+		});
 	}
 	$(document).ready(function(){
-        $(window).resize(function() {
-        	for (var i = 0; i < totalCount; i++) {
+		$(window).resize(function() {
+			for (var i = 0; i < totalCount; i++) {
 				// console.log('#'+divId+'-overView_'+i);
-	            $('#'+divId+'-overView_'+i).empty();
-	            eachOverView(i,gene,seqViewDataArr,CDS1,CDS2,divId,$('#wrap').width()*0.75);
+				$('#'+divId+'-overView_'+i).empty();
+				eachOverView(i,gene,seqViewDataArr,CDS1,CDS2,divId,$('#wrap').width()*0.75);
 			}                   
-        });
-    });
+		});
+	});
 	// $('#'+divId+'-sugTable').parent().after('<div id="update_footer" class="card-footer text-center"><button type="button" id="'+divId+'-update" class="btn btn-primary btn-lg" style="width: 25%;">Modify input sequence</button></div>');
 	$('#'+divId+'-update').on({
 		click:function(){
 			var modifyCount = Number($(this).attr('value')) +1;
-			update(modifyCount,sug,sugNotCDS,name,gene,a,b,c,d,e,nematodeType,CDS1,CDS2,csrf,ori_data,pic2src,scanUrl,divId,userNum);
+			update(modifyCount,sug,sugNotCDS,name,gene,a,b,c,d,e,nematodeType,CDS1,CDS2,csrf,ori_data,pic2src,scanUrl,divId,userNum,oldSeqViewDataArr);
 		},
 	});
 
 
 	//先畫CDS內的
 	for (var x in sug){
-		console.log(sug[x]);
+		// console.log(sug[x]);
 		var midX = Number(x)+frontCount;
 		var transX = 22.5;
 		var transY = -17.5;
@@ -784,6 +784,20 @@ function shit(divId,sug,sugNotCDS,a,b,c,d,e,name,gene,nematodeType,CDS1,CDS2,csr
 				'fill':'red',
 				'stroke':'none',
 				});
+
+			// 改過的紅色框框
+			svg.append('rect').attr({
+				// 'id':data[piRNA].piRNA,
+				'x':scaleA((sug[x][7][y][0][1]-sug[x][1]+sug[x][14])),
+				'y':(transY+scaleY(-1+5)),
+				'width':'15', 
+				'height':'15',
+				'transform':'translate('+(transX-7.5)+','+(transY-4)+')',
+				'fill':'transparent',
+				// 'opacity': 0,
+				'stroke': 'red',
+				'stroke-width': 1,
+				});
 			var cc = 0;
 			for (var seq in sug[x][8]){
 				// console.log(String(sug[x][2]-Number(seq)));
@@ -925,7 +939,7 @@ function shit(divId,sug,sugNotCDS,a,b,c,d,e,name,gene,nematodeType,CDS1,CDS2,csr
 			var outX = Number(x);
 		}
 		else{
-			var outX = Number(x) + frontCount + midCount;
+			var outX = Number(x) + midCount;
 		}
 		var transX = 22.5;
 		var transY = -27.5;
@@ -1059,6 +1073,22 @@ function shit(divId,sug,sugNotCDS,a,b,c,d,e,name,gene,nematodeType,CDS1,CDS2,csr
 				'fill':'red',
 				'stroke':'none',
 				});
+
+			// 改過的紅色框框
+			svg.append('rect').attr({
+				// 'id':data[piRNA].piRNA,
+				'x':scaleA((sugNotCDS[x][7][y][0][0]-sugNotCDS[x][1])+3),
+				'y':(transY+scaleY(4.5)),
+				'width':'15', 
+				'height':'15',
+				'transform':'translate('+(transX-7.5)+','+(transY-2)+')',
+				'fill':'transparent',
+				// 'opacity': 0,
+				'stroke': 'red',
+				'stroke-width': 1,
+				});
+
+
 			var cc = 0;
 			for (var seq in sugNotCDS[x][8]){
 				// console.log(String(sugNotCDS[x][2]-Number(seq)));
@@ -1188,6 +1218,21 @@ function plot(x,y,z,sug,midX,divId){
 		'fill':'red',
 		'stroke':'none',
 		});
+	// 改過的紅色框框
+			svg.append('rect').attr({
+				// 'id':data[piRNA].piRNA,
+				'x':scaleA((sug[x][7][y][z][1]-sug[x][1]+sug[x][14])),
+				'y':(transY+scaleY(-1+5)),
+				'width':'15', 
+				'height':'15',
+				'transform':'translate('+(transX-7.5)+','+(transY-4)+')',
+				'fill':'transparent',
+				// 'opacity': 0,
+				'stroke': 'red',
+				'stroke-width': 1,
+				});
+
+
 	var cc = 0;
 	for (var seq in sug[x][8]){
 		if( (sug[x][9].indexOf(String(sug[x][2]-Number(seq))) != -1 || sug[x][10].indexOf(String(sug[x][2]-Number(seq))) != -1) && Number(seq) != sug[x][7][y][z][1]-sug[x][1]){				
@@ -1353,6 +1398,22 @@ function plotOutCDS(x,y,z,sugNotCDS,outX,divId){
 		'fill':'red',
 		'stroke':'none',
 		});
+
+	// 改過的紅色框框
+	svg.append('rect').attr({
+		// 'id':data[piRNA].piRNA,
+		'x':scaleA((sugNotCDS[x][7][y][z][0]-sugNotCDS[x][1])+3),
+		'y':(transY+scaleY(4.5)),
+		'width':'15', 
+		'height':'15',
+		'transform':'translate('+(transX-7.5)+','+(transY-2)+')',
+		'fill':'transparent',
+		// 'opacity': 0,
+		'stroke': 'red',
+		'stroke-width': 1,
+		});
+
+
 	var cc = 0;
 	for (var seq in sugNotCDS[x][8]){
 		// console.log(String(sugNotCDS[x][2]-Number(seq)));

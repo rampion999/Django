@@ -1,4 +1,4 @@
-function overView(divId,mRNA,data,CDS_1,CDS_2,divWidth){
+function overView(divId,mRNA,data,CDS_1,CDS_2,divWidth,newout){
   var mRNAlen = mRNA.length;
   var tickkk = 50*(Math.floor(mRNAlen/2000)+1);
   var big = 0;
@@ -71,9 +71,7 @@ function overView(divId,mRNA,data,CDS_1,CDS_2,divWidth){
        });
   var previousPos = -100;
   var seqY = 3;
-  var div = d3.select("body").append("div") 
-    .attr("class", "tooltip")       
-    .style("opacity", 0);
+  var div = d3.select(".tooltip");
   if(CDS_1=='' && CDS_2==''){
     svg.append('rect').attr({
           'x':scaleX(1),
@@ -160,8 +158,10 @@ function overView(divId,mRNA,data,CDS_1,CDS_2,divWidth){
   }
   
   for (var piRNA in data){
+    console.log(newout);
     if(piRNA!=0){
       svg.append('rect').attr({
+          'num':piRNA,
           'id':data[piRNA].piRNA,
           'pos':data[piRNA].firstPos,
           'x':scaleX(Number(data[piRNA].firstPos)),
@@ -173,26 +173,67 @@ function overView(divId,mRNA,data,CDS_1,CDS_2,divWidth){
           'stroke':'black',
           // 'stroke-width':'10'
         }).on("mouseover", function(d) {
+                var num = Number($(this).attr('num'));
                 var IDD = $(this).attr('id');
-                var gettt = 'piRNA name: ' + $(this).attr('id') + '<br>' + 'positions: ' + $(this).attr('pos')
-                            + ' - ' + (parseInt($(this).attr('pos'))+20);   
+                // var gettt = 'piRNA name: ' + data[num].piRNA + '<br>' + 'positions: ' + $(this).attr('pos')+ ' - ' + (parseInt($(this).attr('pos'))+20);
+                var newDetail = newout[(num-1)][3].split(',').join(' , ')
+                var gettt = '<table>';
+                gettt += '<tr class="row1">';
+                gettt += '<th>#</th>';
+                gettt += '<th>piRNA</th>';
+                gettt += '<th>targeted region in<br>input sequence</th>';
+                gettt += '<th style="white-space:nowrap;"># mismatches</th>';
+                gettt += '<th>position in piRNA</th>';
+                gettt += '<th>pairing (top:Input sequence, bottom:piRNA)</th>';
+                gettt += '</tr>';
+                gettt += '<tr>';
+                gettt += '<th>'+num+'</th>';
+                gettt += '<td>'+newout[(num-1)][0]+'</td>';
+                gettt += '<td>'+newout[(num-1)][1]+'</td>';
+                gettt += '<td>'+newout[(num-1)][2]+'</td>';
+                gettt += '<td>'+newDetail+'</td>';
+                gettt += '<td style="font-family: Lucida Console;">'+newout[(num-1)][9]+'<br>'+newout[(num-1)][10]+'</td>';
+                gettt += '</tr>';
+                gettt += '</table>';
+                // console.log($('#originalResult-overView').position());
                 div.transition()    
                   .duration(1)    
                   .style("opacity", 1)
                   .style("visibility", "visible");
-                div.html(gettt);
-                  // .style("left", (d3.event.pageX) + "px")   
-                  // .style("top", (d3.event.pageY - 28) + "px");
-                d3.select(this).style("fill",'grey');
+                div.html(gettt)
+                  .style("left", ($('#wrap').width()*0.5 - $('#tooltip').width()*0.5) + "px")   
+                  .style("top", (event.pageY+25) + "px");
+                d3.select(this).style("fill",'#fd8181');
             })
-            .on("mousemove", function(){
-              return div.style("top", (event.pageY+20)+"px").style("left",(event.pageX+10)+"px");
-            })
+            // .on("mousemove", function(){
+            //   return div.style("top", (event.pageY+20)+"px").style("left",(event.pageX+10)+"px");
+            // })
             .on("mouseout", function(d) {   
                  div.transition()        
                   .style("visibility", "hidden");
                 d3.select(this).style("fill",'red');
             });
+            // on("mouseover", function(d) {
+            //     var IDD = $(this).attr('id');
+            //     var gettt = 'piRNA name: ' + $(this).attr('id') + '<br>' + 'positions: ' + $(this).attr('pos')
+            //                 + ' - ' + (parseInt($(this).attr('pos'))+20);   
+            //     div.transition()    
+            //       .duration(1)    
+            //       .style("opacity", 1)
+            //       .style("visibility", "visible");
+            //     div.html(gettt);
+            //       // .style("left", (d3.event.pageX) + "px")   
+            //       // .style("top", (d3.event.pageY - 28) + "px");
+            //     d3.select(this).style("fill",'grey');
+            // })
+            // .on("mousemove", function(){
+            //   return div.style("top", (event.pageY+20)+"px").style("left",(event.pageX+10)+"px");
+            // })
+            // .on("mouseout", function(d) {   
+            //      div.transition()        
+            //       .style("visibility", "hidden");
+            //     d3.select(this).style("fill",'red');
+            // });
       previousPos = data[piRNA].firstPos;            
     }
   }
@@ -270,9 +311,9 @@ function eachOverView(Num,mRNA,data,CDS_1,CDS_2,divId,divWidth){
        });
   var previousPos = -100;
   var seqY = 3;
-  var div = d3.select("body").append("div") 
-    .attr("class", "tooltip")       
-    .style("opacity", 0);
+  // var div = d3.select("body").append("div") 
+  //   .attr("class", "tooltip")       
+  //   .style("opacity", 0);
   if(CDS_1=='' && CDS_2==''){
     svg.append('rect').attr({
           'x':scaleX(1),
