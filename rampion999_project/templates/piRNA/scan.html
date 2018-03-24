@@ -58,7 +58,7 @@
     }
     if(document.URL == 'http://cosbi2.ee.ncku.edu.tw/piScan' || document.URL == 'http://140.116.215.227/piScan' || document.URL == 'http://140.116.215.227/piScan/'){
       window.location = 'http://cosbi2.ee.ncku.edu.tw/piScan/','_blank';
-    }
+    }    
     var userNum = Math.floor((Math.random() * 10000000) + 1);
     // console.log(document.URL.slice(-1));
     window.sessionStorage["userNum"] = userNum;
@@ -79,13 +79,28 @@
       var end = 0;
       start = new Date().getTime();
       swal.queue([{
-      title : 'Scanning...\nPlease allow up to 10 seconds',
+      title : 'Scanning...',
       text: "Running time : 0 sec",
       imageUrl: "{% static 'piRNA/img/Magnify.gif' %}",
       disableButtons: true,
       showConfirmButton: false,
       allowOutsideClick : false,
       }]);
+
+      var CDSType = $('input[name=CDS_type]:checked').val();
+      if(CDSType == 0){
+        var CDS__1 = -555;
+        var CDS__2 = -555;
+      }
+      else if(CDSType == 2){
+        var CDS__1 = '';
+        var CDS__2 = '';
+      }
+      else{
+        var CDS__1 = $('#CDS_1').val();
+        var CDS__2 = $('#CDS_2').val();
+      }
+      
       $('#result').empty();        
       var clockTime = 1;
       var clock = setInterval(function(){
@@ -95,7 +110,8 @@
         $.ajax({
           url: "piRNA/Scan/scanOperation/", 
             data:{ 
-            data1:$('#gene').val(),
+            data1:$('#gene').val().replace(/\s+/g,""),
+            seqName:$('#seqName').val(),
             opt1:$('#opt1').val(),
             opt2:$('#opt2').val(),
             opt3:$('#opt3').val(),
@@ -103,8 +119,8 @@
             opt5:$('#opt5').val(),
             operationTimes:0,
             nematodeType:$('#nematodeType').val(),
-            CDS_1:$('#CDS_1').val(),
-            CDS_2:$('#CDS_2').val(),
+            CDS_1:CDS__1,
+            CDS_2:CDS__2,
             userNum:userNum,
             // csrfmiddlewaretoken: '{{ csrf_token }}',
           },
@@ -124,7 +140,7 @@
             if(data.state=='nothing'){
               swal(
               'Scan cancelled',
-              'The input aera is empty.',
+              'The input aera is empty',
               'error'
               )
             }
@@ -149,7 +165,21 @@
             else if(data.state=='CDSX'){
               swal(
               'Scan cancelled',
-              'The input CDS regions have some problem',
+              'The CDS specification is invalid',
+              'error'
+              )
+            }
+            else if(data.state=='weridType'){
+              swal(
+              'Scan cancelled',
+              'The input sequence contains non-{A, T(U), C, G} characters',
+              'error'
+              )
+            }
+            else if(data.state=='noSeqName'){
+              swal(
+              'Scan cancelled',
+              "Sequence name is not specified",
               'error'
               )
             }
@@ -157,6 +187,13 @@
               swal(
               'Scan cancelled',
               "Sorry, this part hasn't opened yet",
+              'error'
+              )
+            }
+            else if(data.newout.length > 100){
+              swal(
+              'Too many hits('+data.newout.length+' identified piRNA target sites)',
+              'Use more strict rules or shorter sequence.',
               'error'
               )
             }
@@ -185,31 +222,57 @@
           },
         })
     };
-    // $(document).ready(function(){
-    //   console.log("{% static 'piRNA/img/Magnify.gif' %}");
-    //   var col7_body_h = $('#input > div.row > div.col-sm-7 > div > div').height();
-    //   var col5_footer_h = $('#input > div.row > div.col-sm-5 > div > div.card-footer').height();
 
 
-
-    //   console.log(col7_body_h)
-    //   console.log(col5_footer_h)
-
-    //   var col5_body_h = col7_body_h - col5_footer_h;
-    //   console.log(col5_body_h)
-
-
-    //   $('#input > div.row > div.col-sm-5 > div > div.card-body').css('height',col5_body_h+'px');
-
-    //   // var col5_body_padding_bottom = $('#input > div.row > div.col-sm-5 > div > div.card-body').css('padding-bottom').split('px')[0];
-    //   // var col5_body_padding_top = $('#input > div.row > div.col-sm-5 > div > div.card-body').css('padding-top').split('px')[0];
-
-    //   // var h2 = $('#input > div.row > div.col-sm-5 > div > div.card-body').height(col5_body_h);
-
-    //   // console.log(col5_body_padding)
-    //   console.log($('#input > div.row > div.col-sm-5 > div > div.card-body').height())
-    // }); 
-    $(document).on('click','#TransformBTN',Submit);
+    $(document).ready(function(){
+      $.ajax({
+                url: "piRNA/Scan/preeeCheck/", 
+                // data:{ 
+                //   userNum:data.userNum,
+                // },
+                type: "POST", 
+                dataType:'json',
+                error: function(no){
+                  console.log(no);
+                  swal(
+                    'Scan cancelled',
+                    'There have some problem. Please contact the developer.',
+                    'error'
+                  )
+                  },
+                success: function(data){
+                  console.log(data);
+                  if(data.OK == 'OK'){
+                    $('#clean').trigger('click');
+                    $('#TransformBTN').on('click',Submit);
+                  }
+                  else{
+                    $('#gene').val(data.originalSeq);
+                    $('#seqName').val(data.name);
+                    $('#opt1').val(data.a);
+                    $('#opt2').val(data.b);
+                    $('#opt3').val(data.c);
+                    $('#opt4').val(data.d);
+                    $('#opt5').val(data.e);
+                    if(data.CDS_region == "Whole input sequence"){
+                      $('#CDST1').trigger('click');
+                    }
+                    else if(data.CDS_region == "None"){
+                      $('#CDST3').trigger('click');
+                    }
+                    else{
+                      $('#CDST2').trigger('click');
+                      var CList = data.CDS_region.replace(/\s+/g,"").split('-');
+                      $('#CDS_1').val(CList[0]);
+                      $('#CDS_2').val(CList[1]);
+                    }
+                    $('#TransformBTN').on('click',Submit);
+                  }             
+                },
+              })
+      
+    })
+    // $(document).on('click','#TransformBTN',Submit);
   </script>
 
 
@@ -219,7 +282,7 @@
     <!-- Navigation -->
     <nav class="navbar fixed-top navbar-expand-lg navbar-dark bg-dark fixed-top">
       <div class="container-fluid">
-        <a class="navbar-brand" href="/piScan/">piScan</a>
+        <a class="navbar-brand" href="/piScan/" style="font-size: 1.3rem;"><b class="h2">piScan: </b>a web server to predict piRNA targeting sites and to avoid transgene silencing</a>
         <button class="navbar-toggler navbar-toggler-right" type="button" data-toggle="collapse" data-target="#navbarResponsive" aria-controls="navbarResponsive" aria-expanded="false" aria-label="Toggle navigation">
           <span class="navbar-toggler-icon"></span>
         </button>
@@ -229,13 +292,13 @@
               <a class="nav-link" href="http://cosbi5.ee.ncku.edu.tw/piScan">Home</a>
             </li> -->
             <li class="nav-item">
-              <a class="nav-link active" href="/piScan/">Scan</a>
+              <a class="nav-link active" href="/piScan/" style="font-size: 1.25rem;">Scan</a>
             </li>
             <li class="nav-item">
-              <a class="nav-link" href="/piScan/Tutorial">Tutorial</a>
+              <a class="nav-link" href="/piScan/Tutorial" style="font-size: 1.25rem;">Tutorial</a>
             </li>
             <li class="nav-item">
-              <a class="nav-link" href="/piScan/Contact">Contact</a>
+              <a class="nav-link" href="/piScan/Contact" style="font-size: 1.25rem;">Contact</a>
             </li>
           </ul>
         </div>
@@ -260,14 +323,44 @@
           <div class="card mb-2 h-100">
             <h4 class="card-header">Input</h4>
             <div class="card-body">
-              <label for="gene" class="d-block"><b>Input your DNA (without introns) or spliced RNA sequence (in <a href="https://blast.ncbi.nlm.nih.gov/Blast.cgi?CMD=Web&PAGE_TYPE=BlastDocs&DOC_TYPE=BlastHelp" target="_blank">FASTA format</a>)</b></label>
+              <label for="gene" class="d-block"><b>Input your DNA (without introns) or spliced RNA sequence:</b></label>
+                <!--  (in <a href="https://blast.ncbi.nlm.nih.gov/Blast.cgi?CMD=Web&PAGE_TYPE=BlastDocs&DOC_TYPE=BlastHelp" target="_blank">FASTA format</a>) -->
               <textarea class="form-control " name="gene" id="gene" value="QQ" rows="9" style="width:100%; box-sizing: border-box; resize: none;"></textarea>
               <div class="mt-3">
-                <div>
+                <p>
+                  <div class="d-inline">  
+                    <b>Specify your sequence name:</b> 
+                  </div>
+                  <div>
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<input type="text" id="seqName">
+                  </div>
+                </p>
+                <p>
+                  <div class="d-inline">  
+                    <b>Specify coding sequence (CDS) region:</b> 
+                  </div>
+                  <div class="d-inline" style="white-space: nowrap;">        
+                    <ul class="list-unstyled d-inline">                   
+                      <li class="d-inline">
+                        <label for="CDST1">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<input type="radio" name="CDS_type" id='CDST1' value="0" checked>&nbsp;Whole input sequence&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</label>
+                      </li>
+                      <li class="d-inline">
+                        <label for="CDST2"><input type="radio" name="CDS_type" id='CDST2' value="1">&nbsp;<input type="number" style="width: 60px" id='CDS_1' class='CDS' disabled>&nbsp;-&nbsp;<input type="number" style="width: 60px" id='CDS_2' class='CDS' disabled>&nbsp;&nbsp;&nbsp;</label>                   
+                      </li>
+                      <li class="d-inline">
+                        <label for="CDST3">&nbsp;&nbsp;&nbsp;<input type="radio" name="CDS_type" id='CDST3' value="2">&nbsp;None&nbsp;&nbsp;&nbsp;</label>
+                      </li>
+                    </ul>                                  
+                  </div>
+                </p>
+
+                <!-- old CDS option -->
+                <!-- <div>
                   <input type="checkbox" id='CDS_ck'>&nbsp;&nbsp;<b>Coding sequence (CDS) region: &nbsp;&nbsp;&nbsp;</b>
                   <input type="number" style="width: 60px" id='CDS_1' class='CDS' disabled>&nbsp;-&nbsp;
                   <input type="number" style="width: 60px" id='CDS_2' class='CDS' disabled>
-                </div>
+                </div> -->
+
                 <div class="mt-3" role="group" aria-label="Basic example">
                   <button type="button" class="btn btn-secondary btn-sm" id="example">Example 1</button>
                   <button type="button" class="btn btn-secondary btn-sm" id="example2">Example 2</button>
@@ -288,11 +381,11 @@
         <div class="col-xl-7 col-lg-12 my-3">
           <div class="card mb-2 h-100">
             <h4 class="card-header">piRNA targeting rules</h4>
-            <div class="card-body">
+            <div class="card-body h-100">
               <!-- <div class="float-right mb-3">
                 <button type="button" class="btn btn-secondary" id="reset_to_default">Default Setting</button>
               </div> -->
-              <div class="row">
+              <div class="row h-100">
                 <div class="col-12 col-md-5 align-self-center">
                   
                     <img class="img-fluid rounded" src="{% static 'piRNA/img/QQ.png' %}" alt="">
@@ -307,6 +400,8 @@
                       <button type="button" class="btn btn-secondary" id="reset_to_default">Default Setting</button>
                     </li>
                     
+                    <br>
+
                     <li class="card-text">
                       <b>Number of mismatches allowed at seed region:</b>
                     </li>
@@ -343,6 +438,7 @@
                     </li>
                     
                     <br>
+                    <br>
 
                     <li class="card-text">
                       <b>Number of mismatches allowed at non-seed region:</b>
@@ -361,14 +457,14 @@
                             <option class = "clean" value="4">4</option>
                             <option class = "clean" value="5">5</option>
                             <option class = "clean" value="6">6</option>
-                            <option class = "clean" value="7">7</option>
+                            <!-- <option class = "clean" value="7">7</option>
                             <option class = "clean" value="8">8</option>
                             <option class = "clean" value="9">9</option>
                             <option class = "clean" value="10">10</option>
                             <option class = "clean" value="11">11</option>
                             <option class = "clean" value="12">12</option>
                             <option class = "clean" value="13">13</option>
-                            <option class = "clean" value="14">∞</option>
+                            <option class = "clean" value="14">14</option> -->
                           </select>
                         </li>
                         <li>
@@ -381,20 +477,21 @@
                             <option class = "clean" value="4">4</option>
                             <option class = "clean" value="5">5</option>
                             <option class = "clean" value="6">6</option>
-                            <option class = "clean" value="7">7</option>
+                         <!--    <option class = "clean" value="7">7</option>
                             <option class = "clean" value="8">8</option>
                             <option class = "clean" value="9">9</option>
                             <option class = "clean" value="10">10</option>
                             <option class = "clean" value="11">11</option>
                             <option class = "clean" value="12">12</option>
                             <option class = "clean" value="13">13</option>
-                            <option class = "clean" value="14">∞</option>
+                            <option class = "clean" value="14">14</option> -->
                           </select>
                         </li>
                       </ul>
                     </li>
 
-                    <br>  
+                    <br> 
+                    <br> 
 
                     <li>
                       <label class="mr-sm-2" for="opt5"><b>Total number of mismatches at seed & non-seed regions <span style="white-space: nowrap;">≤&nbsp;
@@ -406,7 +503,7 @@
                         <option class = "clean" value="4">4</option>
                         <option class = "clean" value="5">5</option>
                         <option class = "clean" selected value="6">6</option>
-                        <option class = "clean" value="7">7</option>
+                        <!-- <option class = "clean" value="7">7</option>
                         <option class = "clean" value="8">8</option>
                         <option class = "clean" value="9">9</option>
                         <option class = "clean" value="10">10</option>
@@ -420,7 +517,7 @@
                         <option class = "clean" value="18">18</option>
                         <option class = "clean" value="19">19</option>
                         <option class = "clean" value="20">20</option>
-                        <option class = "clean" value="21">21</option>
+                        <option class = "clean" value="21">21</option> -->
                       </select></span></b></label>
                     </li>
 

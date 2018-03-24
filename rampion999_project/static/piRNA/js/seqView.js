@@ -97,7 +97,7 @@ function seqView(divId,mRNA,scanData,CDS,CDS_1,CDS_2,divWidth){
     }
   }
   // exceptHeight += (Math.floor((CDS_2-1)/lineUnit) - Math.floor((CDS_1-1)/lineUnit))*2;
-  var div = d3.select(".tooltip");
+  var div = d3.select(".Pictooltip");
 
   // console.log("exceptHeight :"+(Math.floor(mRNAlen/lineUnit)+1));
   var width = divWidth+50;
@@ -120,7 +120,8 @@ function seqView(divId,mRNA,scanData,CDS,CDS_1,CDS_2,divWidth){
 
   var svg = d3.select('#'+divId+'-seqView').attr({
       'width': width,
-      'height': height
+      'height': height,
+      'class':'mt-4'
     });
   
   var y=3;

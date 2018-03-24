@@ -63,11 +63,15 @@ def deleteUserNum(request):
 	# 	w1.writerow(['reset'])
 	return JsonResponse({'OK':'OK'})
 
-# def deleteUserNum(request):
-# 	module_dir = os.path.dirname(__file__)
-# 	userNum = request.POST.get('userNum')
-# 	os.delete(os.path.join(module_dir,'userNum.csv'))
-# 	return JsonResponse({'OK':'OK'})
+def preeeCheck(request):
+	module_dir = os.path.dirname(__file__)
+	if os.path.exists(os.path.join(module_dir,'temp/ruleInfo.json')):
+		with open(os.path.join(module_dir,'temp/ruleInfo.json'),'r') as w1:
+			data = json.load(w1)
+		os.remove(os.path.join(module_dir,'temp/ruleInfo.json'))
+	else:
+		data = {'OK':'OK'}
+	return JsonResponse(data)
 
 def piRNA(request):
 	return render(request, 'piRNA/home.html')
@@ -92,6 +96,8 @@ def create_data(request):
 	module_dir = os.path.dirname(__file__)
 	userNum = request.POST.get('userNum')
 	modifyCount = request.POST.get('modifyCount')
+	print('!!!!!!!!!!!!!!!')
+	print(userNum)
 	with open(os.path.join(module_dir,'temp/modify'+modifyCount+'_'+userNum+'.csv'),'w',encoding='utf8') as f1:
 		mod = csv.writer(f1)
 		s1 = request.POST.get('name').strip()
@@ -176,24 +182,55 @@ def CDS(RNA,CDS1,CDS2):
 	return CDS_str
 
 def scan_main(request):
+	global scoreA,scoreB,scoreC,scoreD
+	scoreA = 7
+	scoreB = 1.5
+	scoreC = 2
+	scoreD = 1.5
 	module_dir = os.path.dirname(__file__)
 	userNum = int(request.POST.get('userNum'))
 	operationTimes = int(request.POST.get('operationTimes'))		
 	# x = request.POST.get('sth')
 	if request.POST.get('data1') == '':
 		data = {'state':'nothing'}
-	elif re.search("^\s?>[A-Za-z0-9|_,+#)(.\s]+\s[A-Za-z\s]+$",request.POST.get('data1')) == None:
-		data = {'state':'notfasta'}
+	# elif re.search("^\s?>[A-Za-z0-9|_,+#)(.\s]+\s[A-Za-z\s]+$",request.POST.get('data1')) == None:
+	# 	data = {'state':'notfasta'}
 	# elif request.POST.get('nematodeType') == 'C.remanei' or request.POST.get('nematodeType') == 'C.brenneri':
 	# 	data = {'state':'nematode'}
 	else:
 		with open(os.path.join(module_dir,'temp/userNum{0}.csv'.format(userNum)),'w') as f1:
 			w1 = csv.writer(f1)
 			w1.writerow([userNum])
-		Gene_OK = request.POST.get('data1').replace('>','').strip().split('\n')
-		name = Gene_OK.pop(0)
+
+		# 紀錄今天掃描第幾次
+		# with open(os.path.join(module_dir,'temp/date.csv'),'r') as r1:
+		# 	read1 = csv.reader(r1)
+		# 	for x in read1:
+		# 		if x[0] == time.strftime("%m%d%Y", time.localtime()):
+		# 			day = x[0]
+		# 			role = int(x[1]) + 1
+		# 		else:
+		# 			day = time.strftime("%m%d%Y", time.localtime())
+		# 			role = 1
+		# with open(os.path.join(module_dir,'temp/date.csv'),'w') as w1:
+		# 	wri1 = csv.writer(w1)
+		# 	wri1.writerow([day,role])
+
+
+		seqName = request.POST.get('seqName')
+		if seqName == '':
+			data = {'state':'noSeqName'}
+			return JsonResponse(data)
+
+		originalSeq = request.POST.get('data1')
+		Gene_OK = originalSeq.strip().split('\n')
+		name = seqName
 		Gene_OK_Str = ''.join(Gene_OK)
 		RNA = strtr(Gene_OK_Str.upper(),{'T':'U'}) #將輸入基因T轉成U
+		if re.search("^[AUCG]+$",RNA) == None:
+			data = {'state':'weridType'}
+			return JsonResponse(data)
+		
 		Arr2 = list(RNA)
 		options = {'core_non_GU':request.POST.get('opt1'),'core_GU':request.POST.get('opt2'),'non_core_non_GU':request.POST.get('opt3'),'non_core_GU':request.POST.get('opt4'),'total':request.POST.get('opt5'),'nematodeType':request.POST.get('nematodeType')}
 		with open(os.path.join(module_dir,'piRNA/{0}/info_name.csv'.format(options['nematodeType'])),'r') as f2:
@@ -201,19 +238,35 @@ def scan_main(request):
 			info_names = []
 			for x in reader2:
 				info_names.append(x[0])
-		if request.POST.get('CDS_1')!='' : 
-			CDS1 = int(request.POST.get('CDS_1'))
+		if request.POST.get('CDS_1') == '-555':
+			CDS1 = 1
+		elif request.POST.get('CDS_1')is'0' : 
+			return JsonResponse({'state':'CDSX'})
+		elif request.POST.get('CDS_1')!='' : 
+			CDS1 = int(request.POST.get('CDS_1'))	
 		else: 
 			CDS1 = 0
-		if request.POST.get('CDS_2')!='' :
+
+
+
+
+		if request.POST.get('CDS_2') == '-555':
+			CDS2 = len(Arr2)
+			CDS_region = 'Whole input sequence'
+		elif request.POST.get('CDS_2')is'0' : 
+			return JsonResponse({'state':'CDSX'})
+		elif request.POST.get('CDS_2')!='' :
 			CDS2 = int(request.POST.get('CDS_2'))
+			CDS_region = str(CDS1)+' - '+str(CDS2)
 		else: 
 			CDS2 = 0
+			CDS_region = 'None'
 
-		if (CDS1==0 and CDS2!=0) or (CDS2==0 and CDS1!=0) or ((CDS1!= 0 and CDS2!= 0) and (CDS1 >= CDS2 or (CDS2-CDS1-2)%3 !=0 or CDS2 > len(Arr2) or CDS1 < 1)):
+		if (CDS1==0 and CDS2!=0) or (CDS2==0 and CDS1!=0) or ((CDS1!= 0 and CDS2!= 0) and ((CDS1 >= CDS2) or ((CDS2-CDS1-2)%3 !=0) or (CDS2 > len(Arr2)) or (CDS1 < 1))):
 			data = {'state':'CDSX'}
 		else:
 			mission_count = {'C.elegans':357, 'C.briggsae':290, 'C.brenneri':1157, 'C.remanei':813}
+			
 			result=[]
 			start_time = time.time()
 			q = JoinableQueue()
@@ -233,7 +286,7 @@ def scan_main(request):
 			sug['notInCDS'] = sorted(sug['notInCDS'], key=operator.itemgetter(1))
 			for i in sug['inCDS']:				
 				i[7] = sorted(i[7], key=operator.itemgetter(1),reverse=False)
-				i[7] = sorted(i[7], key=operator.itemgetter(6),reverse=True)
+				i[7] = sorted(i[7], key=operator.itemgetter(7),reverse=False)
 			for i in sug['notInCDS']:				
 				i[7] = sorted(i[7], key=operator.itemgetter(0),reverse=False)
 				i[7] = sorted(i[7], key=operator.itemgetter(5),reverse=True)
@@ -259,6 +312,9 @@ def scan_main(request):
 				'EX':EX,
 				'csrf':request.POST.get('csrfmiddlewaretoken'),
 				'userNum':userNum,
+				'CDS_region':CDS_region,
+				'Tscore':[scoreA,scoreB,scoreC,scoreD],
+				'originalSeq':originalSeq
 			}
 
 			if options['nematodeType'] == 'C.elegans':
@@ -267,17 +323,24 @@ def scan_main(request):
 				data['e_NameToId'] = e_NameToId
 
 			result = sorted(result, key = lambda l:int(l[1].split('-')[0]))
-
+			result = sorted(result, key=operator.itemgetter(14),reverse=True)
 
 			#存table資料 
 			with open(os.path.join(module_dir,'temp/tableData{0}_{1}.csv'.format(operationTimes,userNum)),'w') as w1:
 				wr1 = csv.writer(w1)
-				wr1.writerow(['piRNA','targeted region in input sequence','# mismatches','position in piRNA','# non-GU mismatches in seed region','# GU mismatches in seed region','# non-GU mismatches in non-seed region','# GU mismatches in non-seed region','5\' Input sequence 3\'','3\' piRNA 5\''])
+				wr1.writerow(['Sequence name: '+ seqName])
+				wr1.writerow(['Specify coding sequence (CDS) region: '+ CDS_region])
+				wr1.writerow(['piRNA targeting rules: '])
+				wr1.writerow(['Seed region: non-GU: up to {0}, GU: up to {1}'.format(options['core_non_GU'],options['core_GU'])])
+				wr1.writerow(['Non-seed region: nonGU: up to {0}, GU: up to {1}'.format(options['non_core_non_GU'],options['non_core_GU'])])
+				wr1.writerow(['Total mismatches: up to {0}'.format(options['total'])])
+				wr1.writerow([''])
+				wr1.writerow(['piRNA','piRNA targeting score','targeted region in input sequence','# mismatches','position in piRNA','# non-GU mismatches in seed region','# GU mismatches in seed region','# non-GU mismatches in non-seed region','# GU mismatches in non-seed region','5\' Input sequence 3\'','3\' piRNA 5\''])
 				for td in result:
 					detailTopStr = re.sub("<.*?>", "", td[9]).replace("5' ",'').replace(" 3'",'').replace("|",'')
 					detailBotStr = re.sub("<.*?>", "", td[10]).replace("3' ",'').replace(" 5'",'').replace("|",'')
 					detail = detailTopStr + '\n' + detailBotStr
-					wr1.writerow([td[0],td[1],td[2],re.sub("<.*?>", "", td[3]),td[5],td[6],td[7],td[8],detailTopStr,detailBotStr])
+					wr1.writerow([td[0],10-int(td[5])*scoreA-int(td[6])*scoreB-int(td[7])*scoreC-int(td[8])*scoreD,td[1],td[2],re.sub("<.*?>", "", td[3]),td[5],td[6],td[7],td[8],detailTopStr,detailBotStr])
 
 
 			ori_result = data
@@ -293,6 +356,23 @@ def keepOld(request):
 	with open(os.path.join(module_dir,'temp/ori_base_result'+userNum+'.json'),'w') as w1:
 		json.dump(data,w1,indent=4)
 	return JsonResponse(data)	
+
+def goBack(request):
+	module_dir = os.path.dirname(__file__)
+	# rules
+	data = {
+		'originalSeq':request.POST.get('originalSeq'),
+		'name':request.POST.get('name'),
+		'CDS_region':request.POST.get('CDS_region'),
+		'a':request.POST.get('a'),
+		'b':request.POST.get('b'),
+		'c':request.POST.get('c'),
+		'd':request.POST.get('d'),
+		'e':request.POST.get('e'),
+	}
+	with open(os.path.join(module_dir,'temp/ruleInfo.json'),'w') as w1:
+		json.dump(data,w1,indent=4)
+	return JsonResponse(data)
 
 def scan(q,num,Arr2,options):
 	global piRNA_Length
@@ -334,7 +414,12 @@ def scan(q,num,Arr2,options):
 			n = 0
 			o = 0
 			while(b>=a):
-				if c >= len(Arr1)-7 and Arr2[b] != Arr1[c]:
+				if d + e + m + n > int(options['total']):
+					#錯誤總數大於total
+					b-=1
+					c-=1
+					break
+				elif c >= len(Arr1)-7 and Arr2[b] != Arr1[c]:
 					# core區沒對到
 					if (Arr2[b]=='G' and Arr1[c]=='A') or (Arr2[b]=='U' and Arr1[c]=='C'):
 						#沒對到的是GU    
@@ -389,11 +474,11 @@ def scan(q,num,Arr2,options):
 						e+=1
 					b-=1
 					c-=1
-				elif d + e + m + n > int(options['total']):
-					#錯誤總數大於total
-					b-=1
-					c-=1
-					break
+				# elif d + e + m + n > int(options['total']):
+				# 	#錯誤總數大於total
+				# 	b-=1
+				# 	c-=1
+				# 	break
 				elif b == a:
 					# 掃到第一位的情況
 					if Arr2[b] != Arr1[c]:
@@ -445,8 +530,8 @@ def scan(q,num,Arr2,options):
 					if ArryxGU == [] :
 						ArryxGU = 'N/A'
 				
-				
-					outArr.append([key[0],str(a+1)+'-'+str(a+21),o+d+e+m+n,','.join(Arr4),','.join(ArryxGU),d,m,e,n,"<span style=\"white-space:nowrap\">5' "+''.join(Arr3)+" 3'","3' "+''.join(Arr5)+" 5'</span>",key[2],key[1][::-1]])
+					
+					outArr.append([key[0],str(a+1)+'-'+str(a+21),o+d+e+m+n,','.join(Arr4),','.join(ArryxGU),d,m,e,n,"<span style=\"white-space:nowrap\">5' "+''.join(Arr3)+" 3'","3' "+''.join(Arr5)+" 5'</span>",key[2],key[1][::-1],str(a+1).zfill(5),10-d*scoreA-m*scoreB-e*scoreC-n*scoreD])
 					GG+=1
 					b-=1
 					c-=1
@@ -1041,7 +1126,9 @@ def suggestion(data,CDS1,CDS2,RNA,options):
 			else:
 				now = tt[1]
 				spanCount = 1
+			tt.append(10-tt[4][0]*scoreA-tt[4][1]*scoreB-tt[4][2]*scoreC-tt[4][3]*scoreD)
 		qq.append(spanDict)
+		qq.append(10-qq[3]*scoreA-qq[4]*scoreB-qq[5]*scoreC-qq[6]*scoreD)
 
 	for qq in output['notInCDS']:
 		now = 0
@@ -1055,6 +1142,7 @@ def suggestion(data,CDS1,CDS2,RNA,options):
 				now = tt[0]
 				spanCount = 1
 		qq.append(spanDict)
+		qq.append(10-qq[3]*scoreA-qq[4]*scoreB-qq[5]*scoreC-qq[6]*scoreD)
 	return output
 
 
@@ -1280,11 +1368,29 @@ def sucData(request):
 		return new.join(li)
 	newCDS1 = int(request.POST.get('CDS1'))
 	newCDS2 = int(request.POST.get('CDS2'))
+	CDS_region = request.POST.get('CDS_region')
+
 	with open(os.path.join(module_dir,'temp/sucResult_'+modifyCount+'_'+userNum+'.txt'),'w') as f1:
 		newRNA = RNA.replace(RNA[0:newCDS1-1],RNA[0:newCDS1-1].lower(),1)
 		if newCDS2 != len(RNA):
 			newRNA = rreplace(newRNA,newRNA[newCDS2:len(RNA)],newRNA[newCDS2:len(RNA)].lower(),1)		
-		f1.write('>Modified Sequence #'+modifyCount+', lowercase (uppercase) text indicates UTR (CDS)\n\r'+newRNA)
+		tttList = []
+		tttList.append('{0} modified sequence #{1}'.format(name,modifyCount))
+		# tttList.append('Sequence name: Modified Sequence #'+modifyCount+'(from the original input seq: '+name+')')
+		tttList.append('Specify coding sequence (CDS) region: '+CDS_region)
+		tttList.append('piRNA targeting rules: ')
+		
+		tttList.append('Seed region: non-GU: up to {0}, GU: up to {1}'.format(request.POST.get('a'),request.POST.get('b')))
+		tttList.append('Non-seed region: non-GU: up to {0}, GU: up to {1}'.format(request.POST.get('c'),request.POST.get('d')))
+		tttList.append('Total mismatches: up to {0}'.format(request.POST.get('e')))
+		tttList.append('')
+		# tttList.append('Lowercase/Uppercase text indicates UTRs/CDS')
+		tttList.append('RNA sequence(Lowercase/Uppercase text indicates UTRs/CDS):')
+		tttList.append(newRNA)
+		tttList.append('')
+		tttList.append('DNA sequence(Lowercase/Uppercase text indicates UTRs/CDS):')
+		tttList.append(newRNA.replace('u','t').replace('U','T'))
+		f1.write('\r\n'.join(tttList))
 		# w1 = csv.writer(f1)
 		# w1.writerow(['>Modified Sequence #'+modifyCount+', lowercase (uppercase) text indicates UTR (CDS)\n\r'+newRNA])
 
@@ -1294,6 +1400,7 @@ def sucData(request):
 def failData(request):
 	modifyCount = request.POST.get('modifyCount')
 	userNum = request.POST.get('userNum')
+	CDS_region = request.POST.get('CDS_region')
 	module_dir = os.path.dirname(__file__)
 	with open(os.path.join(module_dir,'temp/modify'+modifyCount+'_'+userNum+'.csv'),'r') as f1:
 		options = {}
@@ -1379,9 +1486,24 @@ def failData(request):
 		if newCDS2 != len(RNA):
 			newRNA = rreplace(newRNA,newRNA[newCDS2:len(RNA)],newRNA[newCDS2:len(RNA)].lower(),1)
 		
-		f1.write('>Modified Sequence #'+modifyCount+', lowercase (uppercase) text indicates UTR (CDS)\n\r'+newRNA)
-		# w1 = csv.writer(f1)
-		# w1.writerow(['>Modified Sequence #'+modifyCount+', lowercase (uppercase) text indicates UTR (CDS)\n\r'+newRNA])
+		# f1.write('>Modified Sequence #'+modifyCount+', lowercase (uppercase) text indicates UTR (CDS)\n\r'+newRNA)
+		tttList = []
+		tttList.append('{0} modified sequence #{1}'.format(name,modifyCount))
+		# tttList.append('Sequence name: Modified Sequence #'+modifyCount+'(from the original input seq: '+name+')')
+		tttList.append('Specify coding sequence (CDS) region: '+CDS_region)
+		tttList.append('piRNA targeting rules: ')
+		
+		tttList.append('Seed region: non-GU: up to {0}, GU: up to {1}'.format(request.POST.get('a'),request.POST.get('b')))
+		tttList.append('Non-seed region: non-GU: up to {0}, GU: up to {1}'.format(request.POST.get('c'),request.POST.get('d')))
+		tttList.append('Total mismatches: up to {0}'.format(request.POST.get('e')))
+		tttList.append('')
+		tttList.append('Lowercase/Uppercase text indicates UTRs/CDS')
+		tttList.append('RNA sequence(Lowercase/Uppercase text indicates UTRs/CDS):')
+		tttList.append(newRNA)
+		tttList.append('')
+		tttList.append('DNA sequence(Lowercase/Uppercase text indicates UTRs/CDS):')
+		tttList.append(newRNA.replace('u','t').replace('U','T'))
+		f1.write('\r\n'.join(tttList))
 
 	return JsonResponse(SCdata)
 

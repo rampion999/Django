@@ -1,32 +1,81 @@
-function resultCreate(divId,userNum){
-	var resultText = '<div class="container-fluid py-4">';
-	// resultText += '<div class="card my-3">';
-	// resultText += 	'<div class="card-header">';
-	// resultText += 		'<ul class="nav nav-pills card-header-pills" id="'+divId+'-resultTab" role="tablist">';
-	// resultText += 			'<li class="nav-item">';
-	// resultText += 				'<a class="nav-link active" id="'+divId+'-charts-tab" data-toggle="pill" href="#'+divId+'-charts" role="tab" aria-controls="'+divId+'-charts" aria-selected="true">Scan Result</a>';
-	// resultText += 			'</li>';
-	// resultText += 			'<li class="nav-item">';
-	// resultText += 				'<a class="nav-link" id="'+divId+'-suggetions-tab" data-toggle="pill" href="#'+divId+'-suggetions" role="tab" aria-controls="'+divId+'-suggetions" aria-selected="false">Modified Sequence Design</a>';
-	// resultText += 			'</li>';
-	// resultText += 		'</ul>';
-	// resultText += 	'</div>';
-	// resultText += 	'<div class="card-body">';
-	// resultText += 		'<div class="tab-content" id="'+divId+'-resultTabContent">';
-	// resultText += 			'<div class="tab-pane show active mt-4" id="'+divId+'-charts" role="tabpanel" aria-labelledby="'+divId+'-charts-tab">';
-	resultText += 				'<fieldset>';
+function resultCreate(divId,userNum,data){
+	var ruleText = '<div class="escape" style="text-align:left;">';
+	ruleText += 		'<h2>Input Information</h2>';
+	ruleText += 		'<div class="pt-3">';
+	ruleText += 			'<p><span class="h5"><strong>Sequence name: </strong></span>'+data.name+'</p>';
+	ruleText += 		'</div>';
+	ruleText += 		'<div class="pt-3">';
+	ruleText += 			'<p><span class="h5"><strong>Specify coding sequence (CDS) region: </strong></span>'+data.CDS_region+'</p>';
+	ruleText += 		'</div>';
+	ruleText += 		'<div class="pt-3">';
+	ruleText += 			'<p><span class="h5"><strong>piRNA targeting rules:</strong></span></p>';
+	ruleText += 		'</div>';
+	ruleText +=			'<div class="row pt-0 d-flex justify-content-around">';
+	ruleText +=				'<div class="col-3">';
+	ruleText +=					'<ul class="list-unstyled">';
+	ruleText +=						'<li class="card-text">';
+	ruleText +=							'<u>Number of mismatches allowed at seed region</u>:';
+	ruleText +=						'</li>';
+	ruleText +=						'<li class="card-text">';
+	ruleText +=							'<ul>';
+	ruleText +=								'<li>';
+	ruleText +=									'number of non-GU pairs &nbsp;≤&nbsp;'+data.options.core_non_GU;
+	ruleText +=								'</li>';
+	ruleText +=								'<li>';
+	ruleText +=									'number of GU pairs &nbsp;≤&nbsp;'+data.options.core_GU;
+	ruleText +=								'</li>';
+	ruleText +=							'</ul>';
+	ruleText +=						'</li>';
+	ruleText +=					'</ul>';
+	ruleText +=				'</div>';
+
+	ruleText +=				'<div class="col-4">';
+	ruleText +=					'<ul class="list-unstyled">';
+	ruleText +=						'<li class="card-text">';
+	ruleText +=							'<u>Number of mismatches allowed at non-seed region</u>:';
+	ruleText +=						'</li>';
+
+
+	ruleText +=						'<li class="card-text">';
+	ruleText +=							'<ul>';
+	ruleText +=								'<li>';
+	ruleText +=									'number of non-GU pairs &nbsp;≤&nbsp;'+data.options.non_core_non_GU;
+	ruleText +=								'</li>';
+	ruleText +=								'<li>';
+	ruleText +=									'number of GU pairs &nbsp;≤&nbsp;'+data.options.non_core_GU;
+	ruleText +=								'</li>';
+	ruleText +=							'</ul>';
+	ruleText +=						'</li>';
+	ruleText +=					'</ul>';
+	ruleText +=				'</div>';
+
+	ruleText +=				'<div class="col-4">';
+	ruleText +=					'<ul class="list-unstyled">';
+	ruleText +=						'<li class="card-text">';
+	ruleText +=							'<u>Total number of mismatches at seed & non-seed regions</u> ≤&nbsp;'+data.options.total;
+	ruleText +=						'</li>';
+	ruleText +=					'</ul>';
+	ruleText +=				'</div>';
+	ruleText +=			'</div>';
+	ruleText +=		'</div>';
+
+
+	var resultText = '<div class="container-fluid py-2">';
+	resultText += ruleText;
+	resultText += 				'<fieldset class="mt-5">';
 	resultText += 					'<legend>Identified piRNA target sites in the input sequence</legend>';
 	resultText += 					'<div class="card mb-4 border-dark" style="border-top-left-radius: 0rem!important;">';
 	resultText += 						'<div class="card-body text-dark text-center">';
 	resultText += 							'<div class="card mb-4">';
-	resultText += 								'<h1 class="card-header bg-white text-dark text-center"><b>Identified piRNA target sites</b> <small>(Graphical View)</small></h1>';
+	resultText += 								'<h1 class="card-header bg-white text-dark text-center"><b>'+data.newout.length+' Identified piRNA target sites</b> <small>(Graphical View)</small></h1>';
 	resultText += 								'<div class="card-body text-dark text-center">';
+	resultText += 									'<svg id="'+divId+'-explain"></svg>';
 	resultText += 									'<svg id="'+divId+'-overView"></svg>';
 	resultText += 								'</div>';
 	resultText += 							'</div>';
 	resultText += '<br>';
 	resultText += 					'<div class="card my-4">';
-	resultText += 						'<h1 class="card-header bg-white text-dark text-center"><b>Identified piRNA target sites</b> <small>(Table View)&nbsp;&nbsp;</small><a href="/piScan/DownloadTable/0/'+userNum+'" target="_blank"><button type="button" class="btn btn-info" style="border-color: black; padding-top: 4px; padding-bottom: 4px;"><img src="https://png.icons8.com/download/androidL/20/000000">  Download table</button></a></h1>';
+	resultText += 						'<h1 class="card-header bg-white text-dark text-center"><b>'+data.newout.length+' Identified piRNA target sites</b> <small>(Table View)&nbsp;&nbsp;</small><a href="/piScan/DownloadTable/0/'+userNum+'" target="_blank"><button type="button" class="btn btn-info" style="border-color: black; padding-top: 4px; padding-bottom: 4px;"><img src="https://png.icons8.com/download/androidL/20/000000">  Download table</button></a></h1>';
 	resultText += 						'<div class="card-body text-dark text-center">';
 	resultText += 							'<div id="'+divId+'-targetedTable"></div>';
 	resultText += 						'</div>';
@@ -40,7 +89,7 @@ function resultCreate(divId,userNum){
 	resultText += 					'</div>';
 	resultText += '<br>';
 	resultText += 					'<div class="card my-4">';
-	resultText += 						'<h1 class="card-header bg-white text-dark text-center"><b>Identified piRNA target sites</b> <small>(Sequence View)&nbsp;&nbsp;</small><button type="button" id="downloadSeq0" class="btn btn-info" style="border-color: black; padding-top: 4px; padding-bottom: 4px;"><img src="https://png.icons8.com/download/androidL/20/000000">  Download seqView</button></h1>';
+	resultText += 						'<h1 class="card-header bg-white text-dark text-center"><b>'+data.newout.length+' Identified piRNA target sites</b> <small>(Sequence View)&nbsp;&nbsp;</small><button type="button" id="downloadSeq0" class="btn btn-info" style="border-color: black; padding-top: 4px; padding-bottom: 4px;"><img src="https://png.icons8.com/download/androidL/20/000000">  Download seqView</button></h1>';
 	resultText += 						'<div class="card-body text-dark text-center" id="'+divId+'-seqView-div">';
 	resultText += 							'<div class="d-inline float-left mb-4">&nbsp;&nbsp;&nbsp;Lowercase/Uppercase text indicates UTRs/CDS</div><div id="'+divId+'-symbol" class="text-left float-right"></div><svg id="'+divId+'-seqView"></svg>';
 	resultText += 						'</div>';
@@ -97,6 +146,7 @@ function modifyResultCreate(divId,modifyCount,userNum){
 	resultText += '<div class="card mb-4">';
 	resultText += '<h1 class="card-header bg-white text-dark text-center"><b>Identified piRNA target sites</b> <small>(Graphical View)</small></h1>';
 	resultText += '<div class="card-body text-dark text-center">';
+	resultText += '<svg id="'+divId+'-explain"></svg>';
 	resultText += '<svg id="'+divId+'-overView"></svg>';
 	resultText += '</div>';
 	resultText += '</div>';

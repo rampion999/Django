@@ -27,7 +27,11 @@ DEBUG = True
 
 ALLOWED_HOSTS = [
     '140.116.215.238',
+    '140.116.215.227',
+    '140.116.215.236',
+    'cosbi2.ee.ncku.edu.tw',
     'cosbi4.ee.ncku.edu.tw',
+    'cosbi5.ee.ncku.edu.tw',
 ]
 
 

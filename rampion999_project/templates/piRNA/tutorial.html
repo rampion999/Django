@@ -17,6 +17,9 @@
 
     <!-- Custom styles for this template -->
     <link href="{% static 'bo_css/modern-business.css' %}" rel="stylesheet">
+    <!-- ICON NEEDS FONT AWESOME FOR CHEVRON UP ICON -->
+      <link href="//netdna.bootstrapcdn.com/font-awesome/3.2.1/css/font-awesome.css" rel="stylesheet">
+      <link rel="stylesheet" type="text/css" href='{% static "piRNA/css/to_top.css" %}'>
     
     <!-- Bootstrap core JavaScript -->
     <script src="{% static 'vendor/jquery/jquery.min.js' %}"></script>
@@ -51,15 +54,18 @@
 
         });
       });
-    </script>
+    </script>   
   </head>
 
   <body>
+    <!-- Return to Top -->
+    <a href="javascript:" id="return-to-top"><i class="icon-chevron-up"></i></a>
+
 
     <!-- Navigation -->
     <nav class="navbar fixed-top navbar-expand-lg navbar-dark bg-dark fixed-top" id="nav">
       <div class="container-fluid">
-        <a class="navbar-brand" href="/piScan/">piScan</a>
+        <a class="navbar-brand" href="/piScan/" style="font-size: 1.3rem;"><b class="h2">piScan: </b>a web server to predict piRNA targeting sites and to avoid transgene silencing</a>
         <button class="navbar-toggler navbar-toggler-right" type="button" data-toggle="collapse" data-target="#navbarResponsive" aria-controls="navbarResponsive" aria-expanded="false" aria-label="Toggle navigation">
           <span class="navbar-toggler-icon"></span>
         </button>
@@ -69,13 +75,13 @@
               <a class="nav-link" href="http://140.116.215.236/rampion999/piRNA">Home</a>
             </li> -->
             <li class="nav-item">
-              <a class="nav-link" href="/piScan/">Scan</a>
+              <a class="nav-link" href="/piScan/" style="font-size: 1.25rem;">Scan</a>
             </li>
             <li class="nav-item  active">
-              <a class="nav-link" href="/piScan/Tutorial">Tutorial</a>
+              <a class="nav-link" href="/piScan/Tutorial" style="font-size: 1.25rem;">Tutorial</a>
             </li>
             <li class="nav-item">
-              <a class="nav-link" href="/piScan/Contact">Contact</a>
+              <a class="nav-link" href="/piScan/Contact" style="font-size: 1.25rem;">Contact</a>
             </li>
           </ul>
         </div>
@@ -89,8 +95,8 @@
             <h2 class="card-header darkCH">About piScan</h2>
             <div class="card-body">
               <ul>
-                <li><a href="#Motivation_of_piScan">Motivation of piScan</a></li>
-                <li>Impact of piScan</li>
+                <li><a href="#d1" style="font-size: 1.2rem;">Motivation of piScan</a></li>
+                <li><a href="#d2" style="font-size: 1.2rem;">Impact of piScan</a></li>
               </ul>
             </div>
           </div>
@@ -100,63 +106,95 @@
             <h2 class="card-header darkCH">Usage of piScan</h2>
             <div class="card-body">
               <ul>
-                <li>MGeneral Framework</li>
-                <li>Input</li>
-                <li>piRNA Targeting Rules</li>
-                <li>piRNA Target Site Identification Output</li>
-                <li>Modification of the Input Sequence to Avoid piRNA Targeting</li>
+                <li><a href="#d3" style="font-size: 1.2rem;">General Framework</a></li>
+                <li><a href="#d4" style="font-size: 1.2rem;">Input</a></li>
+                <li><a href="#d5" style="font-size: 1.2rem;">piRNA Targeting Rules</a></li>
+                <li><a href="#d6" style="font-size: 1.2rem;">piRNA Target Site Identification Output</a></li>
+                <li><a href="#d7" style="font-size: 1.2rem;">Modification of the Input Sequence to Avoid piRNA Targeting</a></li>
               </ul>
             </div>
           </div>
         </div>
       </div>
-      <div id="Motivation_of_piScan"></div>
-      <div class="card mb-4" style="border-width: 2.5px;">
+      <script>$('#tu1').height($('#tu2').height());</script>
+      <div class="card mb-4" style="border-width: 2.5px;" id="d1">
         <div class="card-body">
           <h2 class="card-title"><b style="color: #007bff;">Motivation of piScan</b></h2>
-          <p class="card-text">
-            <i>C. elegans</i> is one of the most wildly used model organism. However, the expression of transgenes in the germline of <i>C. elegans</i> is notoriously difficult due to PIWI interacting RNA (piRNA)-mediated gene silencing. While several web tools are available to predict miRNA targets, a similar tool is currently unavailable for piRNA. Using systematic piRNA reporter assays, we and others have demonstrated that piRNAs prefer perfect base pairing at a seed region but otherwise can tolerate a few mismatches. Here we develop the piScan webtool to predict the targeting sites of 15,000 piRNAs produced in C. elegnas and thereby avoid transgene silencing. To validate that piScan can predict piRNA sites successfully, we predict piRNA sites on three silencing-prone transgenes, which carry GFP, mCherry and Cas9, respectively. Remarkably, by introducing silent mutations to remove piRNA targeting sites, we observed expression of all three transgenes in the germline of <i>C. elegans</i>.
+          <p class="card-text text-justify" style="text-indent : 36px; font-size: 1.2rem;">
+            <i>C.elegans</i> is one of the most wildly used model organisms. However, the expression of transgenes in the germline of <i>C.elegans</i> is notoriously difficult due to PIWI interacting RNA (piRNA)-mediated gene silencing. While several web tools are available to predict miRNA targets, a similar tool is currently unavailable for piRNA. Using systematic piRNA reporter assays, we and others have demonstrated that piRNAs prefer perfect base pairing at a seed region but otherwise can tolerate a few mismatches. Here we develop the piScan webtool to predict the targeting sites of 15,000 piRNAs produced in <i>C.elegans</i> and thereby avoid transgene silencing. To validate that piScan can predict piRNA sites successfully, we predicted piRNA sites on three silencing-prone transgenes, which carry GFP, mCherry and Cas9, respectively. Remarkably, by introducing silent mutations to remove piRNA targeting sites, we observed expression of all three transgenes in the germline of <i>C.elegans</i>.
           </p>
         </div>
       </div>
-      <div class="card my-4" style="border-width: 2.5px;">
-        <div class="card-body">
-          <h2 class="card-title"><b style="color: #007bff;">Usage of piScan</b></h2>
-          <p class="card-text">
-            piScan allows users to predict piRNA targeting sites at the sequence of interest; it also provides suggestions to introduce silent mutations that abolish piRNA recognition.
-            <ol>
-              <li>
-                piScan takes cDNA/mRNA sequence in FASTA format and allows the user to conduct a search of piRNA targeting sites with the options of changing the piRNA targeting stringency.
-                <img src="{% static 'piRNA/img/input.PNG' %}" class="img-fluid mt-2 mb-5 img-thumbnail" alt="Input">
-              </li>
-              <li>
-                piScan then provides a graphical presentation of piRNA targeting sites that were in the input sequence, and a table displaying the pairing between piRNAs and target sequences.
-                <img src="{% static 'piRNA/img/result.PNG' %}" class="img-fluid mt-2 mb-5" alt="Scan result">
-              </li>
-              <li>
-                Furthermore, to facilitate the process of gene recoding to avoid piRNA recognition, piScan provides choices of silent mutations (mutations that encode the same amino acid) available at each piRNA targeting sites.
-                <img src="{% static 'piRNA/img/design.PNG' %}" class="img-fluid mt-2 mb-5 img-thumbnail" alt="Modified design">
-              </li>
-              <li>
-                The optimized sequence can be re-scanned to verify that no piRNA sites are found.
-                <img src="{% static 'piRNA/img/design_result.PNG' %}" class="img-fluid mt-2 mb-5" alt="Modified result">
-              </li>
-              <li>
-                This optimized sequence can subsequently be downloaded from website.
-                <img src="{% static 'piRNA/img/success.PNG' %}" class="img-fluid mt-2 mb-1 img-thumbnail" alt="Success design">
-              </li>
-            </ol>
-          </p>
-        </div>
-      </div>
-      <div class="card my-4" style="border-width: 2.5px;">
+      <div class="card mb-4" style="border-width: 2.5px;" id="d2">
         <div class="card-body">
           <h2 class="card-title"><b style="color: #007bff;">Impact of piScan</b></h2>
-          <p class="card-text">
-            piScan provides the first webserver that predicts piRNA targeting sites. We expect piScan to hugely impact the <i>C. elegans</i> research community: not only by providing researchers with a platform to examine piRNA targeting sites in a given sequence, but also by allowing researchers to circumvent the transgene silencing that has confounded the field for two decades.
+          <p class="card-text text-justify" style="text-indent : 36px; font-size: 1.2rem;">
+            piScan provides the first webserver that predicts piRNA targeting sites. We expect piScan to hugely impact the <i>C.elegans</i> research community: not only by providing researchers with a platform to examine piRNA targeting sites in a given sequence, but also by allowing researchers to circumvent the transgene silencing that has confounded the field for two decades.
           </p>
         </div>
       </div>
+      <div class="card mb-4" style="border-width: 2.5px;" id="d3">
+        <div class="card-body">
+          <h2 class="card-title"><b style="color: #007bff;">General Framework</b></h2>
+          <p class="card-text text-justify" style="text-indent : 36px; font-size: 1.2rem;">
+            piScan is a tool that predicts the presence of piRNA targeting sites within a given sequence and suggests silent mutations that can be introduced to avoid silencing of transgenes by piRNAs. The user can input a mature mRNA or spliced DNA sequence in FASTA format and be provided with a concise graphical representation of which sites within the sequence display predicted piRNA targeting sites. The user can then choose between suggested silent mutations that will allow the input sequence to escape predicted piRNA targeting, but still retain the same amino acid sequence.
+          </p>
+          <p class="card-text text-justify" style="text-indent : 36px; font-size: 1.2rem;">
+            For each piRNA targeting site, piScan lists the types and positions of mismatches between a predicted endogenous piRNA and the user’s input sequence. The pairing between the 21 nt long piRNA and the corresponding position in the input sequence is displayed for clarity, with the input sequence listed 5’ to 3’. The target sites within the input sequence can be downloaded as a .csv table or as a graphic to be displayed or manipulated by the user outside of our provided framework.
+          </p>
+          <p class="card-text text-justify" style="text-indent : 36px; font-size: 1.2rem;">
+            A user can subsequently change his/her input sequence by following our intuitive graphical interface. Proposed silent mutations will be displayed which can be chosen by the user. Each proposed mutation also indicates which targeting rule(s) will be broken if the nucleotide is changed. The proposed changes are ranked so that mutations which break the most important rules (i.e. mismatches within the seed region) will be listed first and selected by default. If more than one piRNA targeting site were present in the input sequence, then each piRNA will have its own separate table complete with the possible silent mutations to introduce. Each table is displayed according to the 5’ to 3’ order which each piRNA is predicted to interact with the input sequence. Upon the user’s completion of the proposed mutagenesis, the modified sequence can be immediately re-submitted for scanning to verify that the sequence will successfully escape piRNA targeting and ensure that new targeting sites were not inadvertently introduced. If piScan still predicts piRNA targeting sites in the modified sequence, the suggested changes for these sites are presented for further modification. Once the user is satisfied with the adjusted input sequence, the modified version can be downloaded in FASTA format. Additionally, a table and graphic which highlights the user-selected mutations are available for export.
+          </p>
+        </div>
+      </div>
+      <div class="card mb-4" style="border-width: 2.5px;" id="d4">
+        <div class="card-body">
+          <h2 class="card-title"><b style="color: #007bff;">Input</b></h2>
+          <p class="card-text text-justify" style="text-indent : 36px; font-size: 1.2rem;">
+            piScan will accept an input sequence in FASTA format. The input can be a mature mRNA sequence or cDNA sequence. If the first nucleotide present is not the start of the open reading frame, then the coding sequence must be specified by indicating the numerical positions of the open reading frame as it appears in the input sequence. As piRNAs can also target 5’ and 3’ UTR, we suggest the user to include the sequence of 5’ and/or 3’ UTRs and simply specify the coding region. The input sequence should not contain introns.            
+          </p>
+          <img src="{% static 'piRNA/img/input.PNG' %}" class="img-fluid mb-3 img-thumbnail" alt="Input" style="border: 1px dashed #0b6f7f;">
+        </div>
+      </div>
+      <div class="card mb-4" style="border-width: 2.5px;" id="d5">
+        <div class="card-body">
+          <h2 class="card-title"><b style="color: #007bff;">piRNA Targeting Rules</b></h2>
+          <p class="card-text text-justify" style="text-indent : 36px; font-size: 1.2rem;">
+            The rules governing piRNA targeting have proven enigmatic. It has been shown, however, that piRNAs can tolerate at least three mismatches between their sequence and a target. Our group has resolved the mystery by examining how a single piRNA recognizes its target, and confirming our observations by engineering synthetic piRNAs in a reporter-based assay. These analyses have revealed that piRNAs require perfect matching within the 2nd to 7th nucleotide seed-region and can only tolerate a few mismatches outside of the seed region but the first nucleotide does not contribute to the piRNA targeting. piScan will identify piRNA sites using the default setting if not specified. The default setting reflects the confident piRNA targeting sites according to our reporter assay.
+          </p>
+          <img src="{% static 'piRNA/img/rule.PNG' %}" class="img-fluid mb-3 img-thumbnail" alt="Rule" style="border: 1px dashed #0b6f7f;">
+        </div>
+      </div>
+      <div class="card mb-4" style="border-width: 2.5px;" id="d6">
+        <div class="card-body">
+          <h2 class="card-title"><b style="color: #007bff;">piRNA Target Site Identification Output</b></h2>
+          <p class="card-text text-justify" style="text-indent : 36px; font-size: 1.2rem;">
+            Upon submission of an input sequence, the user can download a table in .csv format that contains the list of piRNAs predicted to target the input sequence, the location of targeting sites, how many mismatches are present, and some aspects about those mismatches. Additionally, a visual representation of the predicted piRNA targeting to the input sequence is available for downloading in .png format. Either of these outputs can allow a user to customize his/her input sequence outside of our piScan framework is he/she chooses.
+          </p>
+          <img src="{% static 'piRNA/img/result.PNG' %}" class="img-fluid mb-3 img-thumbnail" alt="Scan result" style="border: 1px dashed #0b6f7f;">
+        </div>
+      </div>
+      <div class="card mb-4" style="border-width: 2.5px;" id="d7">
+        <div class="card-body">
+          <h2 class="card-title"><b style="color: #007bff;">Modification of the Input Sequence to Avoid piRNA Targeting</b></h2>
+          <p class="card-text text-justify" style="text-indent : 36px; font-size: 1.2rem;">
+            At the end of the output page of piRNA targets sites, a link is offered for users to introduce silent mutations in their input sequences to avoid piRNA recognition. The system lists up to 6 suggested changes, ranked by the type of piRNA rules the changes will break. The system will by default choose the top suggested change for the user but the user can select/deselect any modifications or select multiple modifications at each piRNA sites. The system also displays which rule(s) each mutation will break. Note that sometimes multiple mutations are needed for avoiding piRNA recognition. Importantly, piScan will not suggest mutations that will result in the incorporation of a rarely used codon.
+          </p>
+          <img src="{% static 'piRNA/img/modify.PNG' %}" class="img-fluid mb-3 img-thumbnail" alt="Modify" style="border: 1px dashed #0b6f7f;">
+          <p class="card-text text-justify mt-5" style="text-indent : 36px; font-size: 1.2rem;">
+            Once the user chooses silent mutations to introduce into the input sequence, the program will display a table summarizing the changes and also display a link for submitting the modified sequence for re-scanning.
+          </p>
+          <img src="{% static 'piRNA/img/check.PNG' %}" class="img-fluid mb-3 img-thumbnail" alt="Modify check" style="border: 1px dashed #0b6f7f;">
+          <p class="card-text text-justify mt-5" style="text-indent : 36px; font-size: 1.2rem;">
+            piScan will then display “Success” if no piRNA targeting sites are found in the modified sequence, or “Fail” if additional piRNA targeting sites are found. The modified sequences (either success or failure) can be downloaded in FASTA format.
+          </p>
+          <img src="{% static 'piRNA/img/suc.PNG' %}" class="img-fluid mb-3 img-thumbnail" alt="Modify success" style="border: 1px dashed #0b6f7f;">
+          <p class="card-text text-justify mt-5" style="text-indent : 36px; font-size: 1.2rem;">
+            In the case of failure, the program first displays the piRNA sites that remain to allow further modification. We suggest to the user to choose additional sites if the single mutation is not sufficient to avoid piRNA recognition, or to choose different sites if a new piRNA targeting site is found.
+          </p>
+          <img src="{% static 'piRNA/img/combine_OK.PNG' %}" class="img-fluid mb-3 img-thumbnail" alt="Modify fail" style="border: 1px dashed #0b6f7f;">
+        </div>
+      </div>     
     </div>
     <!-- /.container -->
 
@@ -169,7 +207,21 @@
     </footer>
 
     
-
+    <script>
+      // ===== Scroll to Top ==== 
+      $(window).scroll(function() {
+          if ($(this).scrollTop() >= 50) {        // If page is scrolled more than 50px
+              $('#return-to-top').fadeIn(200);    // Fade in the arrow
+          } else {
+              $('#return-to-top').fadeOut(200);   // Else fade out the arrow
+          }
+      });
+      $('#return-to-top').on('click',function(){
+        $('body,html').animate({
+            scrollTop : '0px'                      // Scroll to top of body
+          }, 500);
+      });
+    </script>
   </body>
 
 </html>

@@ -1,6 +1,6 @@
-function newScan(input,pic2src,modifyCount,scanUrl,userNum,oldSeqViewDataArr){
+function newScan(input,pic2src,modifyCount,scanUrl,userNum,oldSeqViewDataArr,loadPic){
   swal.queue([{
-  title : 'Scanning...\nPlease allow up to 10 seconds',
+  title : 'Scanning...',
   text: "Running time : 0 sec",
   imageUrl: scanUrl,
   disableButtons: true,
@@ -13,18 +13,29 @@ function newScan(input,pic2src,modifyCount,scanUrl,userNum,oldSeqViewDataArr){
     $('#swal2-content').html('Running time : '+clockTime+' sec');
     clockTime++;
   }, 1050);
+      if(input.CDS1 == 0){
+        var QAQ1 = '';
+        var QAQ2 = '';
+      }
+      else{
+        var QAQ1 = input.CDS1;
+        var QAQ2 = input.CDS2;
+      }
+      console.log(QAQ1);
       $.ajax({
         url: "scanOperation/", 
         data:{
-          data1:'>'+input.name+'\n'+input.gene,
+          // data1:'>'+input.name+'\n'+input.gene,
+          data1:input.gene,
+          seqName:'Modified seq #'+modifyCount+' (from the original input seq: '+input.name+')',
           opt1:$('#opt1_'+modifyCount).val(),
           opt2:$('#opt2_'+modifyCount).val(),
           opt3:$('#opt3_'+modifyCount).val(),
           opt4:$('#opt4_'+modifyCount).val(),
           opt5:$('#opt5_'+modifyCount).val(),
           nematodeType:input.options['nematodeType'],
-          CDS_1:input.CDS1,
-          CDS_2:input.CDS2,
+          CDS_1:QAQ1,
+          CDS_2:QAQ2,
           operationTimes:modifyCount,
           userNum:userNum,
         },
@@ -40,6 +51,14 @@ function newScan(input,pic2src,modifyCount,scanUrl,userNum,oldSeqViewDataArr){
           )
           },
         success: function(data){
+          swal.queue([{
+              title : 'Loading scan result...',
+              text: "It takes some time. Please wait a moment.",
+              imageUrl: loadPic,
+              disableButtons: true,
+              showConfirmButton: false,
+              allowOutsideClick : false,
+              }]);
           clearInterval(clock);
           if(data.state=='nothing'){
             swal(
@@ -80,8 +99,15 @@ function newScan(input,pic2src,modifyCount,scanUrl,userNum,oldSeqViewDataArr){
             'error'
             )
           }
+          else if(data.newout.length > 100){
+            swal(
+              'Too many hits('+data.newout.length+' identified piRNA target sites)',
+              'Use more strict rules or shorter sequence.',
+              'error'
+              )
+          }
           else{
-            if (data.newout.length == 0){
+            if (data.newout.length == 0){              
               $.ajax({
                 url:"sucData/",
                 data:{
@@ -90,6 +116,12 @@ function newScan(input,pic2src,modifyCount,scanUrl,userNum,oldSeqViewDataArr){
                   geneSeq:data.gene,
                   CDS1:data.CDS1,
                   CDS2:data.CDS2,
+                  CDS_region:data.CDS_region,
+                  a:data.options.core_non_GU,
+                  b:data.options.core_GU,
+                  c:data.options.non_core_non_GU,
+                  d:data.options.non_core_GU,
+                  e:data.options.total,
                   userNum:userNum,
                 },
                 type:"POST",
@@ -107,7 +139,7 @@ function newScan(input,pic2src,modifyCount,scanUrl,userNum,oldSeqViewDataArr){
                   $('#modify_'+modifyCount+'-Result').append('\
                     <div class="alert alert-success" role="alert">\
                       <h2 class="alert-heading">Success!</h2>\
-                      <p>No piRNA target site is found in the modified sequence.&nbsp;&nbsp;&nbsp;<a href="/piScan/Download/'+modifyCount+'/'+userNum+'" target="_blank"><button type="button" class="btn btn-info" style="border-color: black; padding-top: 4px; padding-bottom: 4px;"><img src="https://png.icons8.com/download/androidL/20/000000">  Download sequence</button></a></p>\
+                      <p>No piRNA target site is found in the modified sequence.&nbsp;&nbsp;&nbsp;<a href="/piScan/Download/'+modifyCount+'/'+userNum+'" target="_blank"><button type="button" class="btn btn-info" style="border-color: black; padding-top: 4px; padding-bottom: 4px;"><img src="https://png.icons8.com/download/androidL/20/000000">  Download DNA/RNA sequence</button></a></p>\
                     </div>\
                   ');
                   var strVar = '<div class="card my-4 h-100 darkC">\
@@ -122,21 +154,21 @@ function newScan(input,pic2src,modifyCount,scanUrl,userNum,oldSeqViewDataArr){
                           </div>\
                         </div>\
                       ';                   
-                      strVar += '<div class="text-center"><a href="/piScan/Download/'+modifyCount+'/'+userNum+'" target="_blank"><button type="button" class="btn btn-info btn-lg" style="border-color: black; padding-top: 4px; padding-bottom: 4px;"><img src="https://png.icons8.com/download/androidL/20/000000">  Download sequence</button></a></div>';
+                      strVar += '<div class="text-center"><a href="/piScan/Download/'+modifyCount+'/'+userNum+'" target="_blank"><button type="button" class="btn btn-info btn-lg" style="border-color: black; padding-top: 4px; padding-bottom: 4px;"><img src="https://png.icons8.com/download/androidL/20/000000">  Download DNA/RNA sequence</button></a></div>';
 
                   $('#modify_'+modifyCount+'-Result').append(strVar);
                   $('#downloadModSeq'+modifyCount).on('click',function(){
                     saveSvgAsPng(document.getElementById("preSeqView-"+modifyCount), "pre_modifySeqView_"+modifyCount+".png", {scale: 2, backgroundColor: "#FFFFFF"});
                   });
 
-
                   selectedTable('selectedChange_'+modifyCount,SCdata,modifyCount);
                   preSeqView('preSeqView-'+modifyCount,SCdata,$('#wrap').width()*0.85);
                   $(document).ready(function(){
-                      $(window).resize(function() {
-                        $('#preSeqView-'+modifyCount).empty();
-                        preSeqView('preSeqView-'+modifyCount,SCdata,$('#wrap').width()*0.85);                                                                  
-                      });
+                    $(window).resize(function() {
+                      $('#preSeqView-'+modifyCount).empty();
+                      preSeqView('preSeqView-'+modifyCount,SCdata,$('#wrap').width()*0.85);                                                                  
+                    });
+                    swal.close();
                   });
 
                 }
@@ -150,6 +182,12 @@ function newScan(input,pic2src,modifyCount,scanUrl,userNum,oldSeqViewDataArr){
                   modifyCount:modifyCount,
                   geneName:data.name,
                   geneSeq:data.gene,
+                  CDS_region:data.CDS_region,
+                  a:data.options.core_non_GU,
+                  b:data.options.core_GU,
+                  c:data.options.non_core_non_GU,
+                  d:data.options.non_core_GU,
+                  e:data.options.total,
                   CDS1:data.CDS1,
                   CDS2:data.CDS2,
                   userNum:userNum,
@@ -172,7 +210,7 @@ function newScan(input,pic2src,modifyCount,scanUrl,userNum,oldSeqViewDataArr){
                   $('#modify_'+modifyCount+'-Result').append('\
                     <div class="alert alert-danger" style="margin: 0px 15px;" role="alert">\
                       <h3 class="alert-heading">Fail!</h4>\
-                      <p id="fail-alert-para-'+modifyCount+'">At least one piRNA target site is still found in the modified sequence. &nbsp;&nbsp;&nbsp;<a href="/piScan/Download/'+modifyCount+'/'+userNum+'" target="_blank"><button type="button" class="btn btn-info" style="border-color: black; padding-top: 4px; padding-bottom: 4px;"><img src="https://png.icons8.com/download/androidL/20/000000">  Download sequence</button></a></p>\
+                      <p id="fail-alert-para-'+modifyCount+'">At least one piRNA target site is still found in the modified sequence. &nbsp;&nbsp;&nbsp;<a href="/piScan/Download/'+modifyCount+'/'+userNum+'" target="_blank"><button type="button" class="btn btn-info" style="border-color: black; padding-top: 4px; padding-bottom: 4px;"><img src="https://png.icons8.com/download/androidL/20/000000">  Download DNA/RNA sequence</button></a></p>\
                     </div>\
                   ');
                   var strVar = '<div class="card my-4 h-100 darkC" style="margin: 0px 15px;">\
@@ -184,11 +222,14 @@ function newScan(input,pic2src,modifyCount,scanUrl,userNum,oldSeqViewDataArr){
                   modifyResultCreate('modify_'+modifyCount,modifyCount,userNum);
                   noBulgeData('modify_'+modifyCount,data,pic2src);
                   var geneArr = data.gene.split("");
-                  var seqViewDataArr = seqView('modify_'+modifyCount,geneArr,data,data.CDS[0].split(''),data.CDS1,data.CDS2,$('#wrap').width()*0.775);                 
+                  var seqViewDataArr = seqView('modify_'+modifyCount,geneArr,data,data.CDS[0].split(''),data.CDS1,data.CDS2,$('#wrap').width()*0.775);
+                  explain('modify_'+modifyCount,data.CDS1,data.CDS2,geneArr,$('#wrap').width()*0.9);
                   overView('modify_'+modifyCount,geneArr,seqViewDataArr,data.CDS1,data.CDS2,$('#wrap').width()*0.82,data.newout);                
                   $(document).ready(function(){
                     $(window).resize(function() {
                       $('#modify_'+modifyCount+'-overView').empty();
+                      $('#modify_'+modifyCount+'-explain').empty();
+                      explain('modify_'+modifyCount,data.CDS1,data.CDS2,geneArr,$('#wrap').width()*0.9);
                       overView('modify_'+modifyCount,geneArr,seqViewDataArr,data.CDS1,data.CDS2,$('#wrap').width()*0.82,data.newout);
                       $('#modify_'+modifyCount+'-seqView').empty();                      
                       seqView('modify_'+modifyCount,geneArr,data,data.CDS[0].split(''),data.CDS1,data.CDS2,$('#wrap').width()*0.775);                                          
@@ -258,12 +299,14 @@ function newScan(input,pic2src,modifyCount,scanUrl,userNum,oldSeqViewDataArr){
                   if( $('#successful_'+modifyCount+' > div').length == 0){
                     $('#successful_'+modifyCount).remove();
                   }
+                  $(document).ready(function(){
+                    swal.close();
+                  });
                 }
               });               
             }
 
-            $('html, body').animate({scrollTop: '0px'}, 300);
-            swal.close();           
+            $('html, body').animate({scrollTop: '0px'}, 300);            
           }
         },
       })
@@ -297,10 +340,10 @@ function failSelectedTable(divId,data,modifyCount,newOut,userNum){
   }
   var failPosStr = failPos.join();
   if(failPos.length == 1){
-    $('#fail-alert-para-'+modifyCount).html('The design on position '+failPosStr+' is not successful. &nbsp;&nbsp;&nbsp;<a href="/piScan/Download/'+modifyCount+'/'+userNum+'" target="_blank"><button type="button" class="btn btn-info" style="border-color: black; padding-top: 4px; padding-bottom: 4px;"><img src="https://png.icons8.com/download/androidL/20/000000">  Download sequence</button></a>');
+    $('#fail-alert-para-'+modifyCount).html('The design on position '+failPosStr+' is not successful. &nbsp;&nbsp;&nbsp;<a href="/piScan/Download/'+modifyCount+'/'+userNum+'" target="_blank"><button type="button" class="btn btn-info" style="border-color: black; padding-top: 4px; padding-bottom: 4px;"><img src="https://png.icons8.com/download/androidL/20/000000">  Download DNA/RNA sequence</button></a>');
   }
   else{
-    $('#fail-alert-para-'+modifyCount).html('The design on positions '+failPosStr+' are not successful. &nbsp;&nbsp;&nbsp;<a href="/piScan/Download/'+modifyCount+'/'+userNum+'" target="_blank"><button type="button" class="btn btn-info" style="border-color: black; padding-top: 4px; padding-bottom: 4px;"><img src="https://png.icons8.com/download/androidL/20/000000">  Download sequence</button></a>');
+    $('#fail-alert-para-'+modifyCount).html('The design on positions '+failPosStr+' are not successful. &nbsp;&nbsp;&nbsp;<a href="/piScan/Download/'+modifyCount+'/'+userNum+'" target="_blank"><button type="button" class="btn btn-info" style="border-color: black; padding-top: 4px; padding-bottom: 4px;"><img src="https://png.icons8.com/download/androidL/20/000000">  Download DNA/RNA sequence</button></a>');
   }
   $('#changeTable_'+modifyCount).find('tbody').append(tableTemp);
   $(document).ready(function() {

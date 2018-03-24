@@ -1,9 +1,13 @@
-function shit(divId,sug,sugNotCDS,a,b,c,d,e,name,gene,nematodeType,CDS1,CDS2,csrf,ori_data,pic2src,scanUrl,seqViewDataArr,userNum,oldSeqViewDataArr){
+function shit(divId,sug,sugNotCDS,a,b,c,d,e,name,gene,nematodeType,CDS1,CDS2,csrf,ori_data,pic2src,scanUrl,seqViewDataArr,userNum,oldSeqViewDataArr,loadPic){
 	var duplicateFir = []; //有重複的checkbox第一個位置
 	var duplicateDict = {};
 	var frontCount = 0;
 	var midCount = 0;
 	var lastCount = 0;
+	var scoreA = ori_data.Tscore[0];
+	var scoreB = ori_data.Tscore[1];
+	var scoreC = ori_data.Tscore[2];
+	var scoreD = ori_data.Tscore[3];
 
 	//////////////Rule說明
 	var ruleText = '<div class="escape" style="text-align:left;">';
@@ -88,9 +92,9 @@ function shit(divId,sug,sugNotCDS,a,b,c,d,e,name,gene,nematodeType,CDS1,CDS2,csr
 		var span = sugNotCDS[i][7].length+1;
 		table += '<tr><td class="mid" rowspan="'+(span+2)+'">'+sugNotCDS[i][0]+'</td>';
 		table += '<td class="mid" rowspan="'+(span+2)+'">'+sugNotCDS[i][1]+'~'+(sugNotCDS[i][1]+(sugNotCDS[i][2]-1))+'</td>';
-		table += '<td colspan="4" rowspan="2"></td><td>pairing (top: input sequence, bottom: piRNA)</td><td rowspan="2"></td></tr>';
-		table += '<tr><td id="'+divId+'-piPic'+i+'" class="mid"><svg id = "'+divId+'-pic'+i+'"></svg></td></tr>';
-		table += '<tr><td></td><td>amino acid</td><td>modified position</td><td>suggested change</td><td>pairing after change(top: modified sequence, bottom: piRNA)</td><td>rule(s) broken</td></tr>';
+		table += '<td colspan="4" rowspan="2"></td><td>piRNA targeting score</td><td>pairing (top: input sequence, bottom: piRNA)</td><td rowspan="2"></td></tr>';
+		table += '<tr><td>'+sugNotCDS[i][13]+'</td><td id="'+divId+'-piPic'+i+'" class="mid"><svg id = "'+divId+'-pic'+i+'"></svg></td></tr>';
+		table += '<tr><td></td><td>amino acid</td><td>modified position</td><td>suggested change</td><td>piRNA targeting score after change</td><td>pairing after change(top: modified sequence, bottom: piRNA)</td><td>rule(s) broken</td></tr>';
 		table_html+=table;
 		var temp = '';
 		
@@ -109,14 +113,14 @@ function shit(divId,sug,sugNotCDS,a,b,c,d,e,name,gene,nematodeType,CDS1,CDS2,csr
 			// duplicateDict[sugNotCDS[i][7][pics][0][0]+'_'+i] = pics;
 
 			if(sugNotCDS[i][7][pics].length == 1){
-				temp += '<td>'+sugNotCDS[i][7][pics][0][1]+' → '+sugNotCDS[i][7][pics][0][2]+'</td><td><svg id = "'+divId+'-pic'+i+'_'+pics+'"></svg></td>';
+				temp += '<td>'+sugNotCDS[i][7][pics][0][1]+' → '+sugNotCDS[i][7][pics][0][2]+'</td><td>'+(10-new_sxgu*scoreA-new_sgu*scoreB-new_nsxgu*scoreC-new_nsgu*scoreD)+'</td><td><svg id = "'+divId+'-pic'+i+'_'+pics+'"></svg></td>';
 			}
 			else{
 				temp +=	'<td>'+sugNotCDS[i][7][pics][0][1]+' → <select class="drop">';
 				for(var z in sugNotCDS[i][7][pics]){
 					temp += '<option value="'+i+'_'+pics+'_'+z+'_'+i+'">'+sugNotCDS[i][7][pics][z][2]+'</option>';
 				}
-				temp += '</select></td><td id="'+divId+'-chart'+i+'_'+pics+'"><svg id = "'+divId+'-pic'+i+'_'+pics+'"></svg></td>';
+				temp += '</select></td><td>'+(10-new_sxgu*scoreA-new_sgu*scoreB-new_nsxgu*scoreC-new_nsgu*scoreD)+'</td><td id="'+divId+'-chart'+i+'_'+pics+'"><svg id = "'+divId+'-pic'+i+'_'+pics+'"></svg></td>';
 			}
 
 			if (new_sxgu > a){
@@ -226,9 +230,9 @@ function shit(divId,sug,sugNotCDS,a,b,c,d,e,name,gene,nematodeType,CDS1,CDS2,csr
 		var span = sug[i][7].length+1;
 		table += '<tr><td class="mid" rowspan="'+(span+2)+'">'+sug[i][0]+'</td>';
 		table += '<td class="mid" rowspan="'+(span+2)+'">'+sug[i][1]+'~'+(sug[i][1]+(sug[i][2]-1))+'</td>';
-		table += '<td colspan="4" rowspan="2"></td><td>pairing (top: input sequence, bottom: piRNA)</td><td rowspan="2"></td></tr>';
-		table += '<tr><td id="'+divId+'-piPic'+midX+'" class="mid"><svg id = "'+divId+'-pic'+midX+'"></svg></td></tr>';
-		table += '<tr><td></td><td>amino acid</td><td>modified position</td><td>suggested change</td><td>pairing after change(top: modified sequence, bottom: piRNA)</td><td>rule(s) broken</td></tr>';
+		table += '<td colspan="4" rowspan="2"></td><td>piRNA targeting score</td><td>pairing (top: input sequence, bottom: piRNA)</td><td rowspan="2"></td></tr>';
+		table += '<tr><td>'+sug[i][16]+'</td><td id="'+divId+'-piPic'+midX+'" class="mid"><svg id = "'+divId+'-pic'+midX+'"></svg></td></tr>';
+		table += '<tr><td></td><td>amino acid</td><td>modified position</td><td>suggested change</td><td>piRNA targeting score after change</td><td>pairing after change(top: modified sequence, bottom: piRNA)</td><td>rule(s) broken</td></tr>';
 		table_html+=table;
 		var temp = '';
 		
@@ -247,14 +251,14 @@ function shit(divId,sug,sugNotCDS,a,b,c,d,e,name,gene,nematodeType,CDS1,CDS2,csr
 			duplicateDict[sug[i][7][pics][0][1]+'_'+i] = pics;
 
 			if(sug[i][7][pics].length == 1){
-				temp += '<td>'+sug[i][7][pics][0][2]+' → '+sug[i][7][pics][0][3]+'</td><td><svg id = "'+divId+'-pic'+midX+'_'+pics+'"></svg></td>';
+				temp += '<td>'+sug[i][7][pics][0][2]+' → '+sug[i][7][pics][0][3]+'</td><td>'+(10-new_sxgu*scoreA-new_sgu*scoreB-new_nsxgu*scoreC-new_nsgu*scoreD)+'</td><td><svg id = "'+divId+'-pic'+midX+'_'+pics+'"></svg></td>';
 			}
 			else{
 				temp +=	'<td>'+sug[i][7][pics][0][2]+' → <select class="dropCDS">';
 				for(var z in sug[i][7][pics]){
 					temp += '<option value="'+midX+'_'+pics+'_'+z+'_'+i+'">'+sug[i][7][pics][z][3]+'</option>';
 				}
-				temp += '</select></td><td id="'+divId+'-chart'+midX+'_'+pics+'"><svg id = "'+divId+'-pic'+midX+'_'+pics+'"></svg></td>';
+				temp += '</select></td><td id="'+divId+'-ATscore'+midX+'_'+pics+'">'+(10-new_sxgu*scoreA-new_sgu*scoreB-new_nsxgu*scoreC-new_nsgu*scoreD)+'</td><td id="'+divId+'-chart'+midX+'_'+pics+'"><svg id = "'+divId+'-pic'+midX+'_'+pics+'"></svg></td>';
 			}
 
 			if (new_sxgu > a){
@@ -334,6 +338,9 @@ function shit(divId,sug,sugNotCDS,a,b,c,d,e,name,gene,nematodeType,CDS1,CDS2,csr
 				$('#'+divId+'-rule'+val[0]+'_'+val[1]).html('✕');
 			}
 
+			$('#'+divId+'-ATscore'+val[0]+'_'+val[1]).empty();
+			$('#'+divId+'-ATscore'+val[0]+'_'+val[1]).html((10-new_sxgu*scoreA-new_sgu*scoreB-new_nsxgu*scoreC-new_nsgu*scoreD));
+
 			// if (new_sxgu > a || new_sgu > b || new_nsxgu > c || new_nsgu > d || new_total >e){
 			// 	$('#escape'+val[0]+'_'+val[1]).empty();
 			// 	$('#escape'+val[0]+'_'+val[1]).html('✓');
@@ -364,9 +371,9 @@ function shit(divId,sug,sugNotCDS,a,b,c,d,e,name,gene,nematodeType,CDS1,CDS2,csr
 			var span = sugNotCDS[i][7].length+1;
 			table += '<tr><td class="mid" rowspan="'+(span+2)+'">'+sugNotCDS[i][0]+'</td>';
 			table += '<td class="mid" rowspan="'+(span+2)+'">'+sugNotCDS[i][1]+'~'+(sugNotCDS[i][1]+(sugNotCDS[i][2]-1))+'</td>';
-			table += '<td colspan="4" rowspan="2"></td><td>pairing (top: input sequence, bottom: piRNA)</td><td rowspan="2"></td></tr>';
-			table += '<tr><td id="'+divId+'-piPic'+lastX+'" class="mid"><svg id = "'+divId+'-pic'+lastX+'"></svg></td></tr>';
-			table += '<tr><td></td><td>amino acid</td><td>modified position</td><td>suggested change</td><td>pairing after change(top: modified sequence, bottom: piRNA)</td><td>rule(s) broken</td></tr>';
+			table += '<td colspan="4" rowspan="2"></td><td>piRNA targeting score</td><td>pairing (top: input sequence, bottom: piRNA)</td><td rowspan="2"></td></tr>';
+			table += '<tr><td>'+sugNotCDS[i][13]+'</td><td id="'+divId+'-piPic'+lastX+'" class="mid"><svg id = "'+divId+'-pic'+lastX+'"></svg></td></tr>';
+			table += '<tr><td></td><td>amino acid</td><td>modified position</td><td>suggested change</td><td>piRNA targeting score after change</td><td>pairing after change(top: modified sequence, bottom: piRNA)</td><td>rule(s) broken</td></tr>';
 			table_html+=table;
 			var temp = '';
 			for (var pics in sugNotCDS[i][7]){
@@ -384,14 +391,14 @@ function shit(divId,sug,sugNotCDS,a,b,c,d,e,name,gene,nematodeType,CDS1,CDS2,csr
 				// duplicateDict[sugNotCDS[i][7][pics][0][0]+'_'+i] = pics;
 
 				if(sugNotCDS[i][7][pics].length == 1){
-					temp += '<td>'+sugNotCDS[i][7][pics][0][1]+' → '+sugNotCDS[i][7][pics][0][2]+'</td><td><svg id = "pic'+lastX+'_'+pics+'"></svg></td>';
+					temp += '<td>'+sugNotCDS[i][7][pics][0][1]+' → '+sugNotCDS[i][7][pics][0][2]+'</td><td>'+(10-new_sxgu*scoreA-new_sgu*scoreB-new_nsxgu*scoreC-new_nsgu*scoreD)+'</td><td><svg id = "pic'+lastX+'_'+pics+'"></svg></td>';
 				}
 				else{
 					temp +=	'<td>'+sugNotCDS[i][7][pics][0][1]+' → <select class="drop">';
 					for(var z in sugNotCDS[i][7][pics]){
 						temp += '<option value="'+lastX+'_'+pics+'_'+z+'_'+i+'">'+sugNotCDS[i][7][pics][z][2]+'</option>';
 					}
-					temp += '</select></td><td id="'+divId+'-chart'+lastX+'_'+pics+'"><svg id = "'+divId+'-pic'+lastX+'_'+pics+'"></svg></td>';
+					temp += '</select></td><td>'+(10-new_sxgu*scoreA-new_sgu*scoreB-new_nsxgu*scoreC-new_nsgu*scoreD)+'</td><td id="'+divId+'-chart'+lastX+'_'+pics+'"><svg id = "'+divId+'-pic'+lastX+'_'+pics+'"></svg></td>';
 				}
 
 				if (new_sxgu > a){
@@ -590,8 +597,9 @@ function shit(divId,sug,sugNotCDS,a,b,c,d,e,name,gene,nematodeType,CDS1,CDS2,csr
 	// $('#'+divId+'-sugTable').parent().after('<div id="update_footer" class="card-footer text-center"><button type="button" id="'+divId+'-update" class="btn btn-primary btn-lg" style="width: 25%;">Modify input sequence</button></div>');
 	$('#'+divId+'-update').on({
 		click:function(){
+			$('#'+divId+'-update').prop('disabled',true);
 			var modifyCount = Number($(this).attr('value')) +1;
-			update(modifyCount,sug,sugNotCDS,name,gene,a,b,c,d,e,nematodeType,CDS1,CDS2,csrf,ori_data,pic2src,scanUrl,divId,userNum,oldSeqViewDataArr);
+			update(modifyCount,sug,sugNotCDS,name,gene,a,b,c,d,e,nematodeType,CDS1,CDS2,csrf,ori_data,pic2src,scanUrl,divId,userNum,oldSeqViewDataArr,loadPic);
 		},
 	});
 

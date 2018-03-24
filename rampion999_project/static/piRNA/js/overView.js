@@ -7,7 +7,7 @@ function overView(divId,mRNA,data,CDS_1,CDS_2,divWidth,newout){
   }
   // console.log(big);
   // var div = d3.select("body").append("div") 
-  //             .attr("class", "tooltip")       
+  //             .attr("class", "Pictooltip")       
   //             .style("opacity", 0);
 
   var width = divWidth;
@@ -16,7 +16,7 @@ function overView(divId,mRNA,data,CDS_1,CDS_2,divWidth,newout){
   var svg = d3.select('#'+divId+'-overView').attr({
       'width': width,
       'height': height
-    });  
+    });
   var scaleY = d3.scale.linear()
         .range([0, height])
         .domain([0, height/17.5]);
@@ -71,7 +71,7 @@ function overView(divId,mRNA,data,CDS_1,CDS_2,divWidth,newout){
        });
   var previousPos = -100;
   var seqY = 3;
-  var div = d3.select(".tooltip");
+  var div = d3.select(".Pictooltip");
   if(CDS_1=='' && CDS_2==''){
     svg.append('rect').attr({
           'x':scaleX(1),
@@ -82,16 +82,16 @@ function overView(divId,mRNA,data,CDS_1,CDS_2,divWidth,newout){
           'fill':'lightblue',
           'stroke':'black',
         });
-    svg.append('text').attr({
-        'x':scaleX(mRNAlen/2)-23,
-        'y':scaleY(2.75),
-        'fill':'#000',
-        'stroke':'none',
-        'style':'text-anchor: middle',
-        'transform':'translate(52.5,4)',       
-        }).style({
-        'font-size':'15px'
-       }).text('Input sequence');
+    // svg.append('text').attr({
+    //     'x':scaleX(mRNAlen/2)-23,
+    //     'y':scaleY(2.75),
+    //     'fill':'#000',
+    //     'stroke':'none',
+    //     'style':'text-anchor: middle',
+    //     'transform':'translate(52.5,4)',       
+    //     }).style({
+    //     'font-size':'15px'
+    //    }).text('Input sequence');
   }
   else{
     svg.append('rect').attr({
@@ -124,41 +124,41 @@ function overView(divId,mRNA,data,CDS_1,CDS_2,divWidth,newout){
             'fill':'lightgreen',
             'stroke':'black',
           });
-    if (CDS_1 != 1 || CDS_2 != mRNAlen){svg.append('text').attr({
-            'x':scaleX(0)-23,
-            'y':scaleY(2.75),
-            'fill':'#000',
-            'stroke':'none',
-            'style':'text-anchor: middle',
-            'transform':'translate(50,4)',       
-            }).style({
-            'font-size':'15px'
-           }).text("5' UTR");
-        svg.append('text').attr({
-            'x':scaleX(mRNAlen+1)+28,
-            'y':scaleY(2.75),
-            'fill':'#000',
-            'stroke':'none',
-            'style':'text-anchor: middle',
-            'transform':'translate(52.5,4)',       
-            }).style({
-            'font-size':'15px'
-           }).text("3' UTR");
-    }
-    svg.append('text').attr({
-        'x':scaleX((Number(CDS_2)-Number(CDS_1))/2+Number(CDS_1))+28,
-        'y':scaleY(2.75),
-        'fill':'#000',
-        'stroke':'none',
-        'style':'text-anchor: middle',
-        'transform':'translate(52.5,4)',       
-        }).style({
-        'font-size':'15px'
-       }).text("CDS");    
+    // if (CDS_1 != 1 || CDS_2 != mRNAlen){
+    //     svg.append('text').attr({
+    //         'x':scaleX(0)-23,
+    //         'y':scaleY(2.75),
+    //         'fill':'#000',
+    //         'stroke':'none',
+    //         'style':'text-anchor: middle',
+    //         'transform':'translate(50,4)',       
+    //         }).style({
+    //         'font-size':'15px'
+    //        }).text("5' UTR");
+    //     svg.append('text').attr({
+    //         'x':scaleX(mRNAlen+1)+28,
+    //         'y':scaleY(2.75),
+    //         'fill':'#000',
+    //         'stroke':'none',
+    //         'style':'text-anchor: middle',
+    //         'transform':'translate(52.5,4)',       
+    //         }).style({
+    //         'font-size':'15px'
+    //        }).text("3' UTR");
+    // }
+    // svg.append('text').attr({
+    //     'x':scaleX((Number(CDS_2)-Number(CDS_1))/2+Number(CDS_1))+28,
+    //     'y':scaleY(2.75),
+    //     'fill':'#000',
+    //     'stroke':'none',
+    //     'style':'text-anchor: middle',
+    //     'transform':'translate(52.5,4)',       
+    //     }).style({
+    //     'font-size':'15px'
+    //    }).text("CDS");    
   }
   
   for (var piRNA in data){
-    console.log(newout);
     if(piRNA!=0){
       svg.append('rect').attr({
           'num':piRNA,
@@ -176,7 +176,7 @@ function overView(divId,mRNA,data,CDS_1,CDS_2,divWidth,newout){
                 var num = Number($(this).attr('num'));
                 var IDD = $(this).attr('id');
                 // var gettt = 'piRNA name: ' + data[num].piRNA + '<br>' + 'positions: ' + $(this).attr('pos')+ ' - ' + (parseInt($(this).attr('pos'))+20);
-                var newDetail = newout[(num-1)][3].split(',').join(' , ')
+                var newDetail = newout[(num-1)][3].split(',').join(', ')
                 var gettt = '<table>';
                 gettt += '<tr class="row1">';
                 gettt += '<th>#</th>';
@@ -201,8 +201,8 @@ function overView(divId,mRNA,data,CDS_1,CDS_2,divWidth,newout){
                   .style("opacity", 1)
                   .style("visibility", "visible");
                 div.html(gettt)
-                  .style("left", ($('#wrap').width()*0.5 - $('#tooltip').width()*0.5) + "px")   
-                  .style("top", (event.pageY+25) + "px");
+                  .style("left", ($('#wrap').width()*0.5 - $('#Pictooltip').width()*0.5) + "px")   
+                  .style("top", (event.pageY+30) + "px");
                 d3.select(this).style("fill",'#fd8181');
             })
             // .on("mousemove", function(){
@@ -238,6 +238,238 @@ function overView(divId,mRNA,data,CDS_1,CDS_2,divWidth,newout){
     }
   }
 };
+
+function explain(divId,CDS_1,CDS_2,mRNA,divWidth){
+  var mRNAlen = mRNA.length;
+  var width = divWidth;
+
+  var height = 17.5*4;
+
+  var svg = d3.select('#'+divId+'-explain').attr({
+      'width': width,
+      'height': height
+    });
+
+  var scaleX = d3.scale.linear()
+        .range([0, width-75])
+        .domain([1, 200])
+        .clamp(false);
+
+  var sperate = 160;
+
+  if (CDS_1 == 0){
+    svg.append('rect').attr({
+          'x':scaleX(200)-60-40-55-sperate*1,
+          'y':5,
+          'width':45, 
+          'height':'15',
+          'fill':'lightblue',
+          'stroke':'black',
+        });
+    svg.append('text').attr({
+        'x':scaleX(200)-sperate*1,
+        'y':17.5,
+        'fill':'#000',
+        'stroke':'none',
+        'text-anchor':'end',      
+        }).style({
+        'font-size':'15px'
+       }).text('Input sequence');
+
+    svg.append('rect').attr({
+          'x':scaleX(200)-75-10,
+          'y':5,
+          'width':30, 
+          'height':'15',
+          'fill':'red',
+          'stroke':'black',
+        });
+    svg.append('text').attr({
+        'x':scaleX(200),
+        'y':17.5,
+        'fill':'#000',
+        'stroke':'none',
+        'text-anchor':'end',      
+        }).style({
+        'font-size':'15px'
+       }).text('piRNA');
+  }
+  else{
+    svg.append('rect').attr({
+          'x':scaleX(200)-75-10,
+          'y':5,
+          'width':30, 
+          'height':'15',
+          'fill':'red',
+          'stroke':'black',
+        });
+    svg.append('text').attr({
+        'x':scaleX(200),
+        'y':17.5,
+        'fill':'#000',
+        'stroke':'none',
+        'text-anchor':'end',      
+        }).style({
+        'font-size':'15px'
+       }).text('piRNA');
+
+    
+
+    if(CDS_1!=1 && CDS_2 != mRNAlen){
+      svg.append('rect').attr({
+          'x':scaleX(200)-60-40-sperate*1,
+          'y':5,
+          'width':45, 
+          'height':'15',
+          'fill':'lightpink',
+          'stroke':'black',
+        });
+      svg.append('text').attr({
+          'x':scaleX(200)-sperate*1,
+          'y':17.5,
+          'fill':'#000',
+          'stroke':'none',
+          'text-anchor':'end',      
+          }).style({
+          'font-size':'15px'
+         }).text("3' UTR");
+
+      svg.append('rect').attr({
+          'x':scaleX(200)-60-40-sperate*2,
+          'y':5,
+          'width':45, 
+          'height':'15',
+          'fill':'lightgreen',
+          'stroke':'black',
+        });
+      svg.append('text').attr({
+          'x':scaleX(200)-15-sperate*2,
+          'y':17.5,
+          'fill':'#000',
+          'stroke':'none',
+          'text-anchor':'end',      
+          }).style({
+          'font-size':'15px'
+         }).text('CDS');
+
+      svg.append('rect').attr({
+          'x':scaleX(200)-60-40-sperate*3,
+          'y':5,
+          'width':45, 
+          'height':'15',
+          'fill':'lightyellow',
+          'stroke':'black',
+        });
+      svg.append('text').attr({
+          'x':scaleX(200)-sperate*3,
+          'y':17.5,
+          'fill':'#000',
+          'stroke':'none',
+          'text-anchor':'end',      
+          }).style({
+          'font-size':'15px'
+         }).text("5' UTR");
+    }
+    else if(CDS_1==1 && CDS_2 != mRNAlen){
+      svg.append('rect').attr({
+          'x':scaleX(200)-60-40-sperate*1,
+          'y':5,
+          'width':45, 
+          'height':'15',
+          'fill':'lightpink',
+          'stroke':'black',
+        });
+      svg.append('text').attr({
+          'x':scaleX(200)-sperate*1,
+          'y':17.5,
+          'fill':'#000',
+          'stroke':'none',
+          'text-anchor':'end',      
+          }).style({
+          'font-size':'15px'
+         }).text("3' UTR");
+
+      svg.append('rect').attr({
+          'x':scaleX(200)-60-40-sperate*2,
+          'y':5,
+          'width':45, 
+          'height':'15',
+          'fill':'lightgreen',
+          'stroke':'black',
+        });
+      svg.append('text').attr({
+          'x':scaleX(200)-15-sperate*2,
+          'y':17.5,
+          'fill':'#000',
+          'stroke':'none',
+          'text-anchor':'end',      
+          }).style({
+          'font-size':'15px'
+         }).text('CDS');
+    }
+    else if(CDS_1!=1 && CDS_2 == mRNAlen){
+      svg.append('rect').attr({
+          'x':scaleX(200)-60-40-sperate*1,
+          'y':5,
+          'width':45, 
+          'height':'15',
+          'fill':'lightgreen',
+          'stroke':'black',
+        });
+      svg.append('text').attr({
+          'x':scaleX(200)-15-sperate*1,
+          'y':17.5,
+          'fill':'#000',
+          'stroke':'none',
+          'text-anchor':'end',      
+          }).style({
+          'font-size':'15px'
+         }).text('CDS');
+
+      svg.append('rect').attr({
+          'x':scaleX(200)-60-40-sperate*2,
+          'y':5,
+          'width':45, 
+          'height':'15',
+          'fill':'lightyellow',
+          'stroke':'black',
+        });
+      svg.append('text').attr({
+          'x':scaleX(200)-sperate*2,
+          'y':17.5,
+          'fill':'#000',
+          'stroke':'none',
+          'text-anchor':'end',      
+          }).style({
+          'font-size':'15px'
+         }).text("5' UTR");
+    }
+    else if(CDS_1==1 && CDS_2 == mRNAlen){
+      svg.append('rect').attr({
+          'x':scaleX(200)-60-40-sperate*1,
+          'y':5,
+          'width':45, 
+          'height':'15',
+          'fill':'lightgreen',
+          'stroke':'black',
+        });
+      svg.append('text').attr({
+          'x':scaleX(200)-15-sperate*1,
+          'y':17.5,
+          'fill':'#000',
+          'stroke':'none',
+          'text-anchor':'end',      
+          }).style({
+          'font-size':'15px'
+         }).text('CDS');
+    }
+
+  }
+
+
+
+}
+
 
 
 function eachOverView(Num,mRNA,data,CDS_1,CDS_2,divId,divWidth){
@@ -312,7 +544,7 @@ function eachOverView(Num,mRNA,data,CDS_1,CDS_2,divId,divWidth){
   var previousPos = -100;
   var seqY = 3;
   // var div = d3.select("body").append("div") 
-  //   .attr("class", "tooltip")       
+  //   .attr("class", "Pictooltip")       
   //   .style("opacity", 0);
   if(CDS_1=='' && CDS_2==''){
     svg.append('rect').attr({

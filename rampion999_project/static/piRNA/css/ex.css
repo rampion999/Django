@@ -12,6 +12,10 @@ th{
   text-align:center;
 }
 
+li label{
+  margin-bottom: 0rem;
+}
+
 mark{
   background-color: yellow;
   padding: 0em;
@@ -61,7 +65,7 @@ div.blue{
   padding: 1.25rem;
   margin-top: 1.25rem;
   margin-bottom: 1.25rem;
-  border: 1px solid #eee;
+  border: 1px solid #dedede;
   border-left-color: #17a2b8;
   border-left-width: .25rem;
   border-radius: .25rem;
@@ -212,8 +216,8 @@ code {
 }
 
 
-/*tooltip CSS*/
-div.tooltip { 
+/*Pictooltip CSS*/
+div.Pictooltip { 
     visibility: hidden;
     /*width: 500px;*/
     background-color: #555;
@@ -231,12 +235,12 @@ div.tooltip {
   border-bottom: 1px solid #ddd;
 }
 
-.tooltip table{
+.Pictooltip table{
   font-size: 18px;
   width: 100%;
 }
 
-.tooltip table th, .tooltip table td {
+.Pictooltip table th, .Pictooltip table td {
     padding: 0px 15px;
     text-align: center;    
 }
@@ -254,3 +258,9 @@ div.tooltip {
     padding: 5px;
     text-align: center;    
 }*/
+
+.tooltip-inner {
+    max-width: 350px;
+    /* If max-width does not work, try using width instead */
+    width: 350px; 
+}

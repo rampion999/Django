@@ -1,8 +1,8 @@
 function noBulgeData(divId,data){
 	var table_html = '<table id="'+divId+'-myTable" class="display"><thead>\
 						<tr>\
-						<th>#</th>\
 						<th>piRNA</th>\
+						<th><abbr title="" style="border-bottom: 1.5px dotted #000;text-decoration: none;" id="score">piRNA targeting score</abbr></th>\
 						<th>targeted region in input sequence</th>\
 						<th style="white-space:nowrap;"># mismatches</th>\
 						<th>position in piRNA</th>\
@@ -40,13 +40,15 @@ function noBulgeData(divId,data){
 	for(var key in data.newout){
 	// 	var first = 0;
 		if(data.newout[key][0].indexOf("21ur-") == 0){
-			var table_html = '<tr id = "'+data.newout[key][0].replace('C.bri.','')+'" class = "name"><th class="mid">'+(Number(key)+1)+'</th><td class="mid" style="white-space:nowrap;"><a href="http://www.wormbase.org/species/c_elegans/gene/'+data.e_NameToId[data.newout[key][0]]+'" target="_blank">'+data.newout[key][0]+'</a></td>';
+			var table_html = '<tr id = "'+data.newout[key][0].replace('C.bri.','')+'" class = "name"><td class="mid" style="white-space:nowrap;"><a href="http://www.wormbase.org/species/c_elegans/gene/'+data.e_NameToId[data.newout[key][0]]+'" target="_blank">'+data.newout[key][0]+'</a></td>';
+			// <th class="mid">'+(Number(key)+1)+'</th>
 		}
 		else{
-			var table_html = '<tr id = "'+data.newout[key][0].replace('C.bri.','')+'" class = "name"><th class="mid">'+(Number(key)+1)+'</th><td class="mid" style="white-space:nowrap;">'+data.newout[key][0]+'</td>';
+			var table_html = '<tr id = "'+data.newout[key][0].replace('C.bri.','')+'" class = "name"><td class="mid" style="white-space:nowrap;">'+data.newout[key][0]+'</td>';
+			// <th class="mid">'+(Number(key)+1)+'</th>
 		}
-		      
-		table_html += '<td class="mid">'+data.newout[key][1]+'</td>';     
+		table_html += '<td class="mid">'+(10-data.newout[key][5]*data.Tscore[0]-data.newout[key][6]*data.Tscore[1]-data.newout[key][7]*data.Tscore[2]-data.newout[key][8]*data.Tscore[3])+'</td>';     
+		table_html += '<td class="mid"><span style="display:none;">'+data.newout[key][13]+'</span>'+data.newout[key][1]+'</td>';     
 		table_html += '<td class="mid">'+data.newout[key][2]+'</td>';     
 		table_html += '<td class="mid">'+data.newout[key][3]+'</td>';     
 		// table_html += '<td class="mid">'+data.newout[key][4]+'</td>';
@@ -112,16 +114,35 @@ function noBulgeData(divId,data){
 	// 	firstlast = first;
 	}
 	piRNA_info(divId,data.newout,data.piRNA_info_name,data.options.nematodeType);
-	// seqViewDataArr.unshift({most:most});
+	
 	resultTable = $('#'+divId+'-myTable').DataTable({
-		"ordering": false,
-		// "aLengthMenu": [[5,10, 25, 50, -1], [5,10, 25, 50, "All"]],
-		// "iDisplayLength": 5,
-		// info:false,
+		"order": [[ 1, "desc" ],[ 2, "asc" ]],
+		"initComplete": function(settings){
+            $('#score').tooltip(
+            {
+               title: '<span style="font-size:1rem;"><b>piRNA targeting score</b> = <br>10<br><span style="white-space: nowrap;">– '+data.Tscore["0"]+' * (# non-GU mismatches in seed)</span><br><span style="white-space: nowrap;">– '+data.Tscore["1"]+' * (# GU mismatches in seed)</span><br><span style="white-space: nowrap;">– '+data.Tscore["2"]+' * (# non-GU mismatches in non-seed)</span><br><span style="white-space: nowrap;"> – '+data.Tscore["3"]+' * (# GU mismatches in non-seed)</span></span>',
+               "container": 'body',
+               html:true,
+               template:'<div class="tooltip" role="tooltip"><div class="arrow"></div><div class="tooltip-inner"></div></div>'
+            });          
+        },
 		"searching": false,
 		"scrollX": true,
-		// "paging":false
+		"columnDefs": [{ 
+			orderable: false, targets: [0,4,9] },
+		// 	{
+  //           	targets: [ 1 ],
+  //           	orderData: [ 1, 2 ]
+  //       	},
+		],
 	});
+	// $('#scoreH').hover(
+	//  	function() {
+	//     	$('#score').trigger('mouseenter');
+	// 	}, function() {
+	// 		$('#score').trigger('mouseleave');
+	// 	}
+	// );
 	
 	$('#'+divId+'-myTable_length').removeClass('dataTables_length');
 	$('#'+divId+'-myTable_length').addClass('text-left');

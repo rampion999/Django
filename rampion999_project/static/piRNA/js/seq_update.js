@@ -1,4 +1,4 @@
-function update(modifyCount,sug,sugNotCDS,name,gene,a,b,c,d,e,f,g,h,csrf,ori_data,pic2src,scanUrl,divId,userNum,oldSeqViewDataArr){
+function update(modifyCount,sug,sugNotCDS,name,gene,a,b,c,d,e,f,g,h,csrf,ori_data,pic2src,scanUrl,divId,userNum,oldSeqViewDataArr,loadPic){
 	var new_gene = gene.split('');
 	var selected = {};
 	var count = 0;
@@ -53,12 +53,12 @@ function update(modifyCount,sug,sugNotCDS,name,gene,a,b,c,d,e,f,g,h,csrf,ori_dat
 			}
 			preCount += 1;
 		}
-		if(selectArr.length != 0){
-			// console.log('#piPic'+j);
-			ori_piRNA[count] = sugNotCDS[i][0]+'@@@'+sugNotCDS[i][1]+'@@@'+$('#'+divId+'-piPic'+i).html().replace('id="'+divId+'-pic'+i,'id="'+divId+'-new_pic'+i);
-			selected[count] = selectArr.join('@@@');
-			count+=1;
-		}
+		// if(selectArr.length != 0){
+		// 	// console.log('#piPic'+j);
+		// 	ori_piRNA[count] = sugNotCDS[i][0]+'@@@'+sugNotCDS[i][1]+'@@@'+$('#'+divId+'-piPic'+i).html().replace('id="'+divId+'-pic'+i,'id="'+divId+'-new_pic'+i);
+		// 	selected[count] = selectArr.join('@@@');
+		// 	count+=1;
+		// }
 	}
 
 
@@ -96,12 +96,12 @@ function update(modifyCount,sug,sugNotCDS,name,gene,a,b,c,d,e,f,g,h,csrf,ori_dat
 					notSelectPos.push(sug[x][1]+'-'+(sug[x][1]+sug[x][2]-1));
 				}
 			}
-			if(selectArr.length != 0){
-				// console.log('#piPic'+j);
-				ori_piRNA[count] = sug[x][0]+'@@@'+sug[x][1]+'@@@'+$('#'+divId+'-piPic'+i).html().replace('id="'+divId+'-pic'+i,'id="'+divId+'-new_pic'+i);
-				selected[count] = selectArr.join('@@@');
-				count+=1;
-			}
+			// if(selectArr.length != 0){
+			// 	// console.log('#piPic'+j);
+			// 	ori_piRNA[count] = sug[x][0]+'@@@'+sug[x][1]+'@@@'+$('#'+divId+'-piPic'+i).html().replace('id="'+divId+'-pic'+i,'id="'+divId+'-new_pic'+i);
+			// 	selected[count] = selectArr.join('@@@');
+			// 	count+=1;
+			// }
 	    midCount +=1;
 	}
 	
@@ -141,12 +141,12 @@ function update(modifyCount,sug,sugNotCDS,name,gene,a,b,c,d,e,f,g,h,csrf,ori_dat
 					}		
 				}
 			}
-			if(selectArr.length != 0){
-				// console.log('#piPic'+j);
-				ori_piRNA[count] = sugNotCDS[x][0]+'@@@'+sugNotCDS[x][1]+'@@@'+$('#'+divId+'-piPic'+i).html().replace('id="'+divId+'-pic'+i,'id="'+divId+'-new_pic'+i);
-				selected[count] = selectArr.join('@@@');
-				count+=1;
-			}
+			// if(selectArr.length != 0){
+			// 	// console.log('#piPic'+j);
+			// 	ori_piRNA[count] = sugNotCDS[x][0]+'@@@'+sugNotCDS[x][1]+'@@@'+$('#'+divId+'-piPic'+i).html().replace('id="'+divId+'-pic'+i,'id="'+divId+'-new_pic'+i);
+			// 	selected[count] = selectArr.join('@@@');
+			// 	count+=1;
+			// }
 	}
 
 	var posToDivNumStr = posToDivNum.join('@-@');
@@ -204,17 +204,18 @@ function update(modifyCount,sug,sugNotCDS,name,gene,a,b,c,d,e,f,g,h,csrf,ori_dat
 				nematodeType:f,
 				CDS_1:g,
 				CDS_2:h,
-				selected:selected,
-				select_num:count,
+				selected:'QQ',
+				select_num:0,
 				selectInfoStr:selectInfoStr,
 				posString:posString,
-				ori_piRNA:ori_piRNA,
+				ori_piRNA:'QQ',
 				posToDivNumStr:posToDivNumStr,
 				pickedStr:pickedStr,
 				userNum:userNum,
 				// csrfmiddlewaretoken: '{{ csrf_token }}',
 			},
-			type: "POST", 
+			type: "POST",
+			// contentType: "application/json; charset=utf-8", 
 			dataType:'json',
 			success: function(data){
 				$('#overallTab').append(
@@ -313,14 +314,14 @@ function update(modifyCount,sug,sugNotCDS,name,gene,a,b,c,d,e,f,g,h,csrf,ori_dat
     				strVar += "                                  <option class = \"clean\" value=\"4\">4<\/option>";
     				strVar += "                                  <option class = \"clean\" value=\"5\">5<\/option>";
     				strVar += "                                  <option class = \"clean\" value=\"6\">6<\/option>";
-    				strVar += "                                  <option class = \"clean\" value=\"7\">7<\/option>";
-    				strVar += "                                  <option class = \"clean\" value=\"8\">8<\/option>";
-    				strVar += "                                  <option class = \"clean\" value=\"9\">9<\/option>";
-    				strVar += "                                  <option class = \"clean\" value=\"10\">10<\/option>";
-    				strVar += "                                  <option class = \"clean\" value=\"11\">11<\/option>";
-    				strVar += "                                  <option class = \"clean\" value=\"12\">12<\/option>";
-    				strVar += "                                  <option class = \"clean\" value=\"13\">13<\/option>";
-    				strVar += "                                  <option class = \"clean\" value=\"14\">∞<\/option>";
+    				// strVar += "                                  <option class = \"clean\" value=\"7\">7<\/option>";
+    				// strVar += "                                  <option class = \"clean\" value=\"8\">8<\/option>";
+    				// strVar += "                                  <option class = \"clean\" value=\"9\">9<\/option>";
+    				// strVar += "                                  <option class = \"clean\" value=\"10\">10<\/option>";
+    				// strVar += "                                  <option class = \"clean\" value=\"11\">11<\/option>";
+    				// strVar += "                                  <option class = \"clean\" value=\"12\">12<\/option>";
+    				// strVar += "                                  <option class = \"clean\" value=\"13\">13<\/option>";
+    				// strVar += "                                  <option class = \"clean\" value=\"14\">∞<\/option>";
     				strVar += "                                <\/select>";
     				strVar += "                              <\/li>";
     				strVar += "                              <li>";
@@ -333,14 +334,14 @@ function update(modifyCount,sug,sugNotCDS,name,gene,a,b,c,d,e,f,g,h,csrf,ori_dat
     				strVar += "                                  <option class = \"clean\" value=\"4\">4<\/option>";
     				strVar += "                                  <option class = \"clean\" value=\"5\">5<\/option>";
     				strVar += "                                  <option class = \"clean\" value=\"6\">6<\/option>";
-    				strVar += "                                  <option class = \"clean\" value=\"7\">7<\/option>";
-    				strVar += "                                  <option class = \"clean\" value=\"8\">8<\/option>";
-    				strVar += "                                  <option class = \"clean\" value=\"9\">9<\/option>";
-    				strVar += "                                  <option class = \"clean\" value=\"10\">10<\/option>";
-    				strVar += "                                  <option class = \"clean\" value=\"11\">11<\/option>";
-    				strVar += "                                  <option class = \"clean\" value=\"12\">12<\/option>";
-    				strVar += "                                  <option class = \"clean\" value=\"13\">13<\/option>";
-    				strVar += "                                  <option class = \"clean\" value=\"14\">∞<\/option>";
+    				// strVar += "                                  <option class = \"clean\" value=\"7\">7<\/option>";
+    				// strVar += "                                  <option class = \"clean\" value=\"8\">8<\/option>";
+    				// strVar += "                                  <option class = \"clean\" value=\"9\">9<\/option>";
+    				// strVar += "                                  <option class = \"clean\" value=\"10\">10<\/option>";
+    				// strVar += "                                  <option class = \"clean\" value=\"11\">11<\/option>";
+    				// strVar += "                                  <option class = \"clean\" value=\"12\">12<\/option>";
+    				// strVar += "                                  <option class = \"clean\" value=\"13\">13<\/option>";
+    				// strVar += "                                  <option class = \"clean\" value=\"14\">∞<\/option>";
     				strVar += "                                <\/select>";
     				strVar += "                              <\/li>";
     				strVar += "                            <\/ul>";
@@ -357,21 +358,21 @@ function update(modifyCount,sug,sugNotCDS,name,gene,a,b,c,d,e,f,g,h,csrf,ori_dat
     				strVar += "                              <option class = \"clean\" value=\"4\">4<\/option>";
     				strVar += "                              <option class = \"clean\" value=\"5\">5<\/option>";
     				strVar += "                              <option class = \"clean\" value=\"6\">6<\/option>";
-    				strVar += "                              <option class = \"clean\" value=\"7\">7<\/option>";
-    				strVar += "                              <option class = \"clean\" value=\"8\">8<\/option>";
-    				strVar += "                              <option class = \"clean\" value=\"9\">9<\/option>";
-    				strVar += "                              <option class = \"clean\" value=\"10\">10<\/option>";
-    				strVar += "                              <option class = \"clean\" value=\"11\">11<\/option>";
-    				strVar += "                              <option class = \"clean\" value=\"12\">12<\/option>";
-    				strVar += "                              <option class = \"clean\" value=\"13\">13<\/option>";
-    				strVar += "                              <option class = \"clean\" value=\"14\">14<\/option>";
-    				strVar += "                              <option class = \"clean\" value=\"15\">15<\/option>";
-    				strVar += "                              <option class = \"clean\" value=\"16\">16<\/option>";
-    				strVar += "                              <option class = \"clean\" value=\"17\">17<\/option>";
-    				strVar += "                              <option class = \"clean\" value=\"18\">18<\/option>";
-    				strVar += "                              <option class = \"clean\" value=\"19\">19<\/option>";
-    				strVar += "                              <option class = \"clean\" value=\"20\">20<\/option>";
-    				strVar += "                              <option class = \"clean\" value=\"21\">21<\/option>";
+    				// strVar += "                              <option class = \"clean\" value=\"7\">7<\/option>";
+    				// strVar += "                              <option class = \"clean\" value=\"8\">8<\/option>";
+    				// strVar += "                              <option class = \"clean\" value=\"9\">9<\/option>";
+    				// strVar += "                              <option class = \"clean\" value=\"10\">10<\/option>";
+    				// strVar += "                              <option class = \"clean\" value=\"11\">11<\/option>";
+    				// strVar += "                              <option class = \"clean\" value=\"12\">12<\/option>";
+    				// strVar += "                              <option class = \"clean\" value=\"13\">13<\/option>";
+    				// strVar += "                              <option class = \"clean\" value=\"14\">14<\/option>";
+    				// strVar += "                              <option class = \"clean\" value=\"15\">15<\/option>";
+    				// strVar += "                              <option class = \"clean\" value=\"16\">16<\/option>";
+    				// strVar += "                              <option class = \"clean\" value=\"17\">17<\/option>";
+    				// strVar += "                              <option class = \"clean\" value=\"18\">18<\/option>";
+    				// strVar += "                              <option class = \"clean\" value=\"19\">19<\/option>";
+    				// strVar += "                              <option class = \"clean\" value=\"20\">20<\/option>";
+    				// strVar += "                              <option class = \"clean\" value=\"21\">21<\/option>";
     				strVar += "                            <\/select>";
     				strVar += "                          <\/li>";
     				strVar += "";
@@ -420,7 +421,7 @@ function update(modifyCount,sug,sugNotCDS,name,gene,a,b,c,d,e,f,g,h,csrf,ori_dat
 						selectedTable('selectedChange_'+modifyCount,data,modifyCount);
 						$('#selectedTitle').html(data.selectedInfo.length+' selected changes in the input sequence');
 						$('#TransformBTN_'+modifyCount).on('click',function(){
-							newScan(data,pic2src,modifyCount,scanUrl,userNum,oldSeqViewDataArr);
+							newScan(data,pic2src,modifyCount,scanUrl,userNum,oldSeqViewDataArr,loadPic);
 						});
 						$(document).ready(function(){
 		                    $(window).resize(function() {
@@ -443,7 +444,8 @@ function update(modifyCount,sug,sugNotCDS,name,gene,a,b,c,d,e,f,g,h,csrf,ori_dat
 		        $('#modify_'+modifyCount+'-tab').trigger('click');
 		      var loca = '#originalResult-suggetions-tab';
 					$('#original-tab').click(function(e){
-            $(document).ready(function(e){              
+            $(document).ready(function(e){ 
+            	$('#'+divId+'-update').prop('disabled',false);           
               $(loca).tab('show');
             });            
           });

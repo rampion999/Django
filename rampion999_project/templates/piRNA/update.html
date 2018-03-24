@@ -69,7 +69,7 @@
             }
         }
     });
-
+    
     $.ajax({
       url: "readUserNum/",
       data:{ 
@@ -89,14 +89,33 @@
         if (data.out == 'nonono'){
           window.location = document.URL.replace('update/',''),'_blank';
         }
-        else{
+        else{         
+          swal.queue([{
+          title : 'Loading scan result...',
+          text: "It takes some time. Please wait a moment.",
+          imageUrl: "{% static 'piRNA/img/load.gif' %}",
+          disableButtons: true,
+          showConfirmButton: false,
+          allowOutsideClick : false,
+          }]);
+          
+          // $(document).ready(function(){
+          //   var clockTime = 1;
+          //   var clock = setInterval(function(){
+          //     $('#swal2-content').html('Running time : '+clockTime+' sec');
+          //     clockTime++;
+          //   }, 1050);
+          // }) 
           dataLoad(data.out);
+          // $(document).ready(function(){
+          //   swal.close();
+          // });     
         }        
       }
     })
     
         
-    function dataLoad(userNum){
+    function dataLoad(userNum){         
       $.ajax({
         url: "firstResult/", 
         data:{ 
@@ -168,7 +187,7 @@
             });
           }
           else{
-            resultCreate('originalResult',userNum);
+            resultCreate('originalResult',userNum,data);
             var pic2src = "{% static 'piRNA/img/QQ.png' %}";
             var scanUrl = "{% static 'piRNA/img/Magnify.gif' %}"
             noBulgeData('originalResult',data);
@@ -177,6 +196,7 @@
             var newSug = arrangeSug(data.suggestion);
             var oldSeqViewDataArr = seqViewDataArr
             if(data.newout.length != 0){
+              var loadPic = "{% static 'piRNA/img/load.gif' %}";
               shit(
                 'originalResult',
                 newSug.inCDS,
@@ -197,7 +217,8 @@
                 scanUrl,
                 seqViewDataArr,
                 data.userNum,
-                oldSeqViewDataArr
+                oldSeqViewDataArr,
+                loadPic,
               );
               // 預勾
               var preCount = 0;
@@ -236,19 +257,58 @@
             } 
             
             console.log(seqViewDataArr);
+            explain('originalResult',data.CDS1,data.CDS2,geneArr,$('#wrap').width()*0.9);
             overView('originalResult',geneArr,seqViewDataArr,data.CDS1,data.CDS2,$('#wrap').width()*0.82,data.newout);            
             $(document).ready(function(){
-                $(window).resize(function() {
-                  $('#originalResult-overView').empty();
-                  overView('originalResult',geneArr,seqViewDataArr,data.CDS1,data.CDS2,$('#wrap').width()*0.82,data.newout);
-                  $('#originalResult-seqView').empty();
-                  seqView('originalResult',geneArr,data,data.CDS[0].split(''),data.CDS1,data.CDS2,$('#wrap').width()*0.775);
-                });
+              var btText = '<div class="text-center">';
+              btText += '<button type="button" id="Modify" class="btn btn-primary btn-lg mb-2 mx-2" data-toggle="modal" data-target="#originalResult-suggetions-out">Modifiy input sequence</button>';
+              btText += '<button type="button" id="goBack" class="btn btn-success btn-lg mb-2 mx-2">Scan with different rules</button></div>';
+              $('#original').append(btText);             
+              swal.close();
+              $(window).resize(function() {
+                $('#originalResult-overView').empty();
+                $('#originalResult-explain').empty();
+                explain('originalResult',data.CDS1,data.CDS2,geneArr,$('#wrap').width()*0.9);
+                overView('originalResult',geneArr,seqViewDataArr,data.CDS1,data.CDS2,$('#wrap').width()*0.82,data.newout);
+                $('#originalResult-seqView').empty();
+                seqView('originalResult',geneArr,data,data.CDS[0].split(''),data.CDS1,data.CDS2,$('#wrap').width()*0.775);
+              });
+              $('#goBack').click(function(){
+                $.ajax({
+                  url: "goBack/",
+                  async:false, 
+                  data:{ 
+                    originalSeq:data.originalSeq,
+                    a:data.options.core_non_GU,
+                    b:data.options.core_GU,
+                    c:data.options.non_core_non_GU,
+                    d:data.options.non_core_GU,
+                    e:data.options.total,
+                    name:data.name,
+                    CDS_region:data.CDS_region,
+                  },
+                  type: "POST", 
+                  dataType:'json',
+                  error: function(no){
+                    console.log(no);
+                    swal(
+                      'Scan cancelled',
+                      'There have some problem. Please contact the developer.',
+                      'error'
+                    )
+                    },
+                  success: function(data){
+                    window.location = document.URL.replace('update/',''),'_blank';
+                    // console.log(data);
+                  },
+                })
+              });
             });
           }
         },
       });
     };
+
     function arrangeSug(data){
       var output = data;
       for (var x in data.inCDS){
@@ -293,11 +353,11 @@
 
 
   <body>
-    <div class="tooltip p-3" style="opacity: 0;" id="tooltip"></div>
+    <div class="Pictooltip p-3" style="opacity: 0;" id="Pictooltip"></div>
     <!-- Navigation -->
     <nav class="navbar fixed-top navbar-expand-lg navbar-dark bg-dark fixed-top">
       <div class="container-fluid">
-        <a class="navbar-brand" href="/piScan/">piScan</a>
+        <a class="navbar-brand" href="/piScan/" style="font-size: 1.3rem;"><b class="h2">piScan: </b>a web server to predict piRNA targeting sites and to avoid transgene silencing</a>
         <button class="navbar-toggler navbar-toggler-right" type="button" data-toggle="collapse" data-target="#navbarResponsive" aria-controls="navbarResponsive" aria-expanded="false" aria-label="Toggle navigation">
           <span class="navbar-toggler-icon"></span>
         </button>
@@ -307,13 +367,13 @@
               <a class="nav-link" href="http://cosbi5.ee.ncku.edu.tw/piScan">Home</a>
             </li> -->
             <li class="nav-item">
-              <a class="nav-link" href="/piScan/">Scan</a>
+              <a class="nav-link" href="/piScan/" style="font-size: 1.25rem;">Scan</a>
             </li>
             <li class="nav-item">
-              <a class="nav-link" href="/piScan/Tutorial">Tutorial</a>
+              <a class="nav-link" href="/piScan/Tutorial" style="font-size: 1.25rem;">Tutorial</a>
             </li>
             <li class="nav-item">
-              <a class="nav-link" href="/piScan/Contact">Contact</a>
+              <a class="nav-link" href="/piScan/Contact" style="font-size: 1.25rem;">Contact</a>
             </li>
           </ul>
         </div>
@@ -337,10 +397,9 @@
         <div class="card-body tab-content" id="overallTabContent">
           <div class="tab-pane fade show active" id="original" role="tabpanel" aria-labelledby="original-tab">
             <div id="originalResult"></div>
-            <div class="text-center">
-              <!-- Button trigger modal -->
+            <!-- <div class="text-center">
               <button type="button" id="Modify" class="btn btn-primary btn-lg mb-2" data-toggle="modal" data-target="#originalResult-suggetions-out">Modifiy input sequence</button>             
-            </div>
+            </div> -->
           </div>
         </div>
       </div>
